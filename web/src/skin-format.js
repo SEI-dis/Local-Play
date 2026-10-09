@@ -4,7 +4,7 @@
 // https://manicemu.site/guides/homemade-skins/
 export const skinSize={gba:[240,160],gb:[160,144],gbc:[160,144],nes:[256,240],snes:[256,224],md:[320,224],nds:[256,384],'3ds':[400,480]};
 export const gameInputs=new Set(['a','b','x','y','c','z','l','r','l1','r1','start','select','up','down','left','right']);
-export const skinActions=new Set(['menu','quickSave','quickLoad','fastForward','fastForward2x','fastForward3x','fastForward4x','toggleFastForward','reverseScreens','volume','saveStates','cheatCodes','skins','filters','screenshot','haptics','controllers','restart','quit','toggleControlls','resolution']);
+export const skinActions=new Set(['menu','quickSave','quickLoad','fastForward','fastForward2x','fastForward3x','fastForward4x','toggleFastForward','reverseScreens','volume','saveStates','cheatCodes','skins','filters','screenshot','haptics','controllers','restart','quit','toggleControlls','resolution','rewind']);
 const aliases={mode:'select',analogStickUp:'up',analogStickDown:'down',analogStickLeft:'left',analogStickRight:'right'};
 export function skinNumber(value,min,max){if(typeof value!=='number'||!Number.isFinite(value)||value<min||value>max)throw Error('スキンの数値が範囲外です。');return value;}
 export function skinRect(r){if(!r)throw Error('スキンの位置が指定されていません。');return{x:skinNumber(r.x,-8192,8192),y:skinNumber(r.y,-8192,8192),width:skinNumber(r.width,.01,8192),height:skinNumber(r.height,.01,8192)};}

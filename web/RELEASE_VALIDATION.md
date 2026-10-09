@@ -1,6 +1,6 @@
 # 公開前の検証記録
 
-確認日：2026-10-10。対象：PalmoEMU 0.3.7のWeb配布物と、このリポジトリの公開候補。
+確認日：2026-10-10。対象：PalmoEMU 0.3.8のWeb配布物と、このリポジトリの公開候補。
 以下の過去の全件検査と、末尾の各バージョンで再実行した検査は区別して記載しています。
 配布ファイルの正確な内容は RELEASE_CONTENT.json、レビュー対象のハッシュと根拠は
 RELEASE_REVIEW.json で特定します。
@@ -13,8 +13,8 @@ Windows、Node.js 22.16.0、Python 3.12.8、Playwright 1.62.1を使用しまし�
 
 | 検査 | 結果・確認範囲 |
 | --- | --- |
-| Edge全件 | `node web/scripts/test-all.cjs --serve`：43スイート。公開前に全件成功を必須とする |
-| WebKit対応分 | `node web/scripts/test-all.cjs --serve --webkit`：28スイート。公開前に全件成功を必須とする |
+| Edge全件 | `node web/scripts/test-all.cjs --serve`。対象一覧は同コマンドの `--list` で確認。公開前に全件成功を必須とする |
+| WebKit対応分 | `node web/scripts/test-all.cjs --serve --webkit`。対象一覧は同コマンドの `--list` で確認。公開前に全件成功を必須とする |
 | 追加コア | 全7機種の描画・音声出力・ステート・入力、NDSのタッチとセーブ入出力、コア切替時のデータ分離を確認 |
 | JavaScript構文 | アプリ・ビルドスクリプト・検査コードで `node --check` 成功 |
 | 上流ソース・通知・コア | SOURCES.jsonの固定ハッシュと実ファイルが一致。30個のSwift参照ファイルとManicEMUのライセンス原本を照合 |
@@ -324,3 +324,36 @@ save-safetyをEdgeで再実行しました。全件は公開前CIで43＋28ス�
 これはWebアプリの診断記録です。OSのメモリダンプやブラウザ強制終了直前の詳細は取得できず、
 前回が正常終了していない場合に次回プレイ時の記録を残します。実機の強制終了からの
 原因特定を保証するものではありません。新しい外部ライブラリ・画像・コアは追加していません。
+
+
+## 0.3.8: ゲーム別設定・操作補助・一括バックアップ・巻き戻し（2026-10-10）
+
+- ゲーム別の速度・音量・映像・操作設定を追加。未変更項目は共通設定を使用し、個別設定だけをリセットする。
+- 機種／入力機器別のキー・ゲームパッド割り当てと、連射・押しっぱなしを追加。特殊操作はメニュー・保存・読込・速度・巻き戻し。
+- ROMを含まない設定・セーブ・全手動ステート・履歴のバックアップを追加。照合と確認後に復元し、変更前の置き換え対象と設定を1世代保持する。
+- GB/GBC/GBAの対応6構成へ、デフォルトOFF・最大10秒のRAM内巻き戻しを追加。記録と復元コピーは合計8MiBまで、コアの一時シリアライズメモリは別に扱う。
+
+今回追加した専用テストの実行済み結果：
+
+| テスト | 確認範囲 | 結果 |
+| --- | --- | --- |
+| `game-preferences.cjs` | 実アプリのゲーム別設定、共通設定の継承、個別リセット、画面間の適用範囲 | Edge・PC版WebKit成功 |
+| `input-controls.cjs` | 合成キーボード／パッド／タッチ、割り当てUI、入力待ち、連射・固定解除、通信中制限、設定サニタイズ、狭い画面 | Edge・PC版WebKit成功 |
+| `backup.cjs` | 設定・全セーブ・ステート・履歴、2P／コア区分、ROM・画像・診断等の除外、ハッシュと形式検査、確認前不変、復元前1世代、容量不足時の原子性 | Edge・PC版WebKit成功 |
+| `rewind.cjs` | opt-in、容量・10秒上限、最長3秒の移動、pause／clear／disposeの競合、通信禁止、復元失敗時のロールバック | Edge・PC版WebKit成功 |
+| `rewind.cjs` 実コア | GB/GBC mGBA・jgenesis、GBA mGBA・VBA-Nextの自作ROMで実行状態とセーブRAMを復元。IndexedDBの既存セーブ不変 | Edge・PC版WebKit成功 |
+
+実アプリへの接続を含むゲーム別設定と入力機能、既存のspeed-controlはEdge・PC版WebKitで成功。
+既存回帰はEdgeのbrowser（6機種）、state-ui、visibility（GBA・NES）、link-panel、
+runtime-performance、nds-skin（70配置）、video-filtersと、WebKitのdiagnostics・rom-importを再確認した。
+既存メニュー・音声・振動の検査を含む最終全件は、同じコミットのEdge・対応WebKit・Linux配布検査で成功を要求する。
+本節の局所・結合結果だけでは公開対象コミットの全件成功を示さない。
+
+ManicEMUの同じ固定版のGame / GameOptionPerform、ControllerMapping / Trigger、FilesSync*、
+Game.supportRewind / PlayViewController.updateRewindを確認。巻き戻し呼び出しは実際のRetroArchサブモジュール
+00689c83f4d458e061d5fd7b52a181b8d240fe65まで追跡した。SOURCES.jsonのbrowserFeatures038にURL・版・ハッシュ・帰属・利用範囲を記録。
+新規JavaScriptは独自実装で、Deltaのネイティブコード・画像・文章、RetroArchの巻き戻し実装はコピー／リンクしていない。
+既存の著作者表示・ライセンス原文・固定コア・画像許諾・対応ソースを保持。追加のROM・実機BIOS・新コアバイナリはない。
+
+iPhone実機の巻き戻し負荷・発熱・最大容量バックアップ、物理ゲームパッド全般の互換性は未検証。
+PC版WebKitの成功を実機検証の代用とはしない。ファイルにはセーブ内容・チート名等が含まれ、暗号化しないことを案内した。

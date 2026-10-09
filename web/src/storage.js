@@ -2,6 +2,7 @@
 import {guardUpdateTask} from './update-activity.js';
 import {coreRegistry,supportsGame} from './core-registry.js';
 import {withSkinChoice,withoutSkinChoice} from './skin-selection.js';
+import {sanitizeGamePreferences} from './game-preferences.js';
 const stores=['library','roms','saves','states','backups','recoveries','sessions','skins','coverCatalogs'];
 const database=new Promise((resolve,reject)=>{
  const r=indexedDB.open('manicemu-web',4);let blocked=false;
@@ -57,6 +58,12 @@ async function setGameControls(id,layout){const db=await database;return new Pro
  request.onsuccess=()=>{const game=request.result;if(!game){failure=new Error('ゲームが見つかりません。');tx.abort();return;}if(layout===null)delete game.controlLayout;else game.controlLayout=layout;store.put(game,id);};
  tx.oncomplete=resolve;tx.onabort=()=>reject(failure||tx.error||new Error('ボタンの設定を保存できませんでした。'));tx.onerror=()=>{};
 });}
+// Patch only per-game preferences; concurrent cover/name edits remain intact.
+async function setGamePreferences(id,preferences){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=write(db,'library'),store=tx.objectStore('library'),request=store.get(id);let failure,result;
+ tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||Error('ゲームの設定を保存できませんでした。'));tx.onerror=()=>{};
+ request.onsuccess=()=>{try{const game=request.result;if(!game)throw Error('ゲームが見つかりません。');result=preferences===null?null:sanitizeGamePreferences(preferences);if(result===null)delete game.preferences;else game.preferences=result;store.put(game,id);}catch(e){failure=e;tx.abort();}};
+});}
 // Deleted skins cannot leave game-specific overrides pointing to missing artwork.
 async function removeSkin(id){const db=await database;return new Promise((resolve,reject)=>{
  const tx=write(db,['skins','library']);tx.objectStore('skins').delete(id);
@@ -110,6 +117,58 @@ async function commitProtectionBatch(entries){
 
 async function stateEntries(id){const db=await database;return new Promise((resolve,reject)=>{const list=[],r=db.transaction('states').objectStore('states').openCursor(IDBKeyRange.bound(id+':',id+':\uffff'));r.onsuccess=()=>{const c=r.result;if(!c){resolve(list);return;}list.push({key:c.key,value:c.value});c.continue();};r.onerror=()=>reject(r.error);});}
 
+// Private metadata keys share the existing catalog store to avoid a disruptive
+// database upgrade while another tab is playing. No catalog API enumerates it.
+export const backupMetadataPrefix='\u0001palmo-backup:';
+const backupStores=['saves','states','backups','recoveries'];
+async function readBackupData(){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=db.transaction(['library',...backupStores]),result={games:[],records:[]};let bytes=0,failure;
+ for(const name of ['library',...backupStores]){const request=tx.objectStore(name).openCursor();request.onsuccess=()=>{try{const c=request.result;if(!c)return;
+  const project=(value,fields)=>Object.fromEntries(fields.filter(key=>Object.hasOwn(value,key)).map(key=>[key,value[key]]));
+  if(name==='library')result.games.push(project(c.value,['id','system','size','preferences','coreKey','cheats','coreCheats','controlLayout']));else{const rows=Array.isArray(c.value)?c.value:[c.value],values=rows.map(item=>project(item,['bytes','hash','at','coreId','save','saveHash']));result.records.push({store:name,key:c.key,value:Array.isArray(c.value)?values:values[0]});for(const item of values)bytes+=(item.bytes?.byteLength||0)+(item.save?.byteLength||0);}
+  if(result.games.length>1000||result.records.length>10000||bytes>128*1048576){failure=Error('バックアップの上限（128 MiB／1000ゲーム／10000件）を超えています。個別に書き出してから整理してください。');tx.abort();return;}c.continue();}catch(e){failure=Error('バックアップ用の保存データを読めませんでした。');tx.abort();}};}
+ tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||Error('バックアップ用のデータを読めませんでした。'));
+});}
+// Caller holds every local-game lock and validates all incoming bytes first.
+// Capture the actual previous values and replace data in the same transaction.
+// ROM payloads are never read; count() only confirms each library entry exists.
+async function restoreBackupData({games,records,settings,previousSettings,cleanGame,cleanRecord,maxBytes}){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=write(db,['library','roms',...backupStores,'coverCatalogs']),catalog=tx.objectStore('coverCatalogs'),ids=new Set(games.map(g=>g.id));
+ let failure,pending=games.length*2+backupStores.length,previousBytes=0;const before={games:[],records:[]},remove=[];
+ const abort=e=>{failure=e;try{tx.abort();}catch{}};
+ const belongs=key=>typeof key==='string'&&ids.has(key.split(/[@:]/,1)[0]);
+ const done=()=>{if(--pending)return;try{
+  // Latest one only. Previous snapshot replacement is atomic with the restore.
+  catalog.delete(IDBKeyRange.bound(backupMetadataPrefix,backupMetadataPrefix+'\uffff'));
+  const meta={settings:previousSettings,games:before.games,count:before.records.length,at:Date.now()};
+  catalog.put(meta,backupMetadataPrefix+'snapshot');
+  before.records.forEach((record,i)=>catalog.put(record,backupMetadataPrefix+'record:'+i));
+  catalog.put({settings},backupMetadataPrefix+'pending');
+  for(const [store,key] of remove)tx.objectStore(store).delete(key);
+  for(const record of records)tx.objectStore(record.store).put(record.value,record.key);
+ }catch(e){abort(e);}};
+ for(const incoming of games){
+  const r=tx.objectStore('library').get(incoming.id);r.onsuccess=()=>{try{
+   const game=r.result;if(!game||game.system!==incoming.system||game.size!==incoming.size)throw Error('ゲーム一覧が変わりました。ファイルを選び直してください。');
+   before.games.push(cleanGame(game));
+   for(const field of ['preferences','coreKey','cheats','coreCheats','controlLayout']){if(Object.hasOwn(incoming,field))game[field]=incoming[field];else delete game[field];}
+   tx.objectStore('library').put(game,game.id);done();
+  }catch(e){abort(e);}};
+  const check=tx.objectStore('roms').count(incoming.id);check.onsuccess=()=>{if(!check.result)abort(Error('対象のROMがありません。先にROMを追加してください。'));else done();};
+ }
+ for(const name of backupStores){const r=tx.objectStore(name).openCursor();r.onsuccess=()=>{try{const c=r.result;if(!c){done();return;}if(belongs(c.key)){
+   const record=cleanRecord({store:name,key:c.key,value:c.value});before.records.push(record);remove.push([name,c.key]);
+   for(const item of Array.isArray(record.value)?record.value:[record.value])previousBytes+=(item.bytes?.byteLength||0)+(item.save?.byteLength||0);
+   if(previousBytes>maxBytes||before.records.length>10000)throw Error('復元前のデータが退避上限を超えています。個別に書き出してから整理してください。');
+  }c.continue();}catch(e){abort(e);}};}
+ tx.oncomplete=()=>resolve({games:games.length,records:records.length});tx.onabort=()=>reject(failure||tx.error||Error('復元が中断されました。元のデータは変更していません。'));tx.onerror=()=>{};
+});}
+async function readPreviousBackup(){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=db.transaction('coverCatalogs'),store=tx.objectStore('coverCatalogs'),r=store.get(backupMetadataPrefix+'snapshot');let result=null,failure;
+ r.onsuccess=()=>{if(!r.result)return;if(!Number.isInteger(r.result.count)||r.result.count<0||r.result.count>10000){failure=Error('復元前のバックアップ情報が正しくありません。');tx.abort();return;}result={...r.result,records:[]};for(let i=0;i<result.count;i++){const q=store.get(backupMetadataPrefix+'record:'+i);q.onsuccess=()=>{result.records[i]=q.result;};}};
+ tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||Error('復元前のバックアップを読めませんでした。'));
+});}
+
 // Keep storage work inside the update barrier, including waits for IndexedDB/locks.
 const hasWithActivity=guardUpdateTask(has);
 const getWithActivity=guardUpdateTask(get);
@@ -121,6 +180,10 @@ const addGameWithActivity=guardUpdateTask(addGame);
 const setGameCoverWithActivity=guardUpdateTask(setGameCover);
 const setGameSkinWithActivity=guardUpdateTask(setGameSkin);
 const setGameControlsWithActivity=guardUpdateTask(setGameControls);
+export const setGamePreferencesWithActivity=guardUpdateTask(setGamePreferences);
+export {setGamePreferencesWithActivity as setGamePreferences};
+const readBackupDataWithActivity=guardUpdateTask(readBackupData),restoreBackupDataWithActivity=guardUpdateTask(restoreBackupData),readPreviousBackupWithActivity=guardUpdateTask(readPreviousBackup);
+export {readBackupDataWithActivity as readBackupData,restoreBackupDataWithActivity as restoreBackupData,readPreviousBackupWithActivity as readPreviousBackup};
 const removeSkinWithActivity=guardUpdateTask(removeSkin);
 const removeGameWithActivity=guardUpdateTask(removeGame);
 const setGameCoreWithActivity=guardUpdateTask(setGameCore);

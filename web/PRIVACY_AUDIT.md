@@ -1,6 +1,6 @@
 # データ保存・通信の確認記録
 
-確認日：2026年10月9日。対象：このWeb配布物。検査には自作のテストプログラムと合成データを使用しています。
+確認日：2026年10月10日。対象：このWeb配布物。検査には自作のテストプログラムと合成データを使用しています。
 
 ## 実装
 
@@ -10,7 +10,10 @@
 | セーブ、手動ステート、復旧用ステート、履歴 | IndexedDBのsaves、states、recoveries、backups | src/storage.js、src/save-safety.js |
 | ライブラリ、画像、スキン | IndexedDBのlibrary、skins。表示用に端末内のdata/blob URLを使用 | src/app.js、src/skins.js |
 | カバー画像 | IndexedDBのlibrary。端末内の画像をdata URLに変換 | src/cover-dialog.js |
-| 設定 | localStorageのmanic-settings。ROM・セーブのバイト列は保存しない | src/app.js |
+| 設定・入力機器別割り当て | localStorageのmanic-settings。機器名ではなくIDハッシュを保持。ROM・セーブのバイト列は保存しない | src/game-preferences.js、src/input-controls.js |
+| ゲーム別設定 | IndexedDBのlibrary.preferences。共通設定への未変更項目の継承とリセット | src/game-preferences.js、src/storage.js |
+| 一括バックアップ | 手動で端末へJSONダウンロード。復元前の置き換え対象と設定はIndexedDBのcoverCatalogs内の予約名前空間に1世代保持 | src/backup.js、src/storage.js |
+| 巻き戻し | RAM内だけのstate／battery。保持履歴と復元コピー合計8MiB上限、終了時破棄 | src/rewind.js、src/rewind-session.js |
 | オフライン用アプリ | Cache Storage。配布マニフェスト内の静的ファイルだけを保存 | sw.js、offline-manifest.js |
 | ゲーム実行 | 端末内のWASM・Canvas・Web Audio | src/mgba.js、src/retro.js、src/video.js |
 | ユーザーによるセーブ等の書き出し | Blobから端末へのダウンロード。ROMの共有・書き出し機能は実装しない | src/app.jsのdownload、src/game-info.jsのexportSave |
@@ -111,3 +114,34 @@ LICENSE_AUDIT.mdに記載したライセンス通知・対応ソースを維持�
 不正な画像の拒否、カバー変更時のROM・セーブ保持、過去の設定から外部取得が復活しないことを検査します。
 追加コアも同一配信元の静的ファイルだけを取得します。tests/multicore.cjsは全7機種の追加コアを
 合成ROMで起動し、コアごとの保存先・タブ間のロック・削除・HTTP通信の範囲を確認します。
+
+
+## 0.3.8: 設定・操作・一括バックアップ・巻き戻し（2026-10-10）
+
+入力の割り当ては機種・キーボード／ゲームパッド共通／機器IDハッシュ単位で保存します。
+物理入力の履歴、押しっぱなし中のボタン状態、機器名は保存しません。ゲーム別の速度・音量・
+映像等はlibrary内のpreferencesへ保存し、個別設定のない項目だけ共通設定を使います。
+これらの設定操作にネットワークAPIはありません。
+
+一括バックアップは保存データと許可した設定だけを手動でJSONへ書き出します。
+ROM・BIOS、ゲーム名・元ファイル名、カバー・スキン資産と選択状態、ステート画像、
+セッション・診断記録・キャッシュ・巻き戻しRAMは含めません。
+照合用のゲームSHA-256・機種・容量、コア情報、チート名とコード、セーブ内容は含みます。
+暗号化しないため、セーブ内のプレイヤー名などの私的情報が入る場合があります。
+ファイル選択では読み取りと検証だけを行い、確認後に既存の同じROMへ復元します。
+JSONの最大サイズは192MiB、バイト配列の合計は128MiB、1000ゲーム／10000保存項目までです。
+
+復元前の1世代と中断時の設定反映待ちは、旧coverCatalogsストアの予約キー
+`\u0001palmo-backup:` 以下に保持します。外部カバー取得用には使いません。
+セーブ類と復元前データは同じIndexedDBトランザクションで保存し、localStorage側の
+設定反映が中断した場合は起動前に続行します。この記録はクラウドへ送信しません。
+
+巻き戻しはRAM内の機械状態とゲーム内セーブを組で保持し、スクリーンショットを作りません。
+復元中に永続保存を走らせず、再開した後の通常の保存へ戻します。終了・再読込・通信開始や
+互換性を失う状態変更で履歴を捨てます。core内の一時serialize領域は8MiB保持上限とは別です。
+
+専用のinput-controls、backup、rewindテストはEdge・PC版WebKitで実行済みです。
+入力は合成イベント、バックアップは合成データ、巻き戻しは6構成の自作カートリッジを使い、
+既存の永続セーブを変更しない復元と、端末外への通信なしを確認しました。
+実アプリ全体への結合と公開対象の全件CIは、RELEASE_VALIDATION.mdと対象コミットの結果で区別します。
+iPhone実機の性能や最大容量のバックアップ操作を検証したものではありません。

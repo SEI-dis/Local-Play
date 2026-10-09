@@ -32,7 +32,7 @@ const assert=require('node:assert/strict'),runtime=require('./browser-runtime.cj
    const {importSkin}=await import('./src/skins.js'),skin=await importSkin(new File([new Uint8Array(bytes)],'haptic.manicskin'));
    const settings=JSON.parse(localStorage.getItem('manic-settings'));settings.skins={gba:skin.id};settings.haptics=true;settings.hapticStrength=20;localStorage.setItem('manic-settings',JSON.stringify(settings));
   },[...payload]);
-  await p.reload();await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.locator('#loading').waitFor({state:'hidden'});
+  await p.reload();await p.locator('.game-launch').click();assert.equal(await p.locator('[data-setting=hapticStrength]').inputValue(),'0','A game-specific off setting survives common changes');await p.locator('[data-setting=hapticStrength]').selectOption('20');await p.locator('.game-info-play').click();await p.locator('#loading').waitFor({state:'hidden'});
   await p.evaluate(()=>vibrations.length=0);await p.locator('.imported-control[aria-label=a]').tap();assert.ok((await p.evaluate(()=>vibrations)).includes(20),'Imported skin controls use the same vibration setting');
   await pause();await p.locator('#player-menu').click();await p.locator('[data-action=exit]').click();await p.locator('#player').waitFor({state:'hidden'});
   await p.evaluate(()=>Object.defineProperty(navigator,'vibrate',{configurable:true,value:undefined}));await p.locator('[data-tab=settings]').click();

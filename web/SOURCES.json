@@ -82,7 +82,10 @@
       "license": "MPL-2.0",
       "localSource": "sources/celio-web-transport",
       "modifiedSource": "src/room-link.js",
-      "additionalModifiedSources": ["src/direct-link.js", "src/celio-serial.js"]
+      "additionalModifiedSources": [
+        "src/direct-link.js",
+        "src/celio-serial.js"
+      ]
     }
   },
   "toolchain": {
@@ -267,5 +270,157 @@
     "repository": "https://github.com/Manic-EMU/ManicEMUSkins",
     "commit": "63c04f92febba461d10ea16ef00b0f76199a5b20",
     "changes": "See sources/manic-skins/README.md and licenses.html#skins. Approval is limited to the exact recorded versions and files."
+  },
+  "browserFeatures038": {
+    "reviewed": "2026-10-10",
+    "implementationLicense": "AGPL-3.0-or-later",
+    "implementation": [
+      "src/game-preferences.js",
+      "src/input-controls.js",
+      "src/input-controls-view.js",
+      "src/backup.js",
+      "src/backup-view.js",
+      "src/rewind.js",
+      "src/rewind-session.js"
+    ],
+    "changes": "Original browser modules for per-game preferences with shared inheritance/reset; per-system/device mappings and repeat/toggle-hold assistance; local versioned ROM-free settings/save/state backup; RAM-only GB/GBC/GBA rewind. Existing core/artwork pins and corresponding source retained. No new binary, native runtime, cloud SDK or third-party asset.",
+    "referenceOnly": true,
+    "references": [
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Play/Models/Game.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "4484e24d7a1c9427fb2d20fe9ba313a54beace5a8f8946a3afccb4a501532904",
+        "authors": "Max, Copyright © 2025 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "use": "Behavior reference; existing unmodified reference file retained."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Games/Models/GameOptionPerform.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "58586dd1e57194d7f016f2782e0a872363410c1f60bad55273ce8d32ee65992b",
+        "authors": "Daiuno, Copyright © 2026 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "use": "Behavior reference; existing unmodified reference file retained."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Controllers/Models/ControllerMapping.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "a6260369a9d92a95adbced5d3f85cba900c8c4e0dffd0807bceb9edc42330cb4",
+        "license": "AGPL-3.0-or-later",
+        "adaptation": "Behavior reference only: per system/controller input mappings; simple-repeat interval and toggle hold assistance. Independent browser implementation; no Swift code copied.",
+        "authors": "Daiuno, Copyright © 2025 Manic EMU",
+        "use": "Behavior/interaction reference only; no copied runtime code, artwork or text."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/TriggerPro/Models/Trigger.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "ac7661705e69f0ee847d869764e205c63ac972e17579f48184037ba9ee501771",
+        "license": "AGPL-3.0-or-later",
+        "adaptation": "Behavior reference only: per system/controller input mappings; simple-repeat interval and toggle hold assistance. Independent browser implementation; no Swift code copied.",
+        "authors": "Daiuno, Copyright © 2025 Manic EMU",
+        "use": "Behavior/interaction reference only; no copied runtime code, artwork or text."
+      },
+      {
+        "url": "https://github.com/rileytestut/DeltaCore/blob/633dfa86967816315fe19b482511dab1ce517f28/DeltaCore/Model/GameControllerInputMapping.swift",
+        "revision": "633dfa86967816315fe19b482511dab1ce517f28",
+        "sha256": "689e858ade3cda616fad0a2751349174861eafef12c2c3bab9801ab9148bfe3a",
+        "adaptation": "Behavior reference only: physical input identifier to game-action dictionary. No Swift source copied; no root license file was present in the reviewed tree.",
+        "authors": "Riley Testut, 2017",
+        "use": "Behavior/interaction reference only; no copied runtime code, artwork or text."
+      },
+      {
+        "url": "https://faq.deltaemulator.com/using-delta/controllers",
+        "adaptation": "Interaction reference: choose system/controller, select target button, capture physical input, save. No prose copied.",
+        "use": "Behavior/interaction reference only; no copied runtime code, artwork or text."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Tools/Sync/FilesSyncPolicy.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "cc2fca815cae04184b3c3f16558a3f0b450451d4005ccd5ea64a064193992295",
+        "authors": "Daiuno, Copyright © 2026 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "use": "Behavior reference only: category exclusions, batched writes and lifecycle coordination; no cloud/native code copied."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Tools/Sync/FilesSyncRecord.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "5feafc1d4146a0baf87dea42c65cae1f93f29690e60fadafd659cd9b0d0ef456",
+        "authors": "Daiuno, Copyright © 2026 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "use": "Behavior reference only: category exclusions, batched writes and lifecycle coordination; no cloud/native code copied."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Tools/Sync/FilesSyncManager.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "bbe652796be85228f0d5195789dae342679acbfea450036515ea971abc96efd8",
+        "authors": "Daiuno, Copyright © 2026 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "use": "Behavior reference only: category exclusions, batched writes and lifecycle coordination; no cloud/native code copied."
+      },
+      {
+        "url": "https://faq.deltaemulator.com/using-delta/delta-sync",
+        "use": "Documentation/interaction reference only; no code/text copied and no cloud service implemented."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Play/VIewControllers/PlayViewController.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "53b15f87a5f30fe2d4b7b908967d9efb35230a59c9d171e052a9397a833bb68e",
+        "license": "AGPL-3.0-or-later",
+        "authors": [
+          "Max, Copyright © 2025 Manic EMU"
+        ],
+        "use": "Behavior/architecture reference only; no native or RetroArch rewind runtime copied or linked."
+      },
+      {
+        "url": "https://github.com/Daiuno/RetroArch/blob/00689c83f4d458e061d5fd7b52a181b8d240fe65/ui/drivers/LibretroCore.m",
+        "revision": "00689c83f4d458e061d5fd7b52a181b8d240fe65",
+        "sha256": "35aa9423a24f3d21789fb83284a9f0aa823b31346e334bd4ffd8d7657ad47e01",
+        "license": "GPL-3.0-or-later",
+        "authors": [
+          "RetroArch contributors",
+          "Daiuno"
+        ],
+        "use": "Behavior/architecture reference only; no native or RetroArch rewind runtime copied or linked."
+      },
+      {
+        "url": "https://github.com/Daiuno/RetroArch/blob/00689c83f4d458e061d5fd7b52a181b8d240fe65/state_manager.c",
+        "revision": "00689c83f4d458e061d5fd7b52a181b8d240fe65",
+        "sha256": "de03b750d5255d785c7e997d0abf120ac9d149da1b584bf78c540adfbd7ef18e",
+        "license": "GPL-3.0-or-later",
+        "authors": [
+          "Hans-Kristian Arntzen",
+          "Daniel De Matteis",
+          "Alfred Agrell"
+        ],
+        "use": "Behavior/architecture reference only; no native or RetroArch rewind runtime copied or linked."
+      },
+      {
+        "url": "https://github.com/Daiuno/RetroArch/blob/00689c83f4d458e061d5fd7b52a181b8d240fe65/state_manager.h",
+        "revision": "00689c83f4d458e061d5fd7b52a181b8d240fe65",
+        "sha256": "790c7379ef9e11fb8483f815e634955205615fce8008c2567004ba14d073e7e8",
+        "license": "GPL-3.0-or-later",
+        "authors": [
+          "RetroArch contributors"
+        ],
+        "use": "Behavior/architecture reference only; no native or RetroArch rewind runtime copied or linked."
+      }
+    ],
+    "rewindBounds": {
+      "intervalEmulatedMilliseconds": 500,
+      "maxSeconds": 10,
+      "maxSamples": 21,
+      "retainedHistoryAndRollbackBytes": 8388608,
+      "maximumSingleStateBytes": 4194304,
+      "notes": "Core serialization temporary allocation is separate. Opt-in; no persistent writes during rewind; serialized states that include battery RAM are not followed by a battery import."
+    },
+    "backupBounds": {
+      "format": "PalmoEMU-save-backup",
+      "version": 1,
+      "maxFileBytes": 201326592,
+      "maxDecodedBytes": 134217728,
+      "maxGames": 1000,
+      "maxRecords": 10000,
+      "notes": "Local manual file, no encryption/upload/account. Excludes ROM/BIOS, game names, filenames, images, skin assets/selections, diagnostic/session/cache data and volatile rewind history."
+    }
   }
 }

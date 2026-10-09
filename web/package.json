@@ -1,6 +1,6 @@
 {
   "name": "palmoemu",
-  "version": "0.3.7",
+  "version": "0.3.8",
   "private": true,
   "scripts": {
     "dev": "node scripts/serve.cjs",
@@ -50,7 +50,11 @@
     "test:3ds-save": "node tests/three-ds-save.cjs",
     "test:extended-save": "node tests/extended-save.cjs",
     "test:rom-import": "node tests/rom-import.cjs",
-    "test:diagnostics": "node tests/diagnostics.cjs"
+    "test:diagnostics": "node tests/diagnostics.cjs",
+    "test:game-preferences": "node tests/game-preferences.cjs",
+    "test:input-controls": "node tests/input-controls.cjs",
+    "test:rewind": "node tests/rewind.cjs",
+    "test:backup": "node tests/backup.cjs"
   },
   "license": "AGPL-3.0-or-later"
 }

@@ -88,9 +88,9 @@ const kind=process.env.BROWSER_ENGINE||'chromium',browserType=require('./browser
   if(process.env.SCREENSHOT_DIR){fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await page.screenshot({path:path.join(process.env.SCREENSHOT_DIR,kind+'-pitch-menu.png')});}
   await page.locator('[data-action=play]').click();assert.equal(await page.evaluate(()=>testEngine.speed),2,'Switch does not change selected speed');
   await page.locator('#player-menu').click();await page.locator('[data-action=exit]').click();await page.locator('#player').waitFor({state:'hidden'});
-  await settings();assert.equal(await pitch.isChecked(),true,'In-game change also updates settings screen');
+  await settings();assert.equal(await pitch.isChecked(),false,'In-game changes preserve the common setting');assert.equal(await page.evaluate(async()=>(await (await import('./src/storage.js')).all('library'))[0].preferences.preservePitch),true,'The game keeps its own pitch preference');
   if(process.env.SCREENSHOT_DIR)await page.screenshot({path:path.join(process.env.SCREENSHOT_DIR,kind+'-pitch-settings.png')});
   assert.deepEqual(errors,[]);await context.close();
-  console.log('PASS: default-on migration, persisted off/on, settings/pre-play/playing menu sync, live engine application and inherited NDS/Retro audio path.');
+  console.log('PASS: default-on migration, persisted off/on, common/game isolation and pre-play/playing menu sync, live engine application and inherited NDS/Retro audio path.');
  }finally{await browser.close();}
 })().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1);});

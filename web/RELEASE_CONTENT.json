@@ -53,26 +53,26 @@
     },
     {
       "path": "NOTICES.md",
-      "bytes": 26328,
-      "sha256": "152344a1122af57892cd225f3d170d3c1e194c97e1c0d9b1616f5b1ace36a7b6",
+      "bytes": 29567,
+      "sha256": "985beceb2c0bbce4ca3032ba7fab2a2b2d0cc74caf199f4b22f97ff04137af9c",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "PRIVACY_AUDIT.md",
-      "bytes": 10536,
-      "sha256": "e5e30ad67987fab987951da4c95c1a74462bb85f8877afecac260de4dd01ee19",
+      "bytes": 13927,
+      "sha256": "f5a3c22d63546b91f4560afcbf7dc89fcb19ba615ae199d2c602d0980c660227",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "README.md",
-      "bytes": 41058,
-      "sha256": "b58158a6e014752db06eddff08c5db776f47ea21850769f5f49fac870bafa9c9",
+      "bytes": 49547,
+      "sha256": "7523061a553b07c8e57a8f8870fbaa4bf6019fa5daa6b23546e5d5e3ff069a85",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "RELEASE_VALIDATION.md",
-      "bytes": 34788,
-      "sha256": "4a25c8d820a1c979181325416b175796b1bb6565bf05ec4582bb97e709124d1e",
+      "bytes": 38468,
+      "sha256": "0529a9429aa244d8caf6dfb9204c34c88e963b9e697fcb3d59909844b746e5c7",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -83,8 +83,8 @@
     },
     {
       "path": "SOURCES.json",
-      "bytes": 21351,
-      "sha256": "05fc01127d5312c4b04215738539b889a571639ea1a9779f6a82e84e61145bcf",
+      "bytes": 30614,
+      "sha256": "f55364f8b41e310826c3c85b4c9c11dea07e2b9bf2307ffe87c4e8d9a588ff5d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -856,6 +856,12 @@
       "component": "web-port-code-and-documentation"
     },
     {
+      "path": "game-preferences.css",
+      "bytes": 323,
+      "sha256": "01e96fd4b40cfac79b581edb9528211991b5bb9fbdcaed6eb2a8671884f33caf",
+      "component": "web-port-code-and-documentation"
+    },
+    {
       "path": "import-progress.css",
       "bytes": 1835,
       "sha256": "b5e31c879fef9f39f376f15d37624fb98dd711d375d1dd5760256d58cbaef360",
@@ -863,8 +869,14 @@
     },
     {
       "path": "index.html",
-      "bytes": 4823,
-      "sha256": "be7a03874f1d4144b845fb23d2e4101b9e24031a08cc6465651402a51525050d",
+      "bytes": 4923,
+      "sha256": "580057871a466be92683d668a872b51122873976802190def2ad2bbd654d4588",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "input-controls.css",
+      "bytes": 612,
+      "sha256": "310817ad272903bd2c91c8c4228f3b1ee6340b833ea0b347d867a5be81952801",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -1085,14 +1097,14 @@
     },
     {
       "path": "package.json",
-      "bytes": 2672,
-      "sha256": "4d84515447b230ad9e86ce1b9c78409d9d4e248bc13ea112b431c9949bef3685",
+      "bytes": 2890,
+      "sha256": "ba4349dd1cc50e9016b972ff32875d8de60cfc930e710b1bc5a9aa3be5636892",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "privacy.html",
-      "bytes": 6054,
-      "sha256": "ece745d9f4201266c572323036693968d7ac3c046d65567748d3a1657555042e",
+      "bytes": 7973,
+      "sha256": "f8924a9d29b9d99b8dfce4fe20ac5f4bcd33954adfe37b07e9767087b822c81d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -1187,8 +1199,8 @@
     },
     {
       "path": "scripts/test-all.cjs",
-      "bytes": 5292,
-      "sha256": "c335e0589cc7f97f872c8098fb5f91aa3f02af15b6fb28530ea3ac17bc0272e5",
+      "bytes": 5346,
+      "sha256": "c7b3d7221aa1c9c985a5ce5136d19e22a849a44594e53518e7fc07af6c278dfd",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39407,8 +39419,8 @@
     },
     {
       "path": "src/app.js",
-      "bytes": 56090,
-      "sha256": "f24847ca85e249813d611038575c4837cf6502964534a97f725e10a35d086bc3",
+      "bytes": 59527,
+      "sha256": "edc2f36e380e79bd416d9807681d2b697214473e2b73cbbabc7b4c8c23bfd6ed",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39421,6 +39433,18 @@
       "path": "src/auto-update.js",
       "bytes": 6723,
       "sha256": "b91ad4e976b0231d91ab58cb4028922268f929710c64f5beb33cdfb1fe28e1d0",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/backup-view.js",
+      "bytes": 5002,
+      "sha256": "bf65d3b0b7b1caec5fbb671f0028cb0aa38afb1cdd8288c73e62cf30a5760cfd",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/backup.js",
+      "bytes": 15554,
+      "sha256": "067841e82b772515964beadd784e0058460efe0d0795b3a379dcefa3b69d7de0",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39491,8 +39515,8 @@
     },
     {
       "path": "src/diagnostics.js",
-      "bytes": 9784,
-      "sha256": "ec294c6be0e0b94aacc27a27c8cc44e354620d9c142ce8b7d5c2e6ba8ae053a3",
+      "bytes": 9899,
+      "sha256": "57ae03ed36ae4e965e099e8720bd2c2efbb86b86502b67b54b500a0bf612779d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39509,8 +39533,20 @@
     },
     {
       "path": "src/game-info.js",
-      "bytes": 10243,
-      "sha256": "f12b2f8af2ee292100268969d8fdfc1d1c977a67231313a2fc26eabb465c3a37",
+      "bytes": 10423,
+      "sha256": "5407f4990e0b96f3208e60001880b424db727ee990c5b2b8de276a7143bd429d",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/game-preferences-view.js",
+      "bytes": 1263,
+      "sha256": "aa3fe9ffd099b581d46eafec17fae0ea4161361ac9c4b413247376c6f6f7cf19",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/game-preferences.js",
+      "bytes": 2633,
+      "sha256": "9ffb6b67174e676b2a261905a962ec8d166ec79b2fdbb75077ca3abf5b45a26d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39523,6 +39559,18 @@
       "path": "src/import-progress.js",
       "bytes": 1876,
       "sha256": "11ab6b7ae45f53c8df3a84a066a91df3b1b679f58fec55c7b7ada58791664796",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/input-controls-view.js",
+      "bytes": 5292,
+      "sha256": "5e61fc68fea885899be1539a4bd5cbc1141b353e4d6137b435c49ee83c06ea3b",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/input-controls.js",
+      "bytes": 12690,
+      "sha256": "c90c8da4aa51cf887900bdfed09a485f339ca20090f6ee693acc3100eeb508f9",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39557,14 +39605,14 @@
     },
     {
       "path": "src/manic-ui.js",
-      "bytes": 4281,
-      "sha256": "827b737eb0a416b1d502ec01004d45695592c5641953e2ef9a57d3bbe7e46dbc",
+      "bytes": 4320,
+      "sha256": "40d587922a9d0650ff5ff6fccd1994605b4bc148969429640bff5d30cfe53f51",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "src/mgba.js",
-      "bytes": 7695,
-      "sha256": "41ef14dfa423a8c2e45c6ed3703610447738870dd846edc6d3eb964f5975e223",
+      "bytes": 7709,
+      "sha256": "30e1eb9cb779ace0638636ead8e5d501e3c68e1bb1679ca62605e32fac6006ee",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39598,6 +39646,18 @@
       "component": "web-port-code-and-documentation"
     },
     {
+      "path": "src/rewind-session.js",
+      "bytes": 2613,
+      "sha256": "2f3e39800c83498d333f3a7afd9d6f7ad0a18d72ce2a47edfda7aa51b13fc9f0",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/rewind.js",
+      "bytes": 8957,
+      "sha256": "c944f51c33767b4cf4eee1e50b7c9a4119734319f427f5c37fa73d538dd4880c",
+      "component": "web-port-code-and-documentation"
+    },
+    {
       "path": "src/rom-import-worker.js",
       "bytes": 1861,
       "sha256": "676f0fb4bb04096342aeb83e3ea16b821de351a587094d1c75e9d2aa55af6979",
@@ -39623,8 +39683,8 @@
     },
     {
       "path": "src/settings-view.js",
-      "bytes": 10782,
-      "sha256": "eab262cf0b226fa68d65cd513b2b6c093504cec9d77ac3fbe6420a75282d0fa6",
+      "bytes": 10060,
+      "sha256": "a7b01eee3fd386e8da4a900eed8b9d3fc7dc7359ad6cc98a12f9c0f4c0e14cde",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39647,8 +39707,8 @@
     },
     {
       "path": "src/skin-format.js",
-      "bytes": 9192,
-      "sha256": "ae6192c8d3eaa05774c682479d281f7f00322478131c69017d2f10259d9085d9",
+      "bytes": 9201,
+      "sha256": "0e1836d769c9c55a4e0b1bb1755b485cec855a9e9b7531ef36e2904e5a1a466d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39707,14 +39767,14 @@
     },
     {
       "path": "src/state-dialogs.js",
-      "bytes": 8392,
-      "sha256": "95e95984564027e3facf2305061588034370427f769d1e1427af4cbbf83d9e2f",
+      "bytes": 8518,
+      "sha256": "6cb7d71f885f37234091d4e054d47c8ac8cacd3b266c223462d098a89a10685d",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "src/storage.js",
-      "bytes": 12916,
-      "sha256": "efe4b6f37c5af2e7ff30768e52909b1f8f7c005fe4cf792431dc487300dca856",
+      "bytes": 20045,
+      "sha256": "62021c546bbe0287d50bc4f6f085910c3bd70ab213d13b128ec8ebad286d16f7",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39781,6 +39841,12 @@
       "path": "tests/audit-content.py",
       "bytes": 5646,
       "sha256": "e833fd3623cc178bf67a5d10dfb55a518e99809077a7f0eea4f956e3b651a3c6",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "tests/backup.cjs",
+      "bytes": 16282,
+      "sha256": "265f4820016acd00763fa18dd414ea91a390c7d8f05fcc3f64c15afb765a5724",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39874,6 +39940,12 @@
       "component": "web-port-code-and-documentation"
     },
     {
+      "path": "tests/game-preferences.cjs",
+      "bytes": 11384,
+      "sha256": "6f383f9989ce227f4a4e399a358429189da7c3913f558cbc6abf28f070841769",
+      "component": "web-port-code-and-documentation"
+    },
+    {
       "path": "tests/game-skins.cjs",
       "bytes": 7435,
       "sha256": "6676e51e367b2bd502d4f51ddc2d3e8e0db282290b2a3fb5d6c999d90e4403c3",
@@ -39881,8 +39953,14 @@
     },
     {
       "path": "tests/haptics.cjs",
-      "bytes": 6319,
-      "sha256": "e10a738cb4610de0ec53fc52a7bd17f14d729cbe713caea2d4fcbc54fffb1c8c",
+      "bytes": 6521,
+      "sha256": "2fbf4f486e7b3c7f658a54b719174fb0c56d1e97930a0fdcf55b79d026dfcf23",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "tests/input-controls.cjs",
+      "bytes": 9872,
+      "sha256": "5b8072a39fb65c90bf182c7a2b8acfb29faec795e5f92b69a077df1f2dff1b68",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39917,8 +39995,8 @@
     },
     {
       "path": "tests/native-menu.cjs",
-      "bytes": 11863,
-      "sha256": "7f25e540c6dfd7e97f75fd0b2d36b622647c1a79aec685b2534dc4af511be9b2",
+      "bytes": 12097,
+      "sha256": "68e4a0f28019ebe683385df5225f0005349f9974cf74b0a0cfd0c515d536425e",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39947,8 +40025,8 @@
     },
     {
       "path": "tests/pitch-audio.cjs",
-      "bytes": 9705,
-      "sha256": "05b81d003608901ae7ae699cfa871583ca97fb7ccaae6991764f54851e0159bf",
+      "bytes": 9901,
+      "sha256": "647e81b6dac3e0080f382fbd4cf9345a88ae9160ffd2a9f92e0d65fcac7f1f9a",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39961,6 +40039,12 @@
       "path": "tests/responsive-skins.cjs",
       "bytes": 10303,
       "sha256": "1877e9f6147bb2a5dd591e6b7df071932c43b0dd0623a15b252cda754296d191",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "tests/rewind.cjs",
+      "bytes": 9583,
+      "sha256": "e1101c07c58f0e559f07ac36f3023ea0e1330f05699fd7e474cf0529124ad5f9",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -40013,8 +40097,8 @@
     },
     {
       "path": "tests/speed-control.cjs",
-      "bytes": 5210,
-      "sha256": "f178f9e73493219ae5302b2f2eca576a25c984cf225af57dd4685448bb005ab5",
+      "bytes": 5783,
+      "sha256": "5f4ea66f7a3db03c2011cb9d154aebf01af0cd05bb30776f2ed2a2c353dd8495",
       "component": "web-port-code-and-documentation"
     },
     {

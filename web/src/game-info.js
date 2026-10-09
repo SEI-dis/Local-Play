@@ -16,7 +16,7 @@ export function createGameInfo(api){
  const bind=handlers=>$('#sheet-body').querySelectorAll('[data-action]').forEach(b=>b.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>handlers[b.dataset.action]?.()).catch(api.error)));
  async function update(game,changes){const fresh=await db.get('library',game.id);if(!fresh)throw Error('ゲームが見つかりません。');Object.assign(game,fresh,changes);await db.put('library',game.id,game);await api.refresh();}
  function info(game){
-  nativeSheet('ゲーム情報',`<div class="settings-group">${nativeAction('ゲーム機','', 'game',systems[game.system].name)}${nativeAction('コア','','core',coreFor(game).name)}${nativeAction('ROM容量','','folder',bytesLabel(game.size))}</div><p class="sheet-note">ROM・セーブはこのブラウザ内に保存されます。操作・映像の設定は全ゲームで共通です。</p><p class="sheet-note"><a href="licenses.html">クレジット・ライセンス・対応ソース</a></p><button class="secondary wide-button" data-action="back">ゲーム詳細に戻る</button>`);
+  nativeSheet('ゲーム情報',`<div class="settings-group">${nativeAction('ゲーム機','', 'game',systems[game.system].name)}${nativeAction('コア','','core',coreFor(game).name)}${nativeAction('ROM容量','','folder',bytesLabel(game.size))}</div><p class="sheet-note">ROM・セーブはこのブラウザ内に保存されます。速度・音量・映像・操作はゲームごとに保存します。未変更の項目には共通設定を使います。</p><p class="sheet-note"><a href="licenses.html">クレジット・ライセンス・対応ソース</a></p><button class="secondary wide-button" data-action="back">ゲーム詳細に戻る</button>`);
   bind({back:()=>show(game)});
  }
  function rename(game){
@@ -52,6 +52,7 @@ export function createGameInfo(api){
   $('#sheet-body').querySelectorAll('[data-shortcut-choice]').forEach(b=>b.onchange=()=>{api.settings().gameShortcuts=[...$('#sheet-body').querySelectorAll('[data-shortcut-choice]:checked')].map(el=>el.dataset.shortcutChoice);api.saveSettings();});bind({back:()=>show(game)});
  }
  function show(game){
+  api.beginGame?.(game);
   const cells={
    cover:nativeAction('カバー変更','cover','image'),skins:nativeAction('スキン設定','gameSkin','shirt'),
    stateList:nativeAction('セーブステートを確認','states','state'),importSave:nativeAction('セーブデータをインポート','importSave','saveImport'),shareSave:nativeAction('セーブデータをエクスポート','exportSaved','saveExport'),
@@ -60,12 +61,12 @@ export function createGameInfo(api){
    ...api.controlCells(game),gameOptionSort:nativeAction('機能順序設定','optionOrder','layers'),gameShortcut:nativeAction('ゲームショートカット','shortcuts','shortcuts'),
    copyLink:nativeAction('起動リンクをコピー','copyLink','link'),delete:nativeAction('ゲームを削除','delete','trash','','danger')
   };
-  api.sheet(game.name,gameInfoHero(game)+`<div class="native-options" aria-label="ゲームの設定">${groupedOptions(cells,api.settings().menuOrder)}</div>`);
+  api.sheet(game.name,gameInfoHero(game)+`<div class="native-options" aria-label="ゲームの設定">${api.preferenceSummary?.(game)||''}${groupedOptions(cells,api.settings().menuOrder)}</div>`);
   $('#sheet').classList.add('native-menu','game-info');$('#sheet-cover').src=game.cover||'assets/controller.svg';$('#sheet-cover').hidden=false;
   $('#sheet-tools').innerHTML=`<button class="sheet-tool" id="game-info-button" aria-label="ゲーム情報">${icon('info')}</button><button class="sheet-tool" id="game-more-button" aria-label="その他の操作">${icon('more')}</button>`;
   $('#game-info-button').onclick=()=>info(game);$('#game-more-button').onclick=()=>more(game);
   api.bindSettings($('#sheet-body'));
-  bind({switchCore:()=>chooseCore(game),play:()=>{api.closeSheet();return api.launch(game);},safeMode:()=>safeMode(game),rename:()=>rename(game),cover:()=>coverDialog.open(game),gameSkin:()=>api.showSkins(game.system,game),states:()=>api.showStates(game),importSave:()=>api.importSave(game),exportSaved:()=>exportSave(game),cheats:()=>api.showCheats(game),controllers:api.showControllers,optionOrder:()=>sortOptions(game,cells),shortcuts:()=>shortcuts(game),copyLink:()=>copyLink(game),delete:()=>remove(game)});
+  bind({resetPreferences:()=>api.resetPreferences?.(game),switchCore:()=>chooseCore(game),play:()=>{api.closeSheet();return api.launch(game);},safeMode:()=>safeMode(game),rename:()=>rename(game),cover:()=>coverDialog.open(game),gameSkin:()=>api.showSkins(game.system,game),states:()=>api.showStates(game),importSave:()=>api.importSave(game),exportSaved:()=>exportSave(game),cheats:()=>api.showCheats(game),controllers:api.showControllers,optionOrder:()=>sortOptions(game,cells),shortcuts:()=>shortcuts(game),copyLink:()=>copyLink(game),delete:()=>remove(game)});
  }
  return {show};
 }

@@ -392,3 +392,50 @@ attribution and the separate CC BY 4.0 artwork/credits; no new assets or depende
 
 Modified 2026-10-09: stabilize skin picker preview, add-card and dialog heights
 when switching portrait/landscape selections. Artwork and license terms unchanged.
+
+
+## 0.3.8: game preferences, controls, portable backups and rewind (2026-10-10)
+
+Added original AGPL-3.0-or-later browser modules for game-scoped preferences with
+shared defaults/reset, per-system/device input mappings, repeat/toggle-hold
+assistance, a ROM-free local backup archive, and bounded GB/GBC/GBA rewind.
+Existing source archives, authors, core revisions, artwork terms and full license
+texts are retained. No new core binary, third-party artwork, ROM, BIOS, cloud SDK
+or upstream native runtime is included for these features.
+
+Behavior was checked against Manic-EMU/ManicEMU commit
+fbaeab79c214d5920bb51afa6f2d786fb2b12a58 (AGPL-3.0-or-later):
+
+- Game.swift / PlayViewController.swift: Max, Copyright © 2025 Manic EMU.
+  Game settings, serialized-state rewind capability, opt-in recording and online-play exclusion.
+- GameOptionPerform.swift: Daiuno, Copyright © 2026 Manic EMU. Persisted game-option changes.
+- ControllerMapping.swift / Trigger.swift: Daiuno, Copyright © 2025 Manic EMU.
+  Controller-specific input maps and basic repeat/toggle behavior. The Web version
+  does not implement the native TriggerPro macro editor or automation engine.
+- FilesSyncPolicy.swift / FilesSyncRecord.swift / FilesSyncManager.swift:
+  Daiuno, Copyright © 2026 Manic EMU. Data-category exclusions, batched writes,
+  prior versions and lifecycle coordination. The Web adaptation is a manually
+  exported local JSON file; it does not implement ManicEMU cloud synchronization.
+
+Pinned source URLs and SHA-256 hashes are recorded under browserFeatures038 in
+[SOURCES.json](SOURCES.json). The previously supplied Swift references keep their
+original headers; newly reviewed references are not copied into the runtime.
+
+The ManicEMU rewind runtime was traced to Daiuno/RetroArch submodule commit
+00689c83f4d458e061d5fd7b52a181b8d240fe65:
+[LibretroCore.m](https://github.com/Daiuno/RetroArch/blob/00689c83f4d458e061d5fd7b52a181b8d240fe65/ui/drivers/LibretroCore.m)
+and [state_manager.c](https://github.com/Daiuno/RetroArch/blob/00689c83f4d458e061d5fd7b52a181b8d240fe65/state_manager.c).
+state_manager credits Hans-Kristian Arntzen (2010–2014), Daniel De Matteis
+(2011–2017), and Alfred Agrell (2014–2017), under GPL-3.0-or-later.
+This was a behavior/architecture reference only: no RetroArch rewind source is
+copied or linked. The new Web buffer stores bounded full states using the already
+bundled cores, preserves paired battery data, and writes no persistent save.
+
+Additional interaction references: Riley Testut's DeltaCore
+[GameControllerInputMapping.swift](https://github.com/rileytestut/DeltaCore/blob/633dfa86967816315fe19b482511dab1ce517f28/DeltaCore/Model/GameControllerInputMapping.swift)
+at 633dfa86967816315fe19b482511dab1ce517f28 (Riley Testut, 2017),
+[Delta controller documentation](https://faq.deltaemulator.com/using-delta/controllers),
+and [Delta Sync documentation](https://faq.deltaemulator.com/using-delta/delta-sync).
+No Delta code, text, icon or asset is copied into this distribution, and no claim
+of permission to redistribute unverified Delta source is made. The comparison
+informs input capture and local backup UX only; this app has no Delta Sync service.

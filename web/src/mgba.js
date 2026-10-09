@@ -19,7 +19,7 @@ export class MGBACore {
       try{
         const step=1000/this.fps/this.speed;if(this.clock===null||t-this.clock>150)this.clock=t;
         let frames=0;if(t>=this.clock)this.beforeFrame?.();
-        while(t>=this.clock&&frames<Math.ceil(this.speed*3)){this.m._web_frame(this.keys);this.frames++;frames++;this.audio();this.clock+=step;}
+        while(!this.paused&&t>=this.clock&&frames<Math.ceil(this.speed*3)){this.m._web_frame(this.keys);this.frames++;frames++;this.audio();this.clock+=step;}
         if(frames)this.draw();
       }catch(e){this.pause(true);this.onError?.(e);}
       this.scheduleFrame();
