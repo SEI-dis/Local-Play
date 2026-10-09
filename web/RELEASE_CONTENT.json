@@ -71,8 +71,8 @@
     },
     {
       "path": "RELEASE_VALIDATION.md",
-      "bytes": 38468,
-      "sha256": "0529a9429aa244d8caf6dfb9204c34c88e963b9e697fcb3d59909844b746e5c7",
+      "bytes": 39013,
+      "sha256": "b539fc88e9e6a1a87c5c2c62dada8670c37ad52a6bd7d110a9b3a12587706e56",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -870,7 +870,7 @@
     {
       "path": "index.html",
       "bytes": 4923,
-      "sha256": "580057871a466be92683d668a872b51122873976802190def2ad2bbd654d4588",
+      "sha256": "fb71094d84e6a43752175505427c226fa6cf1b15c0709ba79d222acd4d0d9cb6",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -1097,8 +1097,8 @@
     },
     {
       "path": "package.json",
-      "bytes": 2890,
-      "sha256": "ba4349dd1cc50e9016b972ff32875d8de60cfc930e710b1bc5a9aa3be5636892",
+      "bytes": 2949,
+      "sha256": "8db34781eb52c5b672501789bf3ade5a43526765a5b9cd101feca8d5104bcf5a",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -1199,8 +1199,8 @@
     },
     {
       "path": "scripts/test-all.cjs",
-      "bytes": 5346,
-      "sha256": "c7b3d7221aa1c9c985a5ce5136d19e22a849a44594e53518e7fc07af6c278dfd",
+      "bytes": 5362,
+      "sha256": "5976e091f51471e6178180fbd46e0086be37135e498f4f9fe399f550db6b2ab5",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39419,8 +39419,8 @@
     },
     {
       "path": "src/app.js",
-      "bytes": 59527,
-      "sha256": "edc2f36e380e79bd416d9807681d2b697214473e2b73cbbabc7b4c8c23bfd6ed",
+      "bytes": 59792,
+      "sha256": "5a05a0d5a3ae8ddb06e6a8886f6e18412447f139505ec86cda50473a6b89b42e",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39515,8 +39515,8 @@
     },
     {
       "path": "src/diagnostics.js",
-      "bytes": 9899,
-      "sha256": "57ae03ed36ae4e965e099e8720bd2c2efbb86b86502b67b54b500a0bf612779d",
+      "bytes": 9913,
+      "sha256": "41643253d123c78b0cec9f73df845fe484e0f954ad4270abb90b0fe26e58f3aa",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39763,6 +39763,12 @@
       "path": "src/skins.js",
       "bytes": 7317,
       "sha256": "9b7ecc6dd7f1b681681225cc4b9c35af58ca60725305aa21a5ee31513bcb1049",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "src/startup-input.js",
+      "bytes": 1690,
+      "sha256": "d260daf04b8b2eeac4fd27b8421e106a1d52d22a2b8f61210c9d7c62001ac239",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -40099,6 +40105,12 @@
       "path": "tests/speed-control.cjs",
       "bytes": 5783,
       "sha256": "5f4ea66f7a3db03c2011cb9d154aebf01af0cd05bb30776f2ed2a2c353dd8495",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "tests/startup-input.cjs",
+      "bytes": 6546,
+      "sha256": "a0982fba9d426fc210c71eadfcfb075605a83f52d90f33abc33bfcd1fb624f1e",
       "component": "web-port-code-and-documentation"
     },
     {

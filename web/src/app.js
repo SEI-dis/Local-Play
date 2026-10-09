@@ -6,6 +6,7 @@ import {dualScreen} from './development.js';
 import {diagnostics} from './diagnostics.js';
 import {createInputControls} from './input-controls.js';
 import {createInputControlsView} from './input-controls-view.js';
+import {holdStartupInputs} from './startup-input.js';
 import {applyPendingBackupSettings} from './backup.js';
 import {createBackupView} from './backup-view.js';
 import {createRewindSession,supportsRewind} from './rewind-session.js';
@@ -44,6 +45,7 @@ import {createSettingsView,videoFilterNote} from './settings-view.js';
 let link=null,linkMessage='',linkStarting=false,linkSaveBlocked=false,exiting=false,sheetCleanup=()=>{};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
 let library=[],tab=tabFromHash(),filter='all',query='',favorites=false,engine=null,current=null,skinPair=null,paused=false,toastTimer,saveLock=null,launching=false,importing=false,dialogResume=false;
+const finishStartupInputs=holdStartupInputs();
 try{await applyPendingBackupSettings();}catch(e){diagnostics.record(e,'startup');const message=document.createElement('p');message.textContent=e.message||'保存データを開けませんでした。';$('#content').replaceChildren(message);const retry=document.createElement('button');retry.className='primary';retry.textContent='再読み込みして復元を完了';retry.onclick=()=>location.reload();$('#content').append(retry);throw e;}
 let savedSettings={};try{savedSettings=JSON.parse(localStorage.getItem('manic-settings')||'{}');}catch{}
 let settingsGame=null;
@@ -425,5 +427,5 @@ setupOffline().catch(e=>console.warn('Offline setup:',e.message));
 function openGameLink(){if(engine||!location.hash.startsWith('#game='))return;const game=library.find(g=>g.id===location.hash.slice(6));if(game)showDetails(game);else toast('このブラウザにゲームがありません。先にROMを追加してください。');}
 window.addEventListener('hashchange',()=>{if(engine)return;tab=tabFromHash();render();openGameLink();});
 if(await startAutoUpdates(()=>appReady&&!engine&&!launching&&!importing&&!exiting&&!link&&!linkStarting&&!saveLock&&tab!=='imports',()=>toast('更新しました。'))!==false){
- applySettings();refresh().then(()=>{openGameLink();appReady=true;}).catch(e=>{error(e);$('#content').innerHTML='<div class="empty-library"><h2>保存データを開けませんでした</h2><p>プライベートブラウズを終了するか、ブラウザの保存設定を確認してください。</p></div>';});
+ applySettings();refresh().then(async()=>{dragDepth=0;document.body.classList.remove('drop-active');await finishStartupInputs({onTab:id=>{setTab(id);render();},onFiles:guardUpdateTask(importFiles)});openGameLink();appReady=true;}).catch(e=>{error(e);$('#content').innerHTML='<div class="empty-library"><h2>保存データを開けませんでした</h2><p>プライベートブラウズを終了するか、ブラウザの保存設定を確認してください。</p></div>';});
 }
