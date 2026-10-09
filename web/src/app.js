@@ -8,6 +8,9 @@ import {createCore} from './core-factory.js';
 import {coreFor,saveKey,cheatsFor,defaultCore} from './core-registry.js';
 import {videoFilters} from './video.js';
 import {setupOffline,offlineStatus} from './offline.js';
+import {startAutoUpdates} from './auto-update.js';
+import {guardUpdateTask} from './update-activity.js';
+let appReady=false;
 import {RoomLink} from './room-link.js';
 import {LinkSafety} from './link-safety.js';
 import {SaveProtection} from './save-safety.js';
@@ -53,13 +56,13 @@ $('#player-link').onclick=()=>linkPanel.visible?linkPanel.hide():showLink();
 function toast(text){const el=$('#toast');($('#sheet').open?$('#sheet'):document.body).append(el);el.textContent=text;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
 function error(e){console.error(e);toast(e?.name==='QuotaExceededError'?'保存容量が不足しています。セーブをファイルに書き出してください。':e.message||String(e));}
 function applySettings(){$$('#quick-actions button').forEach(b=>b.disabled=!!link);document.documentElement.dataset.theme=settings.theme==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):settings.theme;$('#screen').className=settings.filter==='smooth'?'smooth':settings.filter==='scanlines'?'scanlines':'';engine?.setVolume(settings.muted?0:settings.volume);$('#screen').dataset.scaling=settings.screenScaling||'fit';engine?.setSpeed(link?1:settings.speed);engine?.setPreservePitch?.(settings.preservePitch);updateSpeedButton();updateLinkButton();engine?.setFilter?.(settings.filter);engine?.setRenderLimit?.(settings.ndsPowerSave!==false);$('#fps-meter').hidden=!settings.showFps;localStorage.setItem('manic-settings',JSON.stringify(settings));}
-function bindActions(root,handlers){root.querySelectorAll('[data-action]').forEach(el=>el.onclick=()=>Promise.resolve().then(()=>handlers[el.dataset.action]?.()).catch(error));}
+function bindActions(root,handlers){root.querySelectorAll('[data-action]').forEach(el=>el.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>handlers[el.dataset.action]?.()).catch(error)));}
 function sheet(title,html,resume=false){
  sheetCleanup();sheetCleanup=()=>{};const dialog=$('#sheet');if(dialog.open)dialog.close();
  dialog.classList.remove('port-menu','states-view','save-data','native-menu','game-info');$('#sheet-cover').hidden=true;$('#sheet-cover').removeAttribute('src');$('#sheet-tools').replaceChildren();$('#close-sheet').removeAttribute('data-action');$('#close-sheet').setAttribute('aria-label','閉じる');
  linkPanel.hide();dialogResume=resume;$('#sheet-title').textContent=title;$('#sheet-body').innerHTML=html;dialog.showModal();dialog.scrollTop=0;
 }
-function menuTools(tools,handlers){$('#sheet-tools').innerHTML=tools.map(([id,label,ic])=>`<button class="sheet-tool ${id==='exit'?'danger':''}" data-shortcut="${id}" aria-label="${label}" title="${label}">${icon(ic)}</button>`).join('');$$('[data-shortcut]').forEach(b=>b.onclick=()=>Promise.resolve().then(()=>handlers[b.dataset.shortcut]()).catch(error));}
+function menuTools(tools,handlers){$('#sheet-tools').innerHTML=tools.map(([id,label,ic])=>`<button class="sheet-tool ${id==='exit'?'danger':''}" data-shortcut="${id}" aria-label="${label}" title="${label}">${icon(ic)}</button>`).join('');$$('[data-shortcut]').forEach(b=>b.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>handlers[b.dataset.shortcut]()).catch(error)));}
 function closeSheet(){sheetCleanup();sheetCleanup=()=>{};const resume=dialogResume;dialogResume=false;$('#sheet').close();if(resume&&engine)setPause(false);}
 $('#close-sheet').innerHTML=icon('close');$('#close-sheet').onclick=closeSheet;
 $('#sheet').addEventListener('cancel',e=>{e.preventDefault();closeSheet();});
@@ -101,7 +104,7 @@ function renderImports(){
 
 function bindSettings(root){root.querySelectorAll('[data-setting]').forEach(el=>el.onchange=()=>{settings[el.dataset.setting]=el.type==='checkbox'?(el.dataset.invert?!el.checked:el.checked):['volume','speed','hapticStrength','deadZone'].includes(el.dataset.setting)?Number(el.value):el.value;if(el.dataset.setting==='hapticStrength')settings.haptics=!!settings.hapticStrength;const value=el.closest('.native-select')?.querySelector('.native-value');if(value)value.textContent=el.selectedOptions[0].textContent;applySettings();if($('#video-filter-note'))$('#video-filter-note').hidden=settings.filter!=='edge4x';if(['touchControls','showFps','ndsSwapScreens'].includes(el.dataset.setting))layoutSkin();});}
 async function importFiles(files){if(importing){toast('追加が終わるまでお待ちください。');return;}importing=true;let count=0;try{for(const file of files){const system=detectSystem(file.name);if(!system){toast(`${file.name}: 未対応の形式です。`);continue;}const maxMiB=system==='nds'?512:64;if(file.size>maxMiB*1048576||!file.size){toast(`${file.name}: 空のファイル、または${maxMiB}MBを超えるファイルは追加できません。`);continue;}toast(`${file.name} を追加中…`);const bytes=new Uint8Array(await file.arrayBuffer());const id=await hash(bytes);if(await db.get('library',id)){toast('このゲームは追加済みです。');continue;}const game={id,name:file.name.replace(/\.[^.]+$/,''),filename:file.name,system,size:file.size,added:Date.now(),lastPlayed:0,favorite:false};await db.addGame(game,bytes);count++;}if(count){setTab('games');filter='all';query='';favorites=false;await refresh();toast(`${count}本のゲームを追加しました。`);}}catch(e){error(e);}finally{importing=false;$('#rom-input').value='';}}
-$('#rom-input').onchange=e=>importFiles([...e.target.files]);
+$('#rom-input').onchange=guardUpdateTask(e=>importFiles([...e.target.files]));
 let dragDepth=0;window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();dragDepth++;document.body.classList.add('drop-active');}});window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('dragleave',()=>{if(--dragDepth<=0)document.body.classList.remove('drop-active');});window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;document.body.classList.remove('drop-active');if(!engine)importFiles([...e.dataTransfer.files]);});
 function menuControlCells(game=current){return {
  swapScreen:game?.system==='nds'?nativeToggle('画面切り替え','ndsSwapScreens','layers',!!settings.ndsSwapScreens):'',
@@ -127,7 +130,7 @@ function controlLayout(system,game){return game?.controlLayout??settings.control
 // WebKit can retain a stale computed dvh height on the hidden player. Use the
 // current viewport for library previews, and actual bounds during gameplay.
 function playerSize(){const stage=$('#player'),style=getComputedStyle(stage);return {width:(stage.clientWidth||window.innerWidth)-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),height:(stage.clientHeight||window.innerHeight)-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)};}
-function showSkins(...args){return skinSettings.showSkins(...args);}
+function showSkins(...args){return guardUpdateTask(()=>skinSettings.showSkins(...args))();}
 function showAbout(){sheet('このWeb版について',`<p class="sheet-note">ManicEMUをもとにした非公式のWeb版です。GBAは64MBのROMに対応しています。</p><div class="settings-group"><a class="row" href="https://github.com/Manic-EMU/ManicEMU" target="_blank" rel="noopener">ManicEMU / AGPL-3.0</a><a class="row" href="https://github.com/onikoro334274-cell/mGBA_celio_edition/tree/rom64" target="_blank" rel="noopener">64MB対応コア / MPL-2.0</a><a class="row" href="licenses.html" target="_blank">クレジット・ライセンス</a></div><p class="sheet-note">GBA通信は実験版です。iCloud同期や実績など、iOS版の一部機能には対応していません。</p>`);}
 const protection=new SaveProtection(status=>{
  const el=$('#save-status');el.hidden=!engine;
@@ -246,11 +249,11 @@ function confirmRestart(){
  sheet('再起動しますか？','<p class="sheet-note">ゲーム内セーブから起動します。現在の状態も自動保存に残します。</p><div class="sheet-actions"><button class="secondary" id="cancel-restart">キャンセル</button><button class="primary" id="confirm-restart">再起動</button></div>',true);
  $('#cancel-restart').onclick=showGameMenu;$('#confirm-restart').onclick=async()=>{const button=$('#confirm-restart');button.disabled=true;try{await persist({checkpoint:true,reason:'before-restart'});engine.reset();closeSheet();}catch(e){error(e);button.disabled=false;}};
 }
-function showStates(...args){return stateDialogs.showStates(...args);}
+function showStates(...args){return guardUpdateTask(()=>stateDialogs.showStates(...args))();}
 function confirmStateSave(...args){return stateDialogs.confirmStateSave(...args);}
 function showQuickLoad(){return stateDialogs.showQuickLoad();}
 function chooseSaveImport(game){saveImportTarget=game;$('#save-input').click();}
-$('#save-input').onchange=async e=>{
+$('#save-input').onchange=guardUpdateTask(async e=>{
  const file=e.target.files[0],game=saveImportTarget||current;saveImportTarget=null;if(!file||!game)return;
  let temporaryCore,temporaryProtection;
  try{
@@ -273,7 +276,7 @@ $('#save-input').onchange=async e=>{
    showDetails(game);toast('セーブデータをインポートしました。');
   }
  }catch(errorValue){error(errorValue);}finally{temporaryCore?.close();await temporaryProtection?.close();e.target.value='';}
-};
+});
 async function exitGame(){if(linkStarting||exiting)return;exiting=true;try{const wasLinked=!!link;await link?.close();if(!engine)return;setPause(true);await persist({checkpoint:settings.recovery&&!wasLinked,clean:true,reason:'exit'});if(current&&!current.cover){try{const cover=engine.screenshot(),updated=await db.setGameCover(current.id,{cover,coverSource:'screenshot'},{onlyMissing:true});if(updated)Object.assign(current,updated);}catch(e){console.warn('Cover image could not be stored:',e.name);}}if(current){const stored=await db.get('library',current.id);if(stored)await db.put('library',current.id,{...stored,playDuration:current.playDuration||0});}dialogResume=false;$('#sheet').close();clearImportedSkin();engine.close();await protection.close();releaseSkin();engine=null;current=null;linkPanel.reset();updateLinkButton();linkMessage='';linkSaveBlocked=false;skinData=null;pressed.clear();$('#screen').replaceChildren();$('#player').hidden=true;if(document.fullscreenElement)await document.exitFullscreen();await refresh();}finally{exiting=false;}}
 function download(bytes,name){const url=URL.createObjectURL(new Blob([bytes]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}
 function updateSpeedButton(){
@@ -370,4 +373,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(set
 setupOffline().catch(e=>console.warn('Offline setup:',e.message));
 function openGameLink(){if(engine||!location.hash.startsWith('#game='))return;const game=library.find(g=>g.id===location.hash.slice(6));if(game)showDetails(game);else toast('このブラウザにゲームがありません。先にROMを追加してください。');}
 window.addEventListener('hashchange',()=>{if(engine)return;tab=tabFromHash();render();openGameLink();});
-applySettings();refresh().then(openGameLink).catch(e=>{error(e);$('#content').innerHTML='<div class="empty-library"><h2>保存データを開けませんでした</h2><p>プライベートブラウズを終了するか、ブラウザの保存設定を確認してください。</p></div>';});
+if(await startAutoUpdates(()=>appReady&&!engine&&!launching&&!importing&&!exiting&&!link&&!linkStarting&&!saveLock&&tab!=='imports')!==false){
+ applySettings();refresh().then(()=>{openGameLink();appReady=true;}).catch(e=>{error(e);$('#content').innerHTML='<div class="empty-library"><h2>保存データを開けませんでした</h2><p>プライベートブラウズを終了するか、ブラウザの保存設定を確認してください。</p></div>';});
+}

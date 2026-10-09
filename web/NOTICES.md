@@ -315,3 +315,12 @@ Modified 2026-10-09: retain the selected settings tab across navigation and
 offline reloads, simplify the skin label, and keep the state picker frame and
 tabs stationary across manual/automatic lists and recovery mode. These changes
 retain the existing ManicEMU attribution and do not add dependencies or artwork.
+
+Modified 2026-10-09: revalidate the HTTP cache when installing a new app shell
+and fetching uncached core files, so an update does not copy stale resources
+into the new offline cache. Retain the existing safe activation and local data.
+
+Modified 2026-10-09: add automatic activation after all app tabs confirm they
+are idle. Track pending work, protect activation with Web Locks, and verify
+the HTML build before enabling a new tab. Busy, unknown and unresponsive tabs
+keep the update waiting. The manual updater and original notices are retained.

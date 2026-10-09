@@ -12,6 +12,7 @@ const kind=process.env.BROWSER_ENGINE||'chromium',pw=require(process.env.PLAYWRI
   await context.addInitScript(()=>{if(!localStorage.getItem('manic-settings'))localStorage.setItem('manic-settings',JSON.stringify({autoCovers:true}));});
   page.on('pageerror',e=>errors.push(e.message));page.setDefaultTimeout(15000);await page.goto(base);
   await page.evaluate(()=>navigator.serviceWorker.ready);
+  await page.locator('#content .empty-library').waitFor();
   assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('manic-settings')).autoCovers),undefined,'Legacy opt-in is removed');
   await page.locator('[data-tab=settings]').click();assert.equal(await page.locator('[data-setting=autoCovers]').count(),0);
   const rom=Buffer.from(require('./cartridges.cjs').gb());

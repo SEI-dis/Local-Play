@@ -1,9 +1,22 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 importScripts('./offline-manifest.js');
+importScripts('./src/auto-update-worker.js');
 const base=new URL('./',self.location.href),prefix='manic-web:'+base.pathname+':',cacheName=prefix+APP_OFFLINE.version;
+const autoUpdate=automaticUpdateCoordinator(base);
 const urls=APP_OFFLINE.files.map(f=>new URL(f,base).href),allowed=new Set(urls);
-self.addEventListener('install',e=>e.waitUntil((async()=>{const cache=await caches.open(cacheName);await cache.addAll(APP_OFFLINE.shell.map(f=>new URL(f,base).href));})()));
-self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const name of await caches.keys())if(name.startsWith(prefix)&&name!==cacheName)await caches.delete(name);await self.clients.claim();})()));
+// A new Cache Storage version must not inherit still-fresh files from the HTTP cache.
+self.addEventListener('install',e=>e.waitUntil((async()=>{
+ // Include resources already saved for offline use. Fetch their new versions
+ // before activating, so an interrupted update leaves the complete old version.
+ const needed=new Set(APP_OFFLINE.shell.map(f=>new URL(f,base).href));
+ for(const name of await caches.keys())if(name.startsWith(prefix)&&name!==cacheName){
+  const previous=await caches.open(name);
+  for(const request of await previous.keys())if(allowed.has(request.url))needed.add(request.url);
+ }
+ const cache=await caches.open(cacheName);
+ await cache.addAll([...needed].map(url=>new Request(url,{cache:'no-cache'})));
+})()));
+self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const name of await caches.keys())if(name.startsWith(prefix)&&name!==cacheName)await caches.delete(name);await self.clients.claim();autoUpdate.activated();})()));
 self.addEventListener('fetch',e=>{
  // Reject accidental writes before they reach any HTTP server once this worker
  // controls the page. First-load protection still depends on the app and CSP.
@@ -12,10 +25,15 @@ self.addEventListener('fetch',e=>{
  if(e.request.mode!=='navigate'&&(u.origin!==base.origin||u.search)){e.respondWith(new Response(null,{status:403}));return;}
  if(e.request.method!=='GET'||u.origin!==base.origin||u.search)return;
  if(u.href===base.href)u.pathname+='index.html';if(!allowed.has(u.href))return;
- e.respondWith((async()=>{const cache=await caches.open(cacheName),hit=await cache.match(u.href);if(hit)return hit;const response=await fetch(u.href);if(response.ok)await cache.put(u.href,response.clone());return response;})());
+ e.respondWith((async()=>{const cache=await caches.open(cacheName),hit=await cache.match(u.href);if(hit)return hit;const response=await fetch(u.href,{cache:'no-cache'});if(response.ok)await cache.put(u.href,response.clone());return response;})());
 });
 self.addEventListener('message',e=>{
  const port=e.ports[0];if(!port)return;
+ if(e.data?.type==='app-version'){port.postMessage({version:APP_OFFLINE.version});return;}
+ if(e.data?.type==='auto-update'){
+  e.waitUntil(autoUpdate.apply(e.source).then(applied=>port.postMessage({applied})).catch(()=>port.postMessage({applied:false})));
+  return;
+ }
  if(e.data?.type==='activate-update'){
   e.waitUntil((async()=>{const sender=e.source?.url?new URL(e.source.url):null;if(!sender||sender.href!==new URL('update.html',base).href)throw new Error('更新画面から操作してください。');const open=await self.clients.matchAll({type:'window',includeUncontrolled:true});if(open.some(c=>c.id!==e.source.id&&c.url.startsWith(base.href)))throw new Error('この画面以外のアプリのタブを閉じてください。');port.postMessage({ok:true});await self.skipWaiting();})().catch(err=>port.postMessage({error:err.message})));
   return;

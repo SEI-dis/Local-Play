@@ -2,6 +2,7 @@
    Copyright © 2026 Manic EMU. Original views by Daiuno.
    Modified for Web 2026-10-08. See sources/manicemu-ui/README.md. */
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import {guardUpdateTask} from './update-activity.js';
 import {systems,escapeHTML as esc,icon,bytesLabel} from './shared.js';
 import {coreRegistry,coreFor,saveKey,supportsGame} from './core-registry.js';
 import * as db from './storage.js';
@@ -12,7 +13,7 @@ export function createGameInfo(api){
  const coverDialog=createCoverDialog({...api,showGame:show});
  const $=s=>document.querySelector(s);
  const nativeSheet=(title,html)=>{api.sheet(title,html);$('#sheet').classList.add('native-menu');};
- const bind=handlers=>$('#sheet-body').querySelectorAll('[data-action]').forEach(b=>b.onclick=()=>Promise.resolve().then(()=>handlers[b.dataset.action]?.()).catch(api.error));
+ const bind=handlers=>$('#sheet-body').querySelectorAll('[data-action]').forEach(b=>b.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>handlers[b.dataset.action]?.()).catch(api.error)));
  async function update(game,changes){const fresh=await db.get('library',game.id);if(!fresh)throw Error('ゲームが見つかりません。');Object.assign(game,fresh,changes);await db.put('library',game.id,game);await api.refresh();}
  function info(game){
   nativeSheet('ゲーム情報',`<div class="settings-group">${nativeAction('ゲーム機','', 'game',systems[game.system].name)}${nativeAction('コア','','core',coreFor(game).name)}${nativeAction('ROM容量','','folder',bytesLabel(game.size))}</div><p class="sheet-note">ROM・セーブはこのブラウザ内に保存されます。操作・映像の設定は全ゲームで共通です。</p><p class="sheet-note"><a href="licenses.html">クレジット・ライセンス・対応ソース</a></p><button class="secondary wide-button" data-action="back">ゲーム詳細に戻る</button>`);

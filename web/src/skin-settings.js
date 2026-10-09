@@ -2,6 +2,7 @@
    Copyright © 2025–2026 Manic EMU. Created by Daiuno. Modified 2026-10-09.
    See sources/manicemu-ui/README.md. */
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import {guardUpdateTask} from './update-activity.js';
 import * as db from './storage.js';
 import {systems,escapeHTML as esc} from './shared.js';
 import {row} from './ui.js';
@@ -47,8 +48,8 @@ async function showSkins(system='gba',game=null){
   await syncCurrent();await refresh();
  };
  const choose=async id=>{const controls=$$('#sheet-body button,#sheet-body select');controls.forEach(b=>b.disabled=true);try{await apply(id);await showSkins(system,game);}catch(e){error(e);controls.forEach(b=>{if(b.isConnected)b.disabled=false;});}};
- $('#skin-select').onchange=e=>choose(e.target.value);
- $$('[data-skin-color]').forEach(b=>b.onclick=()=>choose('builtin:'+b.dataset.skinColor));
+ $('#skin-select').onchange=guardUpdateTask(e=>choose(e.target.value));
+ $$('[data-skin-color]').forEach(b=>b.onclick=guardUpdateTask(()=>choose('builtin:'+b.dataset.skinColor)));
  const host=$('#skin-preview'),preview=await previewSkin(system,effective);
  if(!host.isConnected){preview.urls.forEach(URL.revokeObjectURL);return;}
  const description=[preview.skin.description,...(preview.skin.warnings||[])].filter(Boolean).join('\n');$('#skin-description').textContent=description;$('#skin-description').hidden=!description;
@@ -72,7 +73,7 @@ async function showSkins(system='gba',game=null){
  $$('[data-skin-orientation]').forEach(b=>b.onclick=()=>{skinOrientation=b.dataset.skinOrientation;drawPreview();});
  const observer=new ResizeObserver(drawPreview);observer.observe(host);window.addEventListener('resize',drawPreview);runtime.cleanup=()=>{previewScreenCleanup();observer.disconnect();window.removeEventListener('resize',drawPreview);preview.urls.forEach(URL.revokeObjectURL);};drawPreview();
 
- $('#import-skin').onclick=()=>{$('#skin-input').onchange=async e=>{const file=e.target.files[0];if(!file)return;try{toast('スキンを読み込み中…');const skin=await importSkin(file,game?.system);await apply(skin.id,skin.system);await showSkins(game?.system||skin.system,game);toast('スキンを追加しました。');}catch(e){error(e);}finally{e.target.value='';}};$('#skin-input').click();};
+ $('#import-skin').onclick=()=>{$('#skin-input').onchange=guardUpdateTask(async e=>{const file=e.target.files[0];if(!file)return;try{toast('スキンを読み込み中…');const skin=await importSkin(file,game?.system);await apply(skin.id,skin.system);await showSkins(game?.system||skin.system,game);toast('スキンを追加しました。');}catch(e){error(e);}finally{e.target.value='';}});$('#skin-input').click();};
  if($('#delete-skin'))$('#delete-skin').onclick=()=>{
   sheet('スキンを削除しますか？','<p class="sheet-note">このスキンを使っているゲームは、機種の設定に戻ります。ゲームやセーブは残ります。</p><div class="sheet-actions"><button class="secondary" id="cancel-skin-delete">キャンセル</button><button class="secondary danger" id="confirm-skin-delete">削除</button></div>',!!runtime.engine);
   $('#cancel-skin-delete').onclick=()=>showSkins(system,game);

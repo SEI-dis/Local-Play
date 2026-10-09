@@ -7,6 +7,7 @@ const kind=process.env.BROWSER_ENGINE||'chromium',browserType=require('./browser
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),page=await context.newPage(),errors=[];
   page.setDefaultTimeout(10000);page.on('pageerror',e=>{errors.push(e.message);console.error('PAGE ERROR:',e.message);});const base=process.env.TEST_URL||'http://127.0.0.1:4173/';await page.goto(base);
+  await page.waitForFunction(()=>localStorage.getItem('manic-settings')!==null);
   await page.locator('#rom-input').setInputFiles({name:'Original-test.gb',mimeType:'application/octet-stream',buffer:Buffer.from(require('./cartridges.cjs').gb())});
   await page.locator('.game-launch').waitFor();
   const gameId=await page.evaluate(async()=>{
