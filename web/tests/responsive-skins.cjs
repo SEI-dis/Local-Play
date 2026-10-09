@@ -47,8 +47,11 @@ const sizes=[[240,320],[280,240],[320,320],[400,360],[480,240],[320,568],[360,80
     if(rep.wide){const controls=frames.slice(1);if(Math.max(...controls.map(f=>f.y+f.height))-Math.min(...controls.map(f=>f.y))>360.01)throw Error('Controls spread too far vertically');}
    }return n;
   },sizes);assert.ok(checked>1300);
-  const preview=await p.locator('.skin-mini').boundingBox();assert.ok(Math.abs(preview.width/preview.height-390/844)<.01,'Preview uses current device proportions');
-  await p.setViewportSize({width:390,height:650});await p.waitForFunction(()=>{const r=document.querySelector('.skin-mini').getBoundingClientRect();return Math.abs(r.width/r.height-390/650)<.01;});
+  // Gallery artwork is virtualized and rebuilt on resize; inspect the current
+  // visible preview atomically instead of retaining a replaced child handle.
+  await p.locator('#skin-preview').scrollIntoViewIfNeeded();
+  await p.waitForFunction(()=>{const r=document.querySelector('#skin-preview .skin-mini')?.getBoundingClientRect();return r?.height>0&&Math.abs(r.width/r.height-390/844)<.01;});
+  await p.setViewportSize({width:390,height:650});await p.waitForFunction(()=>{const r=document.querySelector('#skin-preview .skin-mini')?.getBoundingClientRect();return r?.height>0&&Math.abs(r.width/r.height-390/650)<.01;});
   await p.locator('#close-sheet').click();
   await p.locator('[data-tab=games]').click();await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.locator('#loading').waitFor({state:'hidden'});
   await p.locator('#player-menu').click();await p.locator('[data-setting=showFps]').check();await p.locator('#close-sheet').click();

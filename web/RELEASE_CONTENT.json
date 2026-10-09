@@ -38411,8 +38411,8 @@
     },
     {
       "path": "tests/responsive-skins.cjs",
-      "bytes": 10013,
-      "sha256": "3b364403fef5c7de98bf67b72f314793de17fd4144deaa53f125df17b3adb823",
+      "bytes": 10275,
+      "sha256": "54e115dc153110ee0c21132fb8804ff0665dbf753ee43336c53c478b7fb0bbc8",
       "component": "web-port-code-and-documentation"
     },
     {
