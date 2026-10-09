@@ -15,7 +15,7 @@
 | ゲーム実行 | 端末内のWASM・Canvas・Web Audio | src/mgba.js、src/retro.js、src/video.js |
 | ユーザーによるセーブ等の書き出し | Blobから端末へのダウンロード。ROMの共有・書き出し機能は実装しない | src/app.jsのdownload、src/game-info.jsのexportSave |
 
-OPFS・sessionStorageは利用していません。「IndexedDBだけ」はアプリによるROM・セーブの
+OPFSは利用していません。sessionStorageには、自動更新完了の通知用に旧ビルド番号と時刻だけを一時保存し、再読み込み後に削除します。ROM・セーブは保存しません。「IndexedDBだけ」はアプリによるROM・セーブの
 永続保存先についての説明です。実行中のメモリや、明示的に書き出したファイルは別です。
 
 ## 自動更新

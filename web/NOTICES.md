@@ -337,3 +337,5 @@ Modified 2026-10-09: add automatic activation after all app tabs confirm they
 are idle. Track pending work, protect activation with Web Locks, and verify
 the HTML build before enabling a new tab. Busy, unknown and unresponsive tabs
 keep the update waiting. The manual updater and original notices are retained.
+Modified 2026-10-09: center the update indicator independently of menu sheets,
+allow time to read it, and show a local completion notice after automatic reload.

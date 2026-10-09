@@ -24,7 +24,8 @@ function automaticUpdateCoordinator(base){
     if((await scopeClients()).some(client=>!known.has(client.id)))return false;
     // Keep new tabs behind the version lock until claim() has switched controllers.
     let timer;const completion=new Promise((resolve,reject)=>{activated=resolve;timer=setTimeout(()=>reject(Error('Activation timed out')),10000);});
-    try{await new Promise(resolve=>setTimeout(resolve,300));await self.skipWaiting();await completion;return true;}finally{clearTimeout(timer);activated=null;}
+    // All prepared pages have shown their update indicator. Give it time to be read.
+    try{await new Promise(resolve=>setTimeout(resolve,1200));await self.skipWaiting();await completion;return true;}finally{clearTimeout(timer);activated=null;}
    });
   }finally{
    for(const result of prepared){try{result.port?.postMessage({type:'cancel'});}catch{}result.port?.close();}

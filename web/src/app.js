@@ -378,6 +378,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(set
 setupOffline().catch(e=>console.warn('Offline setup:',e.message));
 function openGameLink(){if(engine||!location.hash.startsWith('#game='))return;const game=library.find(g=>g.id===location.hash.slice(6));if(game)showDetails(game);else toast('このブラウザにゲームがありません。先にROMを追加してください。');}
 window.addEventListener('hashchange',()=>{if(engine)return;tab=tabFromHash();render();openGameLink();});
-if(await startAutoUpdates(()=>appReady&&!engine&&!launching&&!importing&&!exiting&&!link&&!linkStarting&&!saveLock&&tab!=='imports')!==false){
+if(await startAutoUpdates(()=>appReady&&!engine&&!launching&&!importing&&!exiting&&!link&&!linkStarting&&!saveLock&&tab!=='imports',()=>toast('更新しました。'))!==false){
  applySettings();refresh().then(()=>{openGameLink();appReady=true;}).catch(e=>{error(e);$('#content').innerHTML='<div class="empty-library"><h2>保存データを開けませんでした</h2><p>プライベートブラウズを終了するか、ブラウザの保存設定を確認してください。</p></div>';});
 }

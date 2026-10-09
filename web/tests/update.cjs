@@ -30,7 +30,7 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
  await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));const base='http://127.0.0.1:'+server.address().port+'/';
  const browser=await browserType.launch({headless:true,...(browserName==='chromium'?{channel:process.env.BROWSER_CHANNEL||'msedge'}:{})});
  try{
-  const context=await browser.newContext(),page=await context.newPage();await page.goto(base+'index.html');
+  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage();await page.goto(base+'index.html');
   // Playwright WebKit's offline flag rejects even cached SW navigations (#42775).
   // Use a real origin outage there; Edge also exercises the native online event.
   async function connection(offline){
@@ -64,10 +64,13 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   await stays(2);assert.equal(await second.locator('#player').isVisible(),true,'An active game in another tab blocks automatic update');
   await second.locator('#player-menu').click();await second.locator('[data-action=exit]').click();await second.locator('#player').waitFor({state:'hidden'});
   await stays(2);assert.equal(await update.locator('#sheet').isVisible(),true,'An open settings dialog is not discarded');
+  // Keep this fixture transition atomic even on a slow CI runner. The actual
+  // offline download owns its own pending-task guard once its button is used.
+  await update.evaluate(async()=>{const {guardUpdateTask}=await import('./src/update-activity.js');guardUpdateTask(()=>new Promise(resolve=>{window.finishOpenOfflineDialog=resolve;}))();});
   await update.locator('#close-sheet').click();
   await update.evaluate(()=>{const send=ServiceWorker.prototype.postMessage;ServiceWorker.prototype.postMessage=function(message,...rest){if(message?.type==='download'){window.finishOfflineDownload=()=>{ServiceWorker.prototype.postMessage=send;send.call(this,message,...rest);};return;}return send.call(this,message,...rest);};});
   await update.locator('[data-action=offline]').click();await update.locator('#offline-download').click();
-  await update.waitForFunction(()=>typeof window.finishOfflineDownload==='function');await update.locator('#close-sheet').click();
+  await update.waitForFunction(()=>typeof window.finishOfflineDownload==='function');await update.evaluate(()=>finishOpenOfflineDialog());await update.locator('#close-sheet').click();
   await stays(2);
   await update.evaluate(async()=>{const {guardUpdateTask}=await import('./src/update-activity.js');guardUpdateTask(()=>new Promise(resolve=>{window.finishUpdateTestTask=resolve;}))();});
   await update.evaluate(()=>finishOfflineDownload());
@@ -77,18 +80,28 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   await update.emulateMedia({reducedMotion:'reduce'});
   await picker.setFiles([]);await update.locator('#rom-input').dispatchEvent('cancel');
   await update.getByRole('dialog',{name:'更新中…',exact:true}).waitFor();
+  const progress=await update.locator('.update-progress').boundingBox();
+  assert.ok(Math.abs(progress.x+progress.width/2-195)<2&&Math.abs(progress.y+progress.height/2-422)<2,'Update progress stays at the center of the phone viewport');
+  assert.equal(await update.locator('.update-progress').evaluate(el=>el.scrollWidth>el.clientWidth||el.scrollHeight>el.clientHeight),false,'Update progress has no clipped text or spinner');
   assert.equal(await update.locator('.update-spinner').evaluate(el=>getComputedStyle(el).animationName),'none');
   assert.equal(await second.locator('.update-spinner').evaluate(el=>getComputedStyle(el).animationName),'update-spin');
   await second.screenshot({path:path.join(process.env.SCREENSHOT_DIR||require('node:os').tmpdir(),'local-play-auto-update-'+browserName+'.png')});
   await update.waitForFunction(()=>globalThis.updateTestRevision===3,{},{timeout:30000});await second.waitForFunction(()=>globalThis.updateTestRevision===3);await second.locator('.game-launch').waitFor();await update.locator('.settings-page').waitFor();
+  await update.locator('#toast.show').filter({hasText:'更新しました。'}).waitFor();
   assert.equal(new URL(update.url()).hash,'#settings','Automatic reload retains the selected tab');
   assert.equal(await second.locator('.game-launch').count(),1,'Automatic reload retains the original cartridge');
   assert.deepEqual(await update.evaluate(async()=>[...(await(await import('./src/storage.js')).get('saves','keep')).bytes]),[7,9]);
   assert.equal(await update.evaluate(async()=>(await(await import('./src/offline.js')).offlineStatus()).ready),true,'Updated app includes every offline resource, including newly used cores');
   console.log('PASS: automatic update waits for another tab to exit a game, settings dialogs, asynchronous tasks and native file selection; then refreshes every idle tab and preserves data.');
+  await update.evaluate(()=>{
+   let started;
+   new MutationObserver(()=>{const el=document.querySelector('.update-progress');if(el.open&&el.getAttribute('aria-label')==='更新中…'&&started===undefined)started=performance.now();}).observe(document.querySelector('.update-progress'),{attributes:true});
+   window.addEventListener('pagehide',()=>{if(started!==undefined)sessionStorage.setItem('update-test-visible-ms',String(performance.now()-started));});
+  });
   const unknown=await context.newPage();await unknown.goto(base+'privacy.html');revision=4;
   await update.evaluate(async()=>{await(await navigator.serviceWorker.ready).update();});await stays(3);
   await unknown.close();await update.waitForFunction(()=>globalThis.updateTestRevision===4,{},{timeout:30000});await second.waitForFunction(()=>globalThis.updateTestRevision===4);await second.locator('.game-launch').waitFor();await update.locator('.settings-page').waitFor();
+  assert.ok(Number(await update.evaluate(()=>sessionStorage.getItem('update-test-visible-ms')))>=1100,'Even a fast activation leaves the update notice visible for about 1.2 seconds');
   // Become busy after answering the probe. All prepared tabs must be released.
   await second.evaluate(async()=>{
    const {guardUpdateTask}=await import('./src/update-activity.js');
@@ -104,6 +117,7 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   assert.ok(navigations>=2,'Old HTML arriving after activation is reloaded before app actions become available');
   assert.equal(await late.locator('meta[name=app-build]').getAttribute('content'),'update-test-5');
   assert.equal(await late.evaluate(()=>document.body.inert),false);
+  assert.equal(await late.locator('#toast.show').filter({hasText:'更新しました。'}).count(),0,'Opening a new tab does not show a false update-complete notice');
   console.log('PASS: a newly opened tab with stale HTML refreshes before enabling app actions.');
   await late.close();
   assert.match(await second.evaluate(name=>fetch(name).then(r=>r.text()),lazyAsset),/lazy asset revision 5/);
