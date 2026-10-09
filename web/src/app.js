@@ -310,13 +310,13 @@ async function showOffline(){
  const button=$('#offline-download'),status=$('#offline-status');
  const update=s=>{if(status.isConnected)status.textContent=s.ready?'オフラインで遊べます。':`${s.cached} / ${s.total} ファイル保存済み（全体 ${bytesLabel(s.bytes)}）`;};
  try{update(await offlineStatus());}catch(e){if(status.isConnected)status.textContent=e.message;}
- button.onclick=async()=>{
+ button.onclick=guardUpdateTask(async()=>{
   button.disabled=true;
   try{
    const result=await offlineStatus(true,p=>{if(status.isConnected)status.textContent=`保存中… ${p.progress} / ${p.total}`;});
    update(result);toast('ダウンロードが完了しました。');
   }catch(e){error(e);}finally{button.disabled=false;}
- };
+ });
  // Register the handler before enabling input; never accept a click during the
  // asynchronous status query. Captured elements cannot update a later sheet.
  button.disabled=false;

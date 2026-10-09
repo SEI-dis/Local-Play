@@ -6,15 +6,13 @@ const autoUpdate=automaticUpdateCoordinator(base);
 const urls=APP_OFFLINE.files.map(f=>new URL(f,base).href),allowed=new Set(urls);
 // A new Cache Storage version must not inherit still-fresh files from the HTTP cache.
 self.addEventListener('install',e=>e.waitUntil((async()=>{
- // Include resources already saved for offline use. Fetch their new versions
- // before activating, so an interrupted update leaves the complete old version.
- const needed=new Set(APP_OFFLINE.shell.map(f=>new URL(f,base).href));
- for(const name of await caches.keys())if(name.startsWith(prefix)&&name!==cacheName){
-  const previous=await caches.open(name);
-  for(const request of await previous.keys())if(allowed.has(request.url))needed.add(request.url);
- }
+ // First install loads the shell; updates stage the complete application.
+ // A core or offline download may finish in the old page during installation.
+ // Staging every app file avoids losing those resources when old caches retire.
+ const isUpdate=(await caches.keys()).some(name=>name.startsWith(prefix)&&name!==cacheName);
+ const needed=isUpdate?urls:APP_OFFLINE.shell.map(f=>new URL(f,base).href);
  const cache=await caches.open(cacheName);
- await cache.addAll([...needed].map(url=>new Request(url,{cache:'no-cache'})));
+ await cache.addAll(needed.map(url=>new Request(url,{cache:'no-cache'})));
 })()));
 self.addEventListener('activate',e=>e.waitUntil((async()=>{for(const name of await caches.keys())if(name.startsWith(prefix)&&name!==cacheName)await caches.delete(name);await self.clients.claim();autoUpdate.activated();})()));
 self.addEventListener('fetch',e=>{

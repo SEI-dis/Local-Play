@@ -61,7 +61,12 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   await second.locator('#player-menu').click();await second.locator('[data-action=exit]').click();await second.locator('#player').waitFor({state:'hidden'});
   await stays(2);assert.equal(await update.locator('#sheet').isVisible(),true,'An open settings dialog is not discarded');
   await update.locator('#close-sheet').click();
+  await update.evaluate(()=>{const send=ServiceWorker.prototype.postMessage;ServiceWorker.prototype.postMessage=function(message,...rest){if(message?.type==='download'){window.finishOfflineDownload=()=>{ServiceWorker.prototype.postMessage=send;send.call(this,message,...rest);};return;}return send.call(this,message,...rest);};});
+  await update.locator('[data-action=offline]').click();await update.locator('#offline-download').click();
+  await update.waitForFunction(()=>typeof window.finishOfflineDownload==='function');await update.locator('#close-sheet').click();
+  await stays(2);
   await update.evaluate(async()=>{const {guardUpdateTask}=await import('./src/update-activity.js');guardUpdateTask(()=>new Promise(resolve=>{window.finishUpdateTestTask=resolve;}))();});
+  await update.evaluate(()=>finishOfflineDownload());
   await stays(2);
   const pickerEvent=update.waitForEvent('filechooser');await update.locator('#rom-input').evaluate(input=>input.click());const picker=await pickerEvent;
   await update.evaluate(()=>finishUpdateTestTask());await stays(2);
@@ -75,6 +80,7 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   assert.equal(new URL(update.url()).hash,'#settings','Automatic reload retains the selected tab');
   assert.equal(await second.locator('.game-launch').count(),1,'Automatic reload retains the original cartridge');
   assert.deepEqual(await update.evaluate(async()=>[...(await(await import('./src/storage.js')).get('saves','keep')).bytes]),[7,9]);
+  assert.equal(await update.evaluate(async()=>(await(await import('./src/offline.js')).offlineStatus()).ready),true,'Updated app includes every offline resource, including newly used cores');
   console.log('PASS: automatic update waits for another tab to exit a game, settings dialogs, asynchronous tasks and native file selection; then refreshes every idle tab and preserves data.');
   const unknown=await context.newPage();await unknown.goto(base+'privacy.html');revision=4;
   await update.evaluate(async()=>{await(await navigator.serviceWorker.ready).update();});await stays(3);

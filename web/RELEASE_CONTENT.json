@@ -53,20 +53,20 @@
     },
     {
       "path": "PRIVACY_AUDIT.md",
-      "bytes": 10356,
-      "sha256": "4eeab0a2cc66fde932fce58a87d94a5fcb31dfe320725b474abf84c3625b1e8e",
+      "bytes": 10365,
+      "sha256": "3ea61027cf396feb0c3690da34cae3eeea2c59fcf361ac5926b5ef33a9d5b4cd",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "README.md",
-      "bytes": 35005,
-      "sha256": "622c0c95f75831425feb037dcc487cb9441dc9c8ed09a90b4da609d0a1bafceb",
+      "bytes": 35046,
+      "sha256": "c93fd0000ed068601e04785fdc700158c78c5caf50635cf37f86d99ad21409c4",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "RELEASE_VALIDATION.md",
-      "bytes": 14626,
-      "sha256": "9291b5b1145ece426fd1a5dd3d2ce1f831007ec60fc3d286fb6dc33cc9cfd2b8",
+      "bytes": 15098,
+      "sha256": "ceb6f2d7cb9cae2da077fb3dd70e76c54a9c86d6cf62e0fc980e6a56fc76ba8f",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -234,7 +234,7 @@
     {
       "path": "index.html",
       "bytes": 4617,
-      "sha256": "f0409b674cb13c89a8e29917539e842d9fb53b1cbb3cdc10e367ff3e9ec52150",
+      "sha256": "a70277a3b29ed2a46b93ced2d38d4832142498a1e7ba819af3dc21909ec6fb93",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -37937,8 +37937,8 @@
     },
     {
       "path": "src/app.js",
-      "bytes": 56908,
-      "sha256": "a52cd7eafba42c25f17c66b7bca9022b9b79d24c6a5123687cbde9c128fb5f38",
+      "bytes": 56925,
+      "sha256": "389ee6e48eb244a12aa311d7173a2d02db3268c705661ed2eaae4a5b572dd51d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38195,8 +38195,8 @@
     },
     {
       "path": "sw.js",
-      "bytes": 4146,
-      "sha256": "040e2c08ad4056297f3750f467aad5ecf4f9c3213e93d7894c880ed86b29c057",
+      "bytes": 4084,
+      "sha256": "6966f3bb1b2a5f7beda15037d14c8c402c0ca0b477929605425a933b845b285b",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38423,8 +38423,8 @@
     },
     {
       "path": "tests/update.cjs",
-      "bytes": 13483,
-      "sha256": "e86c3f256180c6f551c36c057a97398f2e09da5fc58c6d9ef5c28121b1c5e8e6",
+      "bytes": 14322,
+      "sha256": "c736d8cadb48daa75fb14f0905c23ad1ced5ccd073034d497b1f77a84857c89f",
       "component": "web-port-code-and-documentation"
     },
     {
