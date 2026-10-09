@@ -301,6 +301,8 @@ also declares PNG icons, including a maskable icon with an opaque background.
 Installation links use content-hashed copies of those PNGs to avoid reusing
 older home-screen images. The original filenames remain available. The manifest
 uses PNG icons only; the empty library uses the same original SVG artwork.
+Modified 2026-10-09: removed the duplicate About entry; credits remain in
+licenses.html. Settings now show the loaded release version and build identifier.
 
 Modified 2026-10-09: expanded the import-screen layout port using the pinned
 ManicEMU ImportMottoCollectionViewCell, ImportServiceListCollectionViewCell and

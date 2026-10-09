@@ -5,7 +5,7 @@ import {escapeHTML as esc,icon,bytesLabel} from './shared.js';
 import {videoFilters} from './video.js';
 export function videoFilterNote(filter){return `<p class="sheet-note" id="video-filter-note" ${filter==='edge4x'?'':'hidden'}>輪郭補正4倍は、元の色を保ちながら斜めの線や角を細かく整えます。処理負荷が増えるため、動作が重い場合は2倍やピクセルに戻してください。</p>`;}
 export function createSettingsView(api){
- const {settings,applySettings,bindSettings,bindActions,sheet,showSkins,showOffline,showAbout}=api;
+ const {settings,applySettings,bindSettings,bindActions,sheet,showSkins,showOffline}=api;
  const $=selector=>document.querySelector(selector),$$=selector=>[...document.querySelectorAll(selector)];
 // SettingsListView / SettingItem port: Daiuno, Copyright 2025 Manic EMU, AGPL-3.0-or-later.
 function renderSettings(){
@@ -29,13 +29,15 @@ function renderSettings(){
   action('オフラインで使う','offline','import'),
   action('保存・復旧の使い方','saveHelp','save')
  ]);
- const links=settingsGroup('その他',[action('このWeb版について','about','game'),...[
+ const links=settingsGroup('その他',[
   ['update.html','アプリの更新','import'],
   ['privacy.html','プライバシーと利用条件','folder'],
   ['licenses.html','クレジット・ライセンス','folder']
- ].map(([href,label,ic])=>`<a class="row" href="${href}">${icon(ic)}<span>${label}</span>${icon('chevron')}</a>`)]);
- $('#content').innerHTML=`<div class="page settings-page"><h1>設定</h1>${general}${advanced}${support}${links}<p class="settings-footer">LOCAL PLAY WEB · 0.3.0</p></div>`;
- bindSettings($('#content'));bindActions($('#content'),{controllers:showControllers,skins:()=>showSkins(),storage:showStorage,offline:showOffline,about:showAbout,video:showVideoSettings,audio:showAudioSettings,saveHelp:showSaveHelp});
+ ].map(([href,label,ic])=>`<a class="row" href="${href}">${icon(ic)}<span>${label}</span>${icon('chevron')}</a>`));
+ // Describe the loaded distribution, including while offline or an update waits.
+ const version=$('meta[name=app-version]').content,build=$('meta[name=app-build]').content;
+ $('#content').innerHTML=`<div class="page settings-page"><h1>設定</h1>${general}${advanced}${support}${links}<p class="settings-footer" title="ビルド ${esc(build)}">LOCAL PLAY WEB · ${esc(version)} (${esc(build.slice(0,8))})</p></div>`;
+ bindSettings($('#content'));bindActions($('#content'),{controllers:showControllers,skins:()=>showSkins(),storage:showStorage,offline:showOffline,video:showVideoSettings,audio:showAudioSettings,saveHelp:showSaveHelp});
  $$('[data-theme-choice]').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.themeChoice;applySettings();renderSettings();});
 }
 function showVideoSettings(){sheet('映像とフレームレート',`<div class="settings-group">${row('映像フィルター',`<select aria-label="映像フィルター" aria-describedby="video-filter-note" data-setting="filter">${videoFilters.map(([v,t])=>`<option value="${v}" ${settings.filter===v?'selected':''}>${t}</option>`).join('')}</select>`,'image')}${row('画面ボタン',`<input data-setting="touchControls" type="checkbox" ${settings.touchControls?'checked':''}>`,'game')}${row('FPS表示',`<input data-setting="showFps" type="checkbox" ${settings.showFps?'checked':''}>`,'bolt')}</div><p class="sheet-note">通常は約60fpsで動作します。速度は端末の性能によって変わります。フィルターは見た目を調整する機能で、ゲーム内部の解像度は変わりません。</p>${videoFilterNote(settings.filter)}`);bindSettings($('#sheet-body'));}

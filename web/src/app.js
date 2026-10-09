@@ -35,7 +35,7 @@ let savedSettings={};try{savedSettings=JSON.parse(localStorage.getItem('manic-se
 let settings={theme:'dark',volume:.7,speed:1,preservePitch:true,autosave:true,recovery:true,haptics:true,filter:'pixel',showFps:false,touchControls:true,...savedSettings};
 delete settings.autoCovers;
 const {renderSettings,showVideoSettings,showAudioSettings,showSaveHelp,showControllers,showStorage}=createSettingsView({
- settings,applySettings,bindSettings,bindActions,sheet,toast,showSkins,showOffline,showAbout,onClose:cleanup=>{sheetCleanup=cleanup;}
+ settings,applySettings,bindSettings,bindActions,sheet,toast,showSkins,showOffline,onClose:cleanup=>{sheetCleanup=cleanup;}
 });
 const runtime={get engine(){return engine;},get current(){return current;},get link(){return link;},get protection(){return protection;},get skinData(){return skinData;},set skinData(value){skinData=value;},set cleanup(value){sheetCleanup=value;}};
 const skinSettings=createSkinSettings({runtime,settings,setPause,sheet,applySettings,layoutSkin,refresh,toast,error,controlLayout,playerSize,frameStyle});
@@ -95,7 +95,7 @@ function renderLibrary(){const games=library.filter(g=>(filter==='all'||g.system
 // Copyright © 2025–2026 Manic EMU. Daiuno / Max. Ported 2026-10-09.
 // Local Files, skin settings and game-specific save import; original Web artwork.
 function renderImports(){
- $('#content').innerHTML=`<section class="page import-page" aria-labelledby="import-heading"><header class="import-hero"><img src="assets/icon.svg" alt=""><h1 id="import-heading">インポート</h1></header>
+ $('#content').innerHTML=`<section class="page import-page" aria-label="インポート"><header class="import-hero"><img src="assets/icon.svg" alt=""></header>
   <button class="import-file" id="choose-rom"><span class="import-file-icon">${icon('folder')}</span><span><strong>ファイル</strong><small>端末内のROMを追加</small></span></button>
   <div class="import-services"><button class="import-service" id="import-skins"><span class="import-service-icon skin-service">${icon('image')}</span><strong>スキン</strong><small>追加・変更</small></button><button class="import-service" id="import-saves" ${library.length?'':'disabled'}><span class="import-service-icon save-service">${icon('saveImport')}</span><strong>セーブデータ</strong><small>${library.length?'ゲームを選んで読み込む':'先にゲームを追加'}</small></button></div>
   <div class="import-drop"><span class="import-drop-icon">${icon('import')}</span><span><strong>ドラッグ＆ドロップ</strong><small>ROMをこの画面にドロップ</small></span></div>
@@ -137,7 +137,6 @@ function controlLayout(system,game){return game?.controlLayout??settings.control
 // current viewport for library previews, and actual bounds during gameplay.
 function playerSize(){const stage=$('#player'),style=getComputedStyle(stage);return {width:(stage.clientWidth||window.innerWidth)-parseFloat(style.paddingLeft)-parseFloat(style.paddingRight),height:(stage.clientHeight||window.innerHeight)-parseFloat(style.paddingTop)-parseFloat(style.paddingBottom)};}
 function showSkins(...args){return guardUpdateTask(()=>skinSettings.showSkins(...args))();}
-function showAbout(){sheet('このWeb版について',`<p class="sheet-note">ManicEMUをもとにした非公式のWeb版です。GBAは64MBのROMに対応しています。</p><div class="settings-group"><a class="row" href="https://github.com/Manic-EMU/ManicEMU" target="_blank" rel="noopener">ManicEMU / AGPL-3.0</a><a class="row" href="https://github.com/onikoro334274-cell/mGBA_celio_edition/tree/rom64" target="_blank" rel="noopener">64MB対応コア / MPL-2.0</a><a class="row" href="licenses.html" target="_blank">クレジット・ライセンス</a></div><p class="sheet-note">GBA通信は実験版です。iCloud同期や実績など、iOS版の一部機能には対応していません。</p>`);}
 const protection=new SaveProtection(status=>{
  const el=$('#save-status');el.hidden=!engine;
  el.classList.toggle('save-error',!!status.error);

@@ -34,8 +34,8 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4173/';
       await page.locator('#persistent-status[data-state=pending]').waitFor();assert.equal(await page.locator('#persistent').isDisabled(),true);
       // A double activation must not queue a second request.
       await page.locator('#persistent').evaluate(b=>b.click());assert.equal(await page.evaluate(()=>window.persistCalls),1);
-      await page.locator('#close-sheet').click();await page.locator('[data-action=about]').click();await page.evaluate(()=>window.finishPersist());
-      await page.getByRole('heading',{name:'このWeb版について'}).waitFor();assert.equal(await page.locator('#persistent-status').count(),0);
+      await page.locator('#close-sheet').click();await page.locator('[data-action=video]').click();await page.evaluate(()=>window.finishPersist());
+      await page.getByRole('heading',{name:'映像とフレームレート'}).waitFor();assert.equal(await page.locator('#persistent-status').count(),0);
      }else{
       await page.waitForFunction(()=>document.querySelector('#persistent-status').dataset.state!=='pending');
       const state=await page.locator('#persistent-status').getAttribute('data-state');

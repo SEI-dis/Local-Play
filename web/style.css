@@ -136,10 +136,9 @@ dialog.control-edit{width:min(1000px,calc(100% - 16px - env(safe-area-inset-left
 /* ManicEMU ImportMotto/File/Service/Footer cells, ported with original Web art.
    Copyright © 2025–2026 Manic EMU. Daiuno / Max. Modified 2026-10-09. */
 .import-page{max-width:720px;padding:8px clamp(16px,5vw,24px) 24px}
-.import-hero{position:relative;isolation:isolate;min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;margin-bottom:20px}
+.import-hero{position:relative;isolation:isolate;min-height:220px;display:flex;align-items:center;justify-content:center;margin-bottom:20px}
 .import-hero:before{content:"";position:absolute;z-index:-1;bottom:0;width:100%;height:64px;border-radius:50% 50% 0 0;background:linear-gradient(color-mix(in srgb,var(--text) 6%,var(--bg)),var(--bg) 75%)}
 .import-hero img{width:144px;height:144px;border-radius:32px}
-.import-hero h1{margin:0;font-size:18px;font-weight:500;color:var(--secondary)}
 .import-file{display:flex;align-items:center;gap:14px;width:100%;min-height:100px;padding:20px;border-radius:20px;text-align:left;background:radial-gradient(ellipse at top left,#269ff433,transparent 70%),radial-gradient(ellipse at bottom right,#269ff433,transparent 70%),var(--panel)}
 .import-file-icon{display:grid;place-items:center;flex:0 0 48px;width:48px;height:48px;background:#269ff41a;border:1px solid #269ff426;border-radius:13px;color:#329ef4}
 .import-file-icon svg{width:28px;height:28px}
@@ -159,4 +158,4 @@ dialog.control-edit{width:min(1000px,calc(100% - 16px - env(safe-area-inset-left
 .import-drop-icon svg{width:20px;height:20px}
 .import-drop strong,.import-drop small{display:block;line-height:1.5}.import-drop strong{font-size:14px;font-weight:500}.import-drop small{margin-top:2px;font-size:12px;color:var(--secondary)}
 .import-formats{margin:24px 4px;color:var(--secondary);font-size:13px}
-@media(orientation:landscape) and (max-height:600px){.import-hero{min-height:100px;flex-direction:row;gap:18px;background:var(--panel);border-radius:20px}.import-hero:before{display:none}.import-hero img{width:72px;height:72px;border-radius:16px}.import-service{min-height:138px}}
+@media(orientation:landscape) and (max-height:600px){.import-hero{min-height:100px;background:var(--panel);border-radius:20px}.import-hero:before{display:none}.import-hero img{width:72px;height:72px;border-radius:16px}.import-service{min-height:138px}}
