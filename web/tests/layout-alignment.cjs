@@ -62,7 +62,10 @@ const kind=process.env.BROWSER_ENGINE||'chromium',pw=require('./browser-runtime.
   await p.locator('[data-edit-orientation=portrait]').click();await save();const saved=await stored();assert.equal(saved.portrait.a.opacity,.45);assert.equal(saved.landscape.a.opacity,.45);
   // Verify preview paint order at an overlap, allowing pointer inspection temporarily.
   await p.locator('[data-preview-skin]').first().click();await p.locator('.skin-zoom .skin-mini').waitFor();
-  const preview=await p.locator('.skin-zoom .skin-mini').evaluate(e=>{
+  // ResizeObserver can replace the artwork after locator resolution. Read the
+  // current artwork inside the stable preview host in the same browser task.
+  const preview=await p.locator('.skin-zoom-art').evaluate(host=>{
+   const e=host.querySelector('.skin-mini');
    const buttons=[...e.querySelectorAll('.skin-mini-button')],screen=e.querySelector('.skin-mini-screen'),r=screen.getBoundingClientRect();
    const a=buttons.find(b=>{const f=b.getBoundingClientRect();return Math.abs(f.x+f.width/2-r.x-r.width/2)<1&&Math.abs(f.y+f.height/2-r.y-r.height/2)<1;});
    if(!a)return {error:'No centered button',screen:r.toJSON(),buttons:buttons.map(b=>b.getBoundingClientRect().toJSON())};

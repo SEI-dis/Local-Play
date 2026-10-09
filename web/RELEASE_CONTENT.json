@@ -38339,8 +38339,8 @@
     },
     {
       "path": "tests/layout-alignment.cjs",
-      "bytes": 10353,
-      "sha256": "9c1e5a8e4e80846882a09373388586b14a1cc1b523a7dc90c0cb6ba7ddd4906b",
+      "bytes": 10551,
+      "sha256": "56796a7a05cd8cebbec8801ba690fb343ee797f3c0998ef937b086b0518f0573",
       "component": "web-port-code-and-documentation"
     },
     {
