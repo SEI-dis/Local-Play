@@ -15,3 +15,26 @@
 #player[data-builtin=true]:not([data-system=nds]) :is(#quick-actions button,#boost,#player-menu){background:#252932b3;color:#fff;border:1px solid #ffffff80;box-shadow:0 1px 2px #0003}
 #player[data-builtin=true]:not([data-system=nds]) #boost.fast{background:var(--accent);border-color:var(--accent)}
 #skin-description{margin:8px 0 12px;font-size:12px;line-height:1.7}
+
+/* Imported artwork sits over the video layers, as in Delta / Manic. */
+#screen[data-imported=true]{background:transparent;overflow:visible;pointer-events:none}
+#screen[data-imported=true] .skin-source{visibility:hidden;position:absolute;pointer-events:none}
+#screen[data-imported=true]::after{content:none}
+.imported-screens{position:absolute;inset:0;overflow:hidden;pointer-events:none}
+#screen .imported-screen{position:absolute;object-fit:fill;background:transparent;pointer-events:none;transform-origin:center}
+.imported-art{position:absolute;background-size:100% 100%;pointer-events:none;z-index:1}
+#skin:has(.imported-art) #touch-controls{z-index:2}
+.imported-control{background:none!important;overflow:visible}
+.imported-control:active,.imported-control.pressed{filter:none;transform:none}
+.imported-control-art,.skin-switch-sprite,.skin-thumbstick{position:absolute;display:block;background-size:100% 100%;pointer-events:none}
+.imported-control:not(.dpad):not(.touch-region).pressed .imported-control-art{filter:brightness(.7)}
+.imported-control:not(.dpad):not(.touch-region).pressed .imported-control-art:empty{background-color:#0003}
+.skin-switch-sprite{transition:top .15s ease,left .15s ease,width .15s ease,height .15s ease}
+.skin-thumbstick{left:50%;top:50%;transform:translate(-50%,-50%)}
+@media(prefers-reduced-motion:reduce){.skin-switch-sprite{transition:none}}
+
+#skin-description{white-space:pre-line;overflow-wrap:anywhere}
+
+.skin-mini[data-imported=true] .skin-source{display:none}
+.skin-mini .imported-screen{position:absolute;image-rendering:pixelated}
+.skin-mini[data-imported=true] .skin-mini-button{z-index:2}

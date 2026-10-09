@@ -165,3 +165,15 @@ gbc-lcdシェーダーのUnlicense本文で、いずれも商用・非商用の�
 MPLの判断には[MPL本文](https://www.mozilla.org/en-US/MPL/2.0/)と
 [Mozillaの組み合わせガイド](https://www.mozilla.org/en-US/MPL/2.0/combining-mpl-and-gpl/)を使用しました。
 修正後、UI構成・通知・対応ソース・配布一覧を再確認し、公開には該当コミットのCI成功を必要とします。
+
+
+## 2026-10-09 スキン互換対応の追加確認
+
+Delta／Manicの公開形式仕様をもとに、配置の正規化・ブラウザ描画・入力アダプターを追加しました。
+新規コードはAGPL-3.0-or-laterで提供します。Apple Core Imageのソースやバイナリは使用していません。
+既存のManicEMU UI帰属表示、PDF.jsのApache-2.0表示は維持しています。
+
+Solo Plastic GBA（aphaits）、Manic標準6機種、Delta標準DSの実ファイルはローカル検証専用です。
+画像・スキンファイルはリポジトリ、公開ディレクトリ、対応ソースZIPに同梱しません。
+自動テストに使用する画像・ROMは新規作成したものです。公式案内へのリンクは配布許諾の代わりになりません。
+未対応の効果・操作を明示し、完全互換という表示はしません。

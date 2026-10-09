@@ -2,6 +2,7 @@
 // Original skins and implementation of the documented Delta skin data format.
 import * as db from './storage.js';
 import {hash} from './shared.js';
+import {normalizeSkin} from './skin-format.js';
 import {readSkinZip} from './skin-zip.js';
 import {builtins,builtinSkin} from './skin-art.js';
 export {builtins};
@@ -15,11 +16,8 @@ export async function loadSkin(system,id='builtin:classic',fallback='builtin:cla
 export async function previewSkin(system,id='builtin:classic',fallback='builtin:classic'){
  if(id.startsWith('builtin:'))return {skin:builtinSkin(system,id.split(':')[1]),urls:[]};
  const saved=await db.get('skins',id);if(!saved||!skinSupportsSystem(saved.system,system))return previewSkin(system,fallback===id?'builtin:classic':fallback);
- const images={},urls=[];for(const [key,blob] of Object.entries(saved.images)){const u=URL.createObjectURL(blob);urls.push(u);images[key]=u;}return {skin:{...saved,images},urls};
+ const images={},urls=[];for(const [key,image] of Object.entries(saved.images)){const blob=image instanceof Blob?image:new Blob([image.bytes],{type:'image/png'});const u=URL.createObjectURL(blob);urls.push(u);images[key]=u;}return {skin:{...saved,images},urls};
 }
-const number=(v,min,max)=>{if(typeof v!=='number'||!Number.isFinite(v)||v<min||v>max)throw new Error('スキンの座標が範囲外です。');return v;};
-function rect(r){if(!r)throw new Error('スキンに画面やボタンの位置が指定されていません。');return {x:number(r.x,-4096,4096),y:number(r.y,-4096,4096),width:number(r.width,1,4096),height:number(r.height,1,4096)};}
-const controls=new Set(['a','b','x','y','c','z','l','r','l1','r1','start','select','menu','up','down','left','right']);
 async function renderImage(bytes,name){
  let canvas=document.createElement('canvas');
  if(/\.pdf$/i.test(name)){
@@ -36,26 +34,20 @@ async function renderImage(bytes,name){
 }
 export async function importSkin(file,expectedSystem){
  if(!/\.(deltaskin|manicskin)$/i.test(file.name))throw new Error('DeltaまたはManic形式のスキンを選択してください。');
- if(file.size>20*1024*1024)throw new Error('20MBを超えるスキンは追加できません。');const buffer=await file.arrayBuffer(),files=await readSkinZip(buffer),infoName=[...files.keys()].find(n=>/(^|\/)info\.json$/i.test(n));
- if(!infoName||files.get(infoName).length>128*1024)throw new Error('スキンの設定ファイルがないか、大きすぎます。');
- const prefix=infoName.slice(0,-9),info=JSON.parse(new TextDecoder().decode(files.get(infoName))),system=String(info.gameTypeIdentifier||'').split('.').pop().toLowerCase();
- if(!['gba','gb','gbc','nes','snes','md'].includes(system))throw new Error('対応機種はGBA・GB/GBC・FC・SFC・MDです。');
+ if(file.size>40*1024*1024)throw new Error('40MBを超えるスキンは追加できません。');const buffer=await file.arrayBuffer(),files=await readSkinZip(buffer),infoName=[...files.keys()].find(n=>/(^|\/)info\.json$/i.test(n));
+ if(!infoName||files.get(infoName).length>512*1024)throw new Error('スキンの設定ファイルがないか、大きすぎます。');
+ const prefix=infoName.slice(0,-9),info=JSON.parse(new TextDecoder().decode(files.get(infoName)));
+ const identifier=String(info.gameTypeIdentifier||'').split('.').pop().toLowerCase(),system=({ds:'nds',genesis:'md'})[identifier]||identifier;
+ if(!['gba','gb','gbc','nes','snes','md','nds'].includes(system))throw new Error('このスキンの機種には対応していません。GBA・GB/GBC・FC・SFC・MD・NDS用を選択してください。');
  if(expectedSystem&&!skinSupportsSystem(system,expectedSystem))throw new Error('このゲーム用のスキンではありません。');
- const source=info.representations?.iphone||info.representations?.iPhone||info.representations?.ipad||info.representations?.iPad;
- const traits=source?.edgeToEdge||source?.standard||source,used=new Set(),representations={};
- const asset=name=>{if(typeof name!=='string'||!files.has(prefix+name)||name.includes('..'))throw new Error('スキン内の画像が見つかりません。');used.add(name);return name;};
- for(const orientation of ['portrait','landscape']){
-  const r=traits?.[orientation];if(!r)continue;
-  const mappingSize={width:number(r.mappingSize?.width,64,4096),height:number(r.mappingSize?.height,64,4096)};
-  let frame=r.gameScreenFrame;if(r.screens){if(r.screens.length!==1||r.screens[0].filters?.length)throw new Error('複数画面や特殊フィルターを使うスキンには対応していません。');frame=r.screens[0].outputFrame;const crop=r.screens[0].inputFrame;if(crop&&(crop.x||crop.y||crop.width!==({gba:240,gb:160,gbc:160,nes:256,snes:256,md:320}[system])||crop.height!==({gba:160,gb:144,gbc:144,nes:240,snes:224,md:224}[system])))throw new Error('画面を切り抜くスキンには対応していません。');}
-  const assets={resizable:asset(r.assets?.resizable||r.assets?.large||r.assets?.medium||r.assets?.small)};
-  if(!Array.isArray(r.items)||r.items.length>80)throw new Error('ボタンの設定がないか、数が多すぎます。');
-  const items=r.items.map(item=>{let inputs=item.inputs;if(Array.isArray(inputs)){if(!inputs.length||inputs.some(k=>!controls.has(k)))throw new Error('未対応のボタン操作が含まれています。');}else{if(!inputs||Object.keys(inputs).some(k=>!['up','down','left','right'].includes(k))||Object.values(inputs).some(k=>!controls.has(k)))throw new Error('対応していない方向キーの設定です。');inputs={...inputs};}return {inputs,frame:rect(item.frame),asset:item.asset?.normal?{normal:asset(item.asset.normal)}:undefined};});
-  representations[orientation]={mappingSize,assets,items,screens:[{outputFrame:rect(frame)}]};
- }
- if(!Object.keys(representations).length)throw new Error('対応する縦画面・横画面の設定が見つかりません。');
- if(used.size>24)throw new Error('スキンの画像数が多すぎます。');const images={};let imageBytes=0;
- for(const name of used){images[name]=await renderImage(files.get(prefix+name),name);if((imageBytes+=images[name].size)>32*1024*1024)throw new Error('変換後のスキンが大きすぎます。');}
+ const used=new Set();
+ const asset=name=>{if(typeof name!=='string'||!files.has(prefix+name)||name.split('/').includes('..')||! /\.(png|jpe?g|webp|pdf)$/i.test(name))throw new Error('スキン内の画像が見つからないか、画像形式に対応していません。');used.add(name);return name;};
+ const representations=normalizeSkin(info,system,asset);
+ if([...files.keys()].some(n=>/\.caf$/i.test(n)))representations.warnings.push('スキンの効果音（CAF）は再生しません。');
+ if(used.size>96)throw new Error('スキンの画像数が多すぎます。');const images=Object.create(null);let imageBytes=0;
+ // Store bytes rather than Blob handles: some WebKit storage backends cannot
+ // persist generated Blobs. Existing Blob records remain readable above.
+ for(const name of used){const blob=await renderImage(files.get(prefix+name),name);if((imageBytes+=blob.size)>64*1024*1024)throw new Error('変換後のスキンが大きすぎます。');images[name]={bytes:new Uint8Array(await blob.arrayBuffer()),type:'image/png',size:blob.size};}
  const record={id:'skin:'+await hash(new Uint8Array(buffer)),name:String(info.name||file.name).slice(0,120),system,images,...representations,importedAt:Date.now()};
  await db.put('skins',record.id,record);return record;
 }

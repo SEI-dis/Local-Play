@@ -10,7 +10,7 @@ const database=new Promise((resolve,reject)=>{
 function write(db,names){try{return db.transaction(names,'readwrite',{durability:'strict'});}catch(e){if(e instanceof TypeError)return db.transaction(names,'readwrite');throw e;}}
 export async function get(store,key){const db=await database;return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 export async function all(store){const db=await database;return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
-export async function put(store,key,data){const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,store);tx.objectStore(store).put(data,key);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||new Error('保存が中断されました。'));tx.onerror=()=>reject(tx.error);});}
+export async function put(store,key,data){const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,store);tx.objectStore(store).put(data,key);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||new Error('保存が中断されました。'));tx.onerror=()=>{};});}
 export async function remove(store,key){const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,store);tx.objectStore(store).delete(key);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});}
 // Commit a confirmed selection of this game's manual states as one operation.
 export async function removeStates(id,keys){

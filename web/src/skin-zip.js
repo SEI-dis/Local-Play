@@ -1,13 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Original bounded ZIP reader using the browser's DEFLATE implementation.
-const MAX=32*1024*1024;
+const MAX=100*1024*1024;
 export async function readSkinZip(buffer){
  const bytes=new Uint8Array(buffer),v=new DataView(bytes.buffer,bytes.byteOffset,bytes.byteLength);
- if(bytes.length>20*1024*1024||bytes.length<22)throw new Error('このスキンは読み込めません。ZIP形式で20MB以下のファイルに対応しています。');
+ if(bytes.length>40*1024*1024||bytes.length<22)throw new Error('このスキンは読み込めません。ZIP形式で40MB以下のファイルに対応しています。');
  let end=-1;for(let i=bytes.length-22;i>=Math.max(0,bytes.length-65557);i--)if(v.getUint32(i,true)===0x06054b50&&i+22+v.getUint16(i+20,true)===bytes.length){end=i;break;}
  if(end<0||v.getUint16(end+4,true)||v.getUint16(end+6,true))throw new Error('このスキンの圧縮形式には対応していません。');
  const count=v.getUint16(end+10,true),start=v.getUint32(end+16,true),size=v.getUint32(end+12,true);
- if(!count||count>128||start+size>end)throw new Error('ファイル数が多すぎるか、スキンの構造が正しくありません。');
+ if(!count||count>256||start+size>end)throw new Error('ファイル数が多すぎるか、スキンの構造が正しくありません。');
  const entries=[],seen=new Set(),decoder=new TextDecoder('utf-8',{fatal:true});let pos=start,total=0;
  for(let i=0;i<count;i++){
   if(pos+46>end||v.getUint32(pos,true)!==0x02014b50)throw new Error('スキンのファイル一覧が壊れています。');
@@ -17,7 +17,8 @@ export async function readSkinZip(buffer){
   if(!name||name.includes('\\')||name.includes(':')||name.startsWith('/')||name.split('/').includes('..')||seen.has(name.toLowerCase()))throw new Error('読み込めないファイル名が含まれています。');seen.add(name.toLowerCase());
   if(flags&1||![0,8].includes(method)||length>MAX||(total+=length)>MAX)throw new Error('容量が大きすぎるか、暗号化・圧縮の形式に対応していません。');
   if(name.endsWith('/')||name.startsWith('__MACOSX/')||name.split('/').pop().startsWith('.'))continue;
-  if(!/\.(json|png|jpe?g|webp|pdf|txt|md)$/i.test(name))throw new Error('対応していない種類のファイルが含まれています。');
+  // Unreferenced files remain bounded, inert bytes. Only validated local images
+  // are decoded by the importer; scripts and external URLs are never executed.
   if(local+30>start||v.getUint32(local,true)!==0x04034b50)throw new Error('ZIPが壊れています。');
   const offset=local+30+v.getUint16(local+26,true)+v.getUint16(local+28,true);
   if(offset+packed>start)throw new Error('スキンの圧縮データが壊れています。');

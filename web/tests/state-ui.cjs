@@ -36,6 +36,8 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   await p.locator('#edit-states').click();await p.locator('[data-slot-load]').first().click();await p.locator('#sheet').waitFor({state:'hidden'});assert.equal(await count(),2,'Loading cannot overwrite manual states');
   // Confirmed deletion changes only selected manual records, not another game's
   // states, automatic checkpoints or battery save. Invalid mixed keys are atomic.
+  // Pause before the snapshot so the regular autosave timer cannot change its timestamp.
+  await menu();
   const before=await p.evaluate(async()=>{const db=await import('./src/storage.js');const [g]=await db.all('library'),states=await db.stateEntries(g.id);await db.put('states','other-game:keep',states[0].value);return {id:g.id,keys:states.map(s=>s.key),save:JSON.stringify(await db.get('saves',g.id)),auto:JSON.stringify(await db.get('recoveries',g.id))};});
   assert.equal(await p.evaluate(async({id,keys})=>{const db=await import('./src/storage.js');try{await db.removeStates(id,[keys[0],'other-game:keep']);return false;}catch{return(await db.stateEntries(id)).length===2&&!!await db.get('states','other-game:keep');}},before),true,'Reject cross-game removal before any deletion');
   await menu();await p.locator('[data-action=states]').click();await p.locator('#edit-states').click();await p.locator('[data-state-select]').first().check();await p.locator('#delete-selected-states').click();await p.locator('#confirm-state-delete').click();await p.locator('[data-slot-load]').first().waitFor();

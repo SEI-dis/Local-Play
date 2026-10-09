@@ -25,7 +25,7 @@ export class NDSCore extends MGBACore {
    if(fit!=='fill'){const scale=(fit==='cover'?Math.max:Math.min)(width/256,height/192);width=256*scale;height=192*scale;left+=(rect.width-width)/2;top+=(rect.height-height)/2;}
    const x=(e.clientX-left)/width,y=(e.clientY-top)/height;
    if(x<0||y<0||x>=1||y>=1){this.releaseTouch();return;}
-   this.m?._web_touch(Math.min(32767,Math.round(x*65535-32768)),Math.min(32767,Math.round(y*32768)),1);
+   this.touchAt(x,y);
   };
   touch.onpointerdown=e=>{if(this.paused||e.button>0||this.pointer!=null)return;e.preventDefault();this.pointer=e.pointerId;touch.setPointerCapture(e.pointerId);this.unlockAudio();position(e);};
   touch.onpointermove=e=>{if(e.pointerId===this.pointer&&!this.paused)position(e);};
@@ -50,6 +50,7 @@ export class NDSCore extends MGBACore {
    for(const [key,value]of Object.entries({x:canvas.style.left,y:canvas.style.top,w:canvas.style.width,h:canvas.style.height}))this.display.style.setProperty(`--screen-${i}-${key}`,value);
   });
  }
+ touchAt(x,y){if(this.paused||x<0||y<0||x>=1||y>=1){this.releaseTouch();return;}this.m?._web_touch(Math.min(32767,Math.round(x*65535-32768)),Math.min(32767,Math.round(y*32768)),1);}
  releaseTouch(){this.m?._web_touch(0,0,0);}
  pause(value){super.pause(value);if(value){this.pointer=null;this.releaseTouch();}}
  draw(){

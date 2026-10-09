@@ -3,6 +3,10 @@
 // Scale4x applies this port's Scale2x pass twice: https://www.scale2x.it/algorithm
 export const videoFilters=[['pixel','ピクセル'],['smooth','なめらか'],['scanlines','スキャンライン'],['edge2x','輪郭補正2倍'],['edge4x','輪郭補正4倍（高品質）']];
 
+const observers=new WeakMap();
+export function observeVideo(canvas,callback){observers.set(canvas,callback);return()=>{if(observers.get(canvas)===callback)observers.delete(canvas);};}
+const present=canvas=>observers.get(canvas)?.();
+
 function scale2x(src,dst,w,h){
  for(let y=0;y<h;y++)for(let x=0;x<w;x++){
   const i=y*w+x,c=src[i],up=src[(y?y-1:y)*w+x],down=src[(y<h-1?y+1:y)*w+x],left=src[y*w+(x?x-1:x)],right=src[y*w+(x<w-1?x+1:x)],o=y*4*w+x*2;
@@ -29,10 +33,10 @@ export class VideoOutput {
  draw(image){
   this.preview=null;
   if(this.sourceImage!==image){this.sourceImage=image;this.sourceWords=new Uint32Array(image.data.buffer,image.data.byteOffset,this.width*this.height);}
-  if(!this.enlarged){this.ctx.putImageData(image,0,0);return;}
+  if(!this.enlarged){this.ctx.putImageData(image,0,0);present(this.canvas);return;}
   if(this.intermediate){scale2x(this.sourceWords,this.intermediate,this.width,this.height);scale2x(this.intermediate,this.enlargedWords,this.width*2,this.height*2);}
   else scale2x(this.sourceWords,this.enlargedWords,this.width,this.height);
-  this.ctx.putImageData(this.enlarged,0,0);
+  this.ctx.putImageData(this.enlarged,0,0);present(this.canvas);
  }
- restorePreview(image){this.preview=image;this.ctx.imageSmoothingEnabled=false;this.ctx.drawImage(image,0,0,this.canvas.width,this.canvas.height);}
+ restorePreview(image){this.preview=image;this.ctx.imageSmoothingEnabled=false;this.ctx.drawImage(image,0,0,this.canvas.width,this.canvas.height);present(this.canvas);}
 }

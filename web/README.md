@@ -52,7 +52,7 @@ DeSmuMEの省電力モードは初期状態でオンです。ゲームの内部�
 ゲーム内セーブの自動保存とインポート／エクスポート、最大5回分のバックアップ・自動ステート、
 端末内の手動ステート保存・再開に対応します。ステートファイル自体のインポート／エクスポートはありません。
 DeSmuMEはHLE、melonDSはBSDライセンスのFreeBIOSを使って直接起動します。市販機から抽出したBIOSは同梱しません。
-ダークスキンの縁のアクセントは機種標準＋4色から選べます。外部NDSスキン、DSi、Wi-Fi通信、実マイク入力は未対応です。
+ダークスキンの縁のアクセントは機種標準＋4色から選べます。外部NDSスキンにも対応しています。DSi、Wi-Fi通信、実マイク入力は未対応です。
 ROMの受付上限は512MiBですが、大きいROMはiPhoneのメモリ上限で起動できない場合があります。
 自作テストプログラムでWindowsのEdge / WebKitを検証済みです。市販ゲームの互換性、
 iPhone実機の速度・発熱は未検証です。
@@ -183,8 +183,12 @@ NDSは「画面」の選択欄でメイン画面／サブ画面を個別に調�
 キーボードでは選択対象を矢印キーで移動でき、サイズ変更ハンドルにフォーカスすると矢印キーで拡縮できます。
 メニューの「コントロール非表示」をオンにするとボタンを隠せます。画面の配置を指定していない場合は、表示領域を広げます。
 端末内の `.deltaskin` / `.manicskin` も追加できます。
-PNG・JPEG・WebP・PDFを使った1画面のスキンに対応しています。複数画面や特殊フィルターには
-対応していません。追加したスキンはサーバーへ送信しません。作者の利用条件に従って使用してください。
+PNG・JPEG・WebP・PDF、機種別・端末別の配置、複数画面と切り抜き、NDSのタッチ入力、
+クイック保存・読込・早送り、可動スティック、Manicのボタン画像・押下アニメーションに対応しています。
+色補正・ぼかし・発光・回転などはブラウザで再現します。Core Imageと完全に同じ描画ではありません。
+未対応の効果・操作とCAF効果音は、取り込み後に注意点を表示します。
+ファイルは40MiB以下、展開後100MiB以下です。対応範囲と検証内容は [SKIN_COMPATIBILITY.md](SKIN_COMPATIBILITY.md) を参照してください。
+追加したスキンはサーバーへ送信しません。作者の利用条件に従って使用してください。
 
 ## GBA通信（Beta）
 
@@ -324,6 +328,7 @@ npm run test:nds
 | NDS専用スキン・画面別の編集・ノッチ余白 | `npm run test:nds-skin` |
 | 保存・復旧・容量不足・ステート一覧 | `npm run test:save`、`npm run test:storage`、`npm run test:state-ui` |
 | 全機種専用スキン・全ボタン入力・標準配色 | `npm run test:system-skins` |
+| Delta／Manic互換・画面合成・安全なショートカット | `npm run test:skin-compatibility` |
 | スキン・機種別／ゲーム別設定 | `npm run test:skins`、`npm run test:game-skins` |
 | 画面サイズ・回転・配置・ボタン操作 | `npm run test:responsive`、`npm run test:control-editor`、`npm run test:layout-sizing`、`npm run test:layout-alignment`、`npm run test:dpad` |
 | 描画・音声・倍速・フィルター | `npm run test:runtime`、`npm run test:speed`、`npm run test:video` |
@@ -345,7 +350,7 @@ npm run test:nds
 - `TEST_URL`: 対応テストのアクセス先。固定の4173番ポートを使うテストもあるため、通常は既定URLで起動してください。
 
 WebKit対応は browser / visibility / state-ui / responsive-skins / layout-sizing / layout-alignment / runtime-performance /
-speed-control / pitch-audio / privacy / native-menu / nds-browser / nds-skin / system-skins / link-panel / room-link / covers の各 `.cjs` です。
+speed-control / pitch-audio / privacy / native-menu / nds-browser / nds-skin / system-skins / link-panel / room-link / covers / multicore / skin-compatibility の各 `.cjs` です。
 音声APIのないWebKitビルドでは、音声検査をスキップしたことを表示します。
 PC版WebKitの検査は、iPhone実機の速度・発熱・消費電力やOS標準メニューの検証を代替しません。
 

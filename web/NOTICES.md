@@ -298,3 +298,15 @@ The SVG and generated artwork are provided under AGPL-3.0-or-later.
 No third-party artwork, console logo or downloaded font was used.
 All root HTML pages explicitly declare the iOS touch icon; the Web manifest
 also declares PNG icons, including a maskable icon with an opaque background.
+
+
+Modified 2026-10-09: expanded the local Delta / Manic format reader and added
+original browser presentation/input adapters (skin-format.js, skin-screens.js,
+skin-inputs.js). Format references: https://noah978.gitbook.io/delta-docs/skins
+and https://manicemu.site/guides/homemade-skins/ . Core Image effect names describe
+compatibility with documented data; Apple's implementation is not included.
+Imported images are decoded locally and stored as PNG bytes in IndexedDB;
+legacy Blob records remain readable. The Solo Plastic skins by aphaits,
+ManicEMU standard skins and Delta's standard DS skin were used only as external
+local compatibility fixtures, not copied into this distribution or source archive.
+The automated fixtures are original. See SKIN_COMPATIBILITY.md for limitations.

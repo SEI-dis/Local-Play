@@ -41,7 +41,8 @@
     "test:nds-skin": "node tests/nds-skin.cjs",
     "test:system-skins": "node tests/system-skins.cjs",
     "test:covers": "node tests/covers.cjs",
-    "test:multicore": "node tests/multicore.cjs"
+    "test:multicore": "node tests/multicore.cjs",
+    "test:skin-compatibility": "node tests/skin-compatibility.cjs"
   },
   "license": "AGPL-3.0-or-later"
 }

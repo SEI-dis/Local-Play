@@ -12,6 +12,9 @@ import {RoomLink} from './room-link.js';
 import {LinkSafety} from './link-safety.js';
 import {SaveProtection} from './save-safety.js';
 import {loadSkin,releaseSkin} from './skins.js';
+import {chooseRepresentation} from './skin-format.js';
+import {mountSkinScreens} from './skin-screens.js';
+import {mountSkinInputs} from './skin-inputs.js';
 import {builtinLayout} from './skin-art.js';
 import {screenBounds} from './control-layout.js';
 import {ndsDisplayLayout} from './nds-skin.js';
@@ -144,20 +147,28 @@ async function launch(game,{safeMode=false,skipRecovery=false}={}){
  }catch(e){engine?.close();engine=null;current=null;await protection.close();$('#player').hidden=true;$('#loading').hidden=true;throw e;}finally{launching=false;}
 }
 function frameStyle(frame,map){return `left:${frame.x/map.width*100}%;top:${frame.y/map.height*100}%;width:${frame.width/map.width*100}%;height:${frame.height/map.height*100}%;`;}
-let layoutFrame=null,lastLayoutSize='';
+let layoutFrame=null,lastLayoutSize='',skinScreenCleanup=()=>{},skinInputs=null;
+function clearImportedSkin(){skinScreenCleanup();skinScreenCleanup=()=>{};skinInputs?.destroy();skinInputs=null;$('#skin .imported-art')?.remove();}
 function scheduleSkinLayout(){if(layoutFrame!==null)return;layoutFrame=requestAnimationFrame(()=>{layoutFrame=null;layoutSkin(false);});}
 function layoutSkin(force=true){if(!current||!skinData)return;
  const stage=$('#player'),{width,height}=playerSize(),builtin=skinData.id.startsWith('builtin:'),padding=getComputedStyle(stage),sizeKey=[width,height,padding.paddingLeft,padding.paddingTop,padding.paddingRight,padding.paddingBottom].join(':');
  // ResizeObserver, viewport and window can report the same resize. Do not
  // rebuild held buttons or generate the SVG again when geometry is unchanged.
- if(!force&&sizeKey===lastLayoutSize)return;lastLayoutSize=sizeKey;release();
+ if(!force&&sizeKey===lastLayoutSize)return;lastLayoutSize=sizeKey;release();clearImportedSkin();
  stage.dataset.system=current.system;stage.dataset.builtin=String(builtin);stage.dataset.displayOnly=String(!settings.touchControls);$('#quick-actions').hidden=!builtin||!settings.touchControls;$('#boost').hidden=!settings.touchControls;
  const landscape=width>height;
- let rep=builtin?builtinLayout(skinData,width,height,controlLayout(current.system,current)[landscape?'landscape':'portrait'],current.system==='gba'?48:32):skinData[landscape?'landscape':'portrait']||skinData.portrait||skinData.landscape;
+ let rep=builtin?builtinLayout(skinData,width,height,controlLayout(current.system,current)[landscape?'landscape':'portrait'],current.system==='gba'?48:32):chooseRepresentation(skinData,width,height);
  if(!settings.touchControls&&current.system==='nds')rep=ndsDisplayLayout(width,height,controlLayout('nds',current)[landscape?'landscape':'portrait']);
  else if(!settings.touchControls){const aspect=['gb','gbc'].includes(current.system)?160/144:current.system==='gba'?1.5:4/3,sw=Math.min(width,height*aspect),customScreen=builtin&&controlLayout(current.system,current)[landscape?'landscape':'portrait']?.screen;rep={mappingSize:{width,height},assets:{},items:[],wide:customScreen?rep.wide:undefined,screens:[{outputFrame:customScreen?{...rep.screens[0].outputFrame}:{x:(width-sw)/2,y:(height-sw/aspect)/2,width:sw,height:sw/aspect}}]};}
  engine?.setLayout?.(rep.wide??landscape,!!settings.ndsSwapScreens,rep);stage.dataset.wide=String(rep.wide??landscape);stage.style.setProperty('--skin-side',(rep.side||130)+'px');
+ const imported=!builtin&&settings.touchControls;
+ $('#boost').hidden=!settings.touchControls||(imported&&rep.items.some(item=>Array.isArray(item.inputs)&&item.inputs.some(key=>key==='toggleFastForward'||/^fastForward/.test(key))));
  const map=rep.mappingSize,ratio=Math.min(width/map.width,height/map.height);const skin=$('#skin');skin.style.width=map.width*ratio+'px';skin.style.height=map.height*ratio+'px';skin.style.backgroundImage=rep.assets.resizable?`url("${skinData.images[rep.assets.resizable]}")`:"none";$('#screen').style.cssText=frameStyle(screenBounds(rep),map)+`border-radius:${skinData.screenRadius||0}px;`;
+ if(imported){
+  skin.style.backgroundImage='none';$('#screen').style.cssText='left:0;top:0;width:100%;height:100%;';
+  skinScreenCleanup=mountSkinScreens($('#screen'),engine,rep,current.system,{swap:!!settings.ndsSwapScreens,ratio});
+  const art=document.createElement('div');art.className='imported-art';art.style.cssText=frameStyle(rep.artFrame||{x:0,y:0,...map},map);art.style.backgroundImage=rep.assets.resizable?`url("${skinData.images[rep.assets.resizable]}")`:'none';skin.append(art);
+ }
  for(const id of ['quick-load','quick-save','player-menu','boost'])$('#'+id).removeAttribute('style');
  const skinRect=skin.getBoundingClientRect(),stageRect=stage.getBoundingClientRect();
  for(const id of ['fps-meter','save-status']){
@@ -165,12 +176,13 @@ function layoutSkin(force=true){if(!current||!skinData)return;
   if(builtin&&settings.touchControls){const maxWidth=current.system==='nds'?(skinRect.width-30)/2:rep.wide?rep.side*ratio-20:(skinRect.width-30)/2;badge.style.top=skinRect.top-stageRect.top+8+'px';badge.style.maxWidth=Math.max(1,maxWidth)+'px';if(id==='fps-meter')badge.style.left=skinRect.left-stageRect.left+10+'px';else badge.style.right=stageRect.right-skinRect.right+10+'px';}
  }
  for(const a of rep.actions||[]){const f=a.frame;$('#'+a.id).style.cssText=`left:${skinRect.left-stageRect.left+f.x*ratio}px;top:${skinRect.top-stageRect.top+f.y*ratio}px;width:${f.width*ratio}px;height:${f.height*ratio}px;right:auto;bottom:auto;min-width:0;padding:0;opacity:${a.opacity??1};`;}
+ if(imported){dpadViews=[];skinInputs=mountSkinInputs($('#touch-controls'),rep,skinData.images,{keybits,pressed,updateKeys,action:skinAction,engine,ratio,swap:!!settings.ndsSwapScreens,selected:command=>({volume:settings.muted,reverseScreens:settings.ndsSwapScreens,toggleControlls:!settings.touchControls})[command],paused:()=>paused,haptic:()=>{if(settings.haptics)navigator.vibrate?.(settings.hapticStrength||8);}});return;}
  $('#touch-controls').innerHTML=rep.items.map((item,i)=>{const pad=!Array.isArray(item.inputs),inputs=pad?['dpad']:item.inputs;return `<button class="skin-button${pad?' dpad':''}" data-item="${i}" aria-label="${pad?'十字キー':esc(item.label||inputs.join('+').toUpperCase())}" style='${frameStyle(item.frame,map)}opacity:${item.opacity??1};background-image:url("${skinData.images[item.asset?.normal]||''}")'>${pad?['up','down','left','right'].map(d=>`<span class="dpad-direction${item.asset?.normal?'':' baked'}" data-direction="${d}" aria-hidden="true" hidden></span>`).join(''):''}</button>`;}).join('');
  dpadViews=$$('.dpad-direction').map(el=>{const inputs=rep.items[Number(el.parentElement.dataset.item)].inputs,key=keybits[inputs[el.dataset.direction]];return {el,mask:key===undefined?0:1<<key,on:false};});
  $$('.skin-button').forEach(btn=>{const item=rep.items[Number(btn.dataset.item)];function input(e){if(Array.isArray(item.inputs)){if(item.inputs.includes('menu'))return;pressed.set(e.pointerId,item.inputs.reduce((v,k)=>v|(keybits[k]===undefined?0:1<<keybits[k]),0));}else{const r=btn.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;let bits=0;for(const [d,on] of [['left',x<-.15],['right',x>.15],['up',y<-.15],['down',y>.15]])if(on&&keybits[item.inputs[d]]!==undefined)bits|=1<<keybits[item.inputs[d]];pressed.set(e.pointerId,bits);}btn.classList.add('pressed');updateKeys();}
  btn.onpointerdown=e=>{e.preventDefault();engine?.unlockAudio();if(item.inputs.includes?.('menu')){showGameMenu();return;}if(paused)return;if($('#link-panel').contains(document.activeElement))document.activeElement.blur();btn.setPointerCapture(e.pointerId);if(settings.haptics)navigator.vibrate?.(settings.hapticStrength||8);input(e);};btn.onpointermove=e=>{if(pressed.has(e.pointerId)&&!Array.isArray(item.inputs))input(e);};const up=e=>{pressed.delete(e.pointerId);btn.classList.remove('pressed');updateKeys();};btn.onpointerup=up;btn.onpointercancel=up;btn.onlostpointercapture=up;});}
 function updateKeys(){let keys=0;for(const mask of pressed.values())keys|=mask;if(paused)keys=0;engine?.setKeys(keys);for(const view of dpadViews){const on=!!(keys&view.mask);if(on!==view.on){view.on=on;view.el.hidden=!on;}}}
-function release(){pressed.clear();updateKeys();$$('.pressed').forEach(b=>b.classList.remove('pressed'));}
+function release(){skinInputs?.release();pressed.clear();updateKeys();$$('.pressed').forEach(b=>b.classList.remove('pressed'));}
 function setPause(v){if(!v&&(linkStarting||link?.closed))return;if(v&&playRunAt&&current){current.playDuration=(current.playDuration||0)+Math.max(0,Date.now()-playRunAt);playRunAt=0;}else if(!v&&!playRunAt&&engine)playRunAt=Date.now();paused=v;$('#resume-game').hidden=!v;release();engine?.pause(v);if(!v)engine?.unlockAudio();}
 $('#resume-game').onclick=()=>{if(engine&&!document.hidden)setPause(false);};
 function backgroundPause(){if(!engine)return;const wasPaused=paused,wasLinked=!!link;setPause(true);if(link?.connected)link.close('画面を離れたため接続を終了しました。');if(!wasPaused&&!wasLinked)persist({checkpoint:settings.recovery,reason:'background'}).catch(error);}
@@ -255,12 +267,28 @@ $('#save-input').onchange=async e=>{
   }
  }catch(errorValue){error(errorValue);}finally{temporaryCore?.close();await temporaryProtection?.close();e.target.value='';}
 };
-async function exitGame(){if(linkStarting||exiting)return;exiting=true;try{const wasLinked=!!link;await link?.close();if(!engine)return;setPause(true);await persist({checkpoint:settings.recovery&&!wasLinked,clean:true,reason:'exit'});if(current&&!current.cover){try{const cover=engine.screenshot(),updated=await db.setGameCover(current.id,{cover,coverSource:'screenshot'},{onlyMissing:true});if(updated)Object.assign(current,updated);}catch(e){console.warn('Cover image could not be stored:',e.name);}}if(current){const stored=await db.get('library',current.id);if(stored)await db.put('library',current.id,{...stored,playDuration:current.playDuration||0});}dialogResume=false;$('#sheet').close();engine.close();await protection.close();releaseSkin();engine=null;current=null;linkPanel.reset();updateLinkButton();linkMessage='';linkSaveBlocked=false;skinData=null;pressed.clear();$('#screen').replaceChildren();$('#player').hidden=true;if(document.fullscreenElement)await document.exitFullscreen();await refresh();}finally{exiting=false;}}
+async function exitGame(){if(linkStarting||exiting)return;exiting=true;try{const wasLinked=!!link;await link?.close();if(!engine)return;setPause(true);await persist({checkpoint:settings.recovery&&!wasLinked,clean:true,reason:'exit'});if(current&&!current.cover){try{const cover=engine.screenshot(),updated=await db.setGameCover(current.id,{cover,coverSource:'screenshot'},{onlyMissing:true});if(updated)Object.assign(current,updated);}catch(e){console.warn('Cover image could not be stored:',e.name);}}if(current){const stored=await db.get('library',current.id);if(stored)await db.put('library',current.id,{...stored,playDuration:current.playDuration||0});}dialogResume=false;$('#sheet').close();clearImportedSkin();engine.close();await protection.close();releaseSkin();engine=null;current=null;linkPanel.reset();updateLinkButton();linkMessage='';linkSaveBlocked=false;skinData=null;pressed.clear();$('#screen').replaceChildren();$('#player').hidden=true;if(document.fullscreenElement)await document.exitFullscreen();await refresh();}finally{exiting=false;}}
 function download(bytes,name){const url=URL.createObjectURL(new Blob([bytes]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}
 function updateSpeedButton(){
  const speed=link?1:settings.speed,button=$('#boost');
  button.querySelector('span').textContent=speed+'×';button.disabled=!!link;button.classList.toggle('fast',speed>1);
  button.setAttribute('aria-label',link?'通信中は1倍速':`速度 ${speed}倍。押すと${speed%5+1}倍`);button.title=link?'通信中は1倍速':'速度切替（1〜5倍） / Tab';
+}
+function skinAction(command){
+ if(link||linkStarting){if(command==='menu')showGameMenu();else toast('通信中はこの操作を使えません。');return;}
+ if(/^fastForward(?:[234]x)?$/.test(command)){engine.setSpeed(Number(command.match(/[234]/)?.[0]||5));return()=>engine?.setSpeed(settings.speed);}
+ const actions={menu:showGameMenu,quickSave:()=>{setPause(true);confirmStateSave(true);},quickLoad:showQuickLoad,toggleFastForward:cycleSpeed,
+  saveStates:()=>{setPause(true);showStates();},skins:()=>{setPause(true);showSkins(current.system,current);},
+  cheatCodes:()=>{if(coreFor(current).cheats){setPause(true);showCheats();}else toast('このコアではチートを使えません。');},
+  filters:()=>{setPause(true);showVideoSettings();dialogResume=true;},resolution:()=>{setPause(true);showVideoSettings();dialogResume=true;},
+  controllers:()=>{setPause(true);showControllers();dialogResume=true;},
+  volume:()=>{settings.muted=!settings.muted;applySettings();},haptics:()=>{settings.haptics=!settings.haptics;applySettings();toast(settings.haptics?'振動：オン':'振動：オフ');},
+  reverseScreens:()=>{if(current.system!=='nds'){toast('2画面のゲームで使えます。');return;}settings.ndsSwapScreens=!settings.ndsSwapScreens;applySettings();layoutSkin();},
+  toggleControlls:()=>{settings.touchControls=!settings.touchControls;applySettings();layoutSkin();},restart:()=>{setPause(true);confirmRestart();},quit:()=>{setPause(true);sheet('ゲームを終了しますか？','<div class="sheet-actions"><button class="secondary" id="skin-stay">キャンセル</button><button class="primary" id="skin-exit">終了</button></div>',true);$('#skin-stay').onclick=closeSheet;$('#skin-exit').onclick=()=>exitGame().catch(error);},
+  screenshot:()=>{const a=document.createElement('a');a.href=engine.screenshot();a.download=current.name+'.png';a.click();}
+ };
+ const handler=actions[command];if(!handler){toast('このスキンの操作はWeb版では使えません。');return;}
+ try{Promise.resolve(handler()).catch(error);}catch(e){error(e);}
 }
 function cycleSpeed(){if(!engine||paused||link)return;settings.speed=settings.speed%5+1;applySettings();}
 $('#boost').onclick=cycleSpeed;
