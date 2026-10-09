@@ -25,6 +25,20 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.locator('#loading').waitFor({state:'hidden'});
   for(let i=0;i<2;i++){await menu();await p.locator('[data-action=newState]').click();await p.locator('#confirm-state-save').click();await p.locator('[data-slot-load]').first().waitFor();}
   assert.equal(await p.locator('[data-slot-load]').count(),2,'Append without replacing');assert.equal(await p.locator('[data-state-delete],[data-action=newState],#confirm-state-save').count(),0,'Read view has no adjacent save/delete action');assert.equal(await count(),2);
+  const stateBounds=async()=>{
+   await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   return p.evaluate(()=>Object.fromEntries(['#sheet','.states-view .segmented','#close-sheet','.state-scroll'].map(selector=>{const r=document.querySelector(selector).getBoundingClientRect();return [selector,{x:r.x,y:r.y,width:r.width,height:r.height}];})));
+  };
+  for(const [width,height] of [[390,844],[844,390],[768,1024],[1366,768]]){
+   await p.setViewportSize({width,height});const bounds=await stateBounds();
+   await p.locator('[data-state-mode=auto]').click();await p.locator('[data-state-mode=auto][aria-pressed=true]').waitFor();
+   assert.deepEqual(await stateBounds(),bounds,'Automatic/manual counts cannot resize or shift the state picker');
+   await p.locator('.save-details summary').click();assert.deepEqual(await stateBounds(),bounds,'Expanding status scrolls within the fixed list');
+   await p.locator('[data-state-mode=manual]').click();await p.locator('#edit-states').waitFor();
+   await p.locator('#edit-states').click();await p.locator('[data-state-select]').first().waitFor();
+   assert.deepEqual(await stateBounds(),bounds,'Edit mode keeps header and list bounds');
+   await p.locator('#edit-states').click();await p.locator('[data-slot-load]').first().waitFor();
+  }
   for(const width of [240,280,320,390,768]){await p.setViewportSize({width,height:844});await fits();if(width===280)await screenshot('state-list-narrow');}
   await p.setViewportSize({width:390,height:844});await screenshot('state-list');
   await menu();assert.equal(await p.locator('#sheet-title').textContent(),'MENU');assert.equal(await p.locator('.action-tile,.menu-resume').count(),0);assert.equal(await p.locator('[data-shortcut]').count(),4);
@@ -56,7 +70,10 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   assert.equal(await p.evaluate(async id=>(await (await import('./src/storage.js')).get('saves',id)).reason,before.id),'backup-restore');
   await menu();await p.locator('[data-action=states]').click();await p.locator('[data-state-mode=auto]').click();await p.locator('[data-recover]').first().waitFor();assert.equal(await p.locator('#edit-states').count(),0,'Recovery checkpoints are protected');
   await screenshot('automatic-state-list');await p.close();
-  p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.getByRole('heading',{name:'前回のプレイを復旧'}).waitFor();await p.locator('[data-recover]').first().click();await p.locator('#sheet').waitFor({state:'hidden'});
+  p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.getByRole('heading',{name:'前回のプレイを復旧'}).waitFor();
+  const recoveryBounds=await stateBounds();await p.locator('[data-state-mode=manual]').click();await p.locator('#edit-states').waitFor();
+  assert.equal(await p.locator('#sheet-title').textContent(),'前回のプレイを復旧');assert.equal(await p.locator('#continue-save').count(),1);assert.deepEqual(await stateBounds(),recoveryBounds,'Recovery guidance and frame persist across tabs');
+  await p.locator('[data-state-mode=auto]').click();await p.locator('[data-recover]').first().click();await p.locator('#sheet').waitFor({state:'hidden'});
   await menu();await p.locator('[data-action=exit]').click();await p.locator('#player').waitFor({state:'hidden'});
   await p.locator('[data-tab=settings]').click();await p.locator('[data-theme-choice=auto]').click();await screenshot('settings-menu');assert.deepEqual(errors,[]);
   console.log('PASS: native menu groups/shortcuts, 240–1024px layouts, append-only states, save/delete/restart cancellation, selected atomic deletion, other-game and battery preservation, real close/reopen recovery.');

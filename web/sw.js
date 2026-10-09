@@ -8,7 +8,7 @@ self.addEventListener('fetch',e=>{
  // Reject accidental writes before they reach any HTTP server once this worker
  // controls the page. First-load protection still depends on the app and CSP.
  if(!['GET','HEAD'].includes(e.request.method)){e.respondWith(new Response(null,{status:405,headers:{Allow:'GET, HEAD'}}));return;}
- const u=new URL(e.request.url);
+ const u=new URL(e.request.url);u.hash=''; // Tab/game fragments are local UI state, not a different app file.
  if(e.request.mode!=='navigate'&&(u.origin!==base.origin||u.search)){e.respondWith(new Response(null,{status:403}));return;}
  if(e.request.method!=='GET'||u.origin!==base.origin||u.search)return;
  if(u.href===base.href)u.pathname+='index.html';if(!allowed.has(u.href))return;

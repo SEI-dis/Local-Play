@@ -27,7 +27,7 @@ import {row,action} from './ui.js';
 import {createSettingsView,videoFilterNote} from './settings-view.js';
 let link=null,linkMessage='',linkStarting=false,linkSaveBlocked=false,exiting=false,sheetCleanup=()=>{};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let library=[],tab='games',filter='all',query='',favorites=false,engine=null,current=null,skinData=null,paused=false,toastTimer,saveLock=null,launching=false,importing=false,dialogResume=false;
+let library=[],tab=tabFromHash(),filter='all',query='',favorites=false,engine=null,current=null,skinData=null,paused=false,toastTimer,saveLock=null,launching=false,importing=false,dialogResume=false;
 let savedSettings={};try{savedSettings=JSON.parse(localStorage.getItem('manic-settings')||'{}');}catch{}
 let settings={theme:'dark',volume:.7,speed:1,preservePitch:true,autosave:true,recovery:true,haptics:true,filter:'pixel',showFps:false,touchControls:true,...savedSettings};
 delete settings.autoCovers;
@@ -69,7 +69,14 @@ $('#sheet').addEventListener('click',e=>{if(e.target===$('#sheet')){const r=e.ta
 $('#controllers').innerHTML=icon('game');$('#controllers').onclick=showControllers;
 $('#history').innerHTML=icon('history');$('#history').onclick=showHistory;
 $('#player-menu').innerHTML=icon('more');$('#player-menu').onclick=showGameMenu;
-for(const [id,ic,label] of [['games','game','ゲーム'],['imports','import','インポート'],['settings','settings','設定']]){const b=$(`[data-tab="${id}"]`);b.innerHTML=icon(ic)+`<span>${label}</span>`;b.onclick=()=>{tab=id;render();};}
+function tabFromHash(){return location.hash==='#settings'?'settings':location.hash==='#imports'?'imports':'games';}
+function setTab(id){
+ tab=id;
+ // Keep the selected tab when returning from a separate settings page.
+ const url=new URL(location.href);url.hash=id==='games'?'':id;
+ history.replaceState(history.state,'',url);
+}
+for(const [id,ic,label] of [['games','game','ゲーム'],['imports','import','インポート'],['settings','settings','設定']]){const b=$(`[data-tab="${id}"]`);b.innerHTML=icon(ic)+`<span>${label}</span>`;b.onclick=()=>{setTab(id);render();};}
 async function refresh(){library=await db.all('library');render();}
 function render(){if(engine)return;$$('[data-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false');});if(tab==='games')renderGames();else if(tab==='imports')renderImports();else renderSettings();}
 function renderGames(){
@@ -93,7 +100,7 @@ function renderImports(){
 }
 
 function bindSettings(root){root.querySelectorAll('[data-setting]').forEach(el=>el.onchange=()=>{settings[el.dataset.setting]=el.type==='checkbox'?(el.dataset.invert?!el.checked:el.checked):['volume','speed','hapticStrength','deadZone'].includes(el.dataset.setting)?Number(el.value):el.value;if(el.dataset.setting==='hapticStrength')settings.haptics=!!settings.hapticStrength;const value=el.closest('.native-select')?.querySelector('.native-value');if(value)value.textContent=el.selectedOptions[0].textContent;applySettings();if($('#video-filter-note'))$('#video-filter-note').hidden=settings.filter!=='edge4x';if(['touchControls','showFps','ndsSwapScreens'].includes(el.dataset.setting))layoutSkin();});}
-async function importFiles(files){if(importing){toast('追加が終わるまでお待ちください。');return;}importing=true;let count=0;try{for(const file of files){const system=detectSystem(file.name);if(!system){toast(`${file.name}: 未対応の形式です。`);continue;}const maxMiB=system==='nds'?512:64;if(file.size>maxMiB*1048576||!file.size){toast(`${file.name}: 空のファイル、または${maxMiB}MBを超えるファイルは追加できません。`);continue;}toast(`${file.name} を追加中…`);const bytes=new Uint8Array(await file.arrayBuffer());const id=await hash(bytes);if(await db.get('library',id)){toast('このゲームは追加済みです。');continue;}const game={id,name:file.name.replace(/\.[^.]+$/,''),filename:file.name,system,size:file.size,added:Date.now(),lastPlayed:0,favorite:false};await db.addGame(game,bytes);count++;}if(count){tab='games';filter='all';query='';favorites=false;await refresh();toast(`${count}本のゲームを追加しました。`);}}catch(e){error(e);}finally{importing=false;$('#rom-input').value='';}}
+async function importFiles(files){if(importing){toast('追加が終わるまでお待ちください。');return;}importing=true;let count=0;try{for(const file of files){const system=detectSystem(file.name);if(!system){toast(`${file.name}: 未対応の形式です。`);continue;}const maxMiB=system==='nds'?512:64;if(file.size>maxMiB*1048576||!file.size){toast(`${file.name}: 空のファイル、または${maxMiB}MBを超えるファイルは追加できません。`);continue;}toast(`${file.name} を追加中…`);const bytes=new Uint8Array(await file.arrayBuffer());const id=await hash(bytes);if(await db.get('library',id)){toast('このゲームは追加済みです。');continue;}const game={id,name:file.name.replace(/\.[^.]+$/,''),filename:file.name,system,size:file.size,added:Date.now(),lastPlayed:0,favorite:false};await db.addGame(game,bytes);count++;}if(count){setTab('games');filter='all';query='';favorites=false;await refresh();toast(`${count}本のゲームを追加しました。`);}}catch(e){error(e);}finally{importing=false;$('#rom-input').value='';}}
 $('#rom-input').onchange=e=>importFiles([...e.target.files]);
 let dragDepth=0;window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();dragDepth++;document.body.classList.add('drop-active');}});window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('dragleave',()=>{if(--dragDepth<=0)document.body.classList.remove('drop-active');});window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;document.body.classList.remove('drop-active');if(!engine)importFiles([...e.dataTransfer.files]);});
 function menuControlCells(game=current){return {
@@ -362,5 +369,5 @@ function renderLinkPanel(){
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(settings.theme==='auto')applySettings();});
 setupOffline().catch(e=>console.warn('Offline setup:',e.message));
 function openGameLink(){if(engine||!location.hash.startsWith('#game='))return;const game=library.find(g=>g.id===location.hash.slice(6));if(game)showDetails(game);else toast('このブラウザにゲームがありません。先にROMを追加してください。');}
-window.addEventListener('hashchange',openGameLink);
+window.addEventListener('hashchange',()=>{if(engine)return;tab=tabFromHash();render();openGameLink();});
 applySettings();refresh().then(openGameLink).catch(e=>{error(e);$('#content').innerHTML='<div class="empty-library"><h2>保存データを開けませんでした</h2><p>プライベートブラウズを終了するか、ブラウザの保存設定を確認してください。</p></div>';});

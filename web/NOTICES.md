@@ -310,3 +310,8 @@ legacy Blob records remain readable. The Solo Plastic skins by aphaits,
 ManicEMU standard skins and Delta's standard DS skin were used only as external
 local compatibility fixtures, not copied into this distribution or source archive.
 The automated fixtures are original. See SKIN_COMPATIBILITY.md for limitations.
+
+Modified 2026-10-09: retain the selected settings tab across navigation and
+offline reloads, simplify the skin label, and keep the state picker frame and
+tabs stationary across manual/automatic lists and recovery mode. These changes
+retain the existing ManicEMU attribution and do not add dependencies or artwork.

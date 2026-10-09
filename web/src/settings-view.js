@@ -16,7 +16,7 @@ function renderSettings(){
  const general=settingsGroup('一般',[
   row('外観',appearance,'image'),
   detail('自動ステート保存','約20秒ごとに保存（直近5回分）',switchControl('recovery',settings.recovery),'save'),
-  action('コントローラースキン','skins','game')
+  action('スキン','skins','game')
  ]);
  const advanced=settingsGroup('詳細',[
   action('コントローラー・キーボード','controllers','game'),

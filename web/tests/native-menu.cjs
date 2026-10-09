@@ -65,7 +65,16 @@ const kind=process.env.BROWSER_ENGINE||'chromium',browserType=require('./browser
   assert.deepEqual(await page.evaluate(async id=>[...await (await import('./src/storage.js')).get('roms',id)],gameId),[...require('./cartridges.cjs').gb()],'Removing share never alters the imported ROM');
   await page.locator('[data-action=safeMode]').click();await page.locator('[data-action=start]').click();await page.locator('#loading').waitFor({state:'hidden'});assert.equal(await page.locator('#sheet').isVisible(),false);
   await page.locator('#player-menu').click();await page.locator('[data-action=exit]').click();await page.locator('#player').waitFor({state:'hidden'});
-  assert.deepEqual(errors,[]);console.log('PASS: card/keyboard/history/more open details without loading a core or changing saves/playtime; explicit Play, native grouping/pinned header, responsive layout, settings, sorting, shortcuts, rename, pre-play states/import and safe mode.');
+  await page.locator('[data-tab=settings]').click();await page.locator('.settings-page').waitFor();
+  assert.equal((await page.locator('.settings-page [data-action=skins]').innerText()).trim(),'スキン');
+  for(const file of ['privacy.html','licenses.html','update.html']){
+   await page.locator(`.settings-page a[href="${file}"]`).click();await page.getByRole('link',{name:'← 戻る',exact:true}).click();
+   await page.locator('.settings-page').waitFor();assert.equal(new URL(page.url()).hash,'#settings');
+   await page.locator(`.settings-page a[href="${file}"]`).click();await page.waitForURL(new URL(file,base).href);await page.goBack();await page.locator('.settings-page').waitFor();
+  }
+  await page.reload();await page.locator('.settings-page').waitFor();
+  await page.goto(new URL('index.html#game='+gameId,base).href);await page.locator('.game-info-title h2').waitFor();assert.equal(await page.locator('#player').isVisible(),false,'Game links still open details');
+  assert.deepEqual(errors,[]);console.log('PASS: native details/settings and safe save actions, fixed headers, settings return links/browser history/reload and game links.');
   await context.close();
  }finally{await browser.close();}
 })().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1);});
