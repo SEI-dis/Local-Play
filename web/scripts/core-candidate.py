@@ -227,7 +227,7 @@ def main():
         upgrade_log = output / 'upgrade-test.log'
         if upgrade_log.exists():
             # Only fixed test labels; do not upload arbitrary compiler output or local paths.
-            labels = {'old-state', 'old-battery', 'extended-flash', 'extended-ram-state'}
+            labels = {'old-state', 'old-battery', 'extended-flash', 'extended-ram-state', 'six-mib-save'}
             outcomes = []
             for line in upgrade_log.read_text(encoding='utf8', errors='replace').splitlines():
                 match = re.fullmatch(r'(CHECK|PASS|SKIP): ([a-z-]+)', line)

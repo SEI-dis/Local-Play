@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-// Original test artwork and cartridge only; no downloaded skins in this repository.
+// This format test uses original test artwork and a synthetic cartridge only.
 const assert=require('node:assert/strict'),{zip}=require('./skin-fixture.cjs');
 const kind=process.env.BROWSER_ENGINE||'chromium',browserType=require('./browser-runtime.cjs')[kind];
 (async()=>{

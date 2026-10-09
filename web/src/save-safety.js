@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import * as db from './storage.js';
-import {saveKey,coreFor} from './core-registry.js';
+import {saveKey,coreFor,compatibleState} from './core-registry.js';
 import {hash} from './shared.js';
 export class SaveProtection {
  constructor(onStatus){this.onStatus=onStatus;this.queue=Promise.resolve();this.stateAt=0;}
@@ -29,9 +29,10 @@ export class SaveProtection {
    if(!game||this.id!==session)return;
    this.onStatus({...this.status,busy:true});
    try{
-    const raw=core.save(),bytes=raw?.length?new Uint8Array(raw):null,at=Date.now();
+    const captured=checkpoint&&core.checkpoint?await core.checkpoint():null;
+    const raw=captured?captured.save:await core.save(),bytes=raw?.length?new Uint8Array(raw):null,at=Date.now();
     let state=null,stateError=null;
-    if(checkpoint){try{state=new Uint8Array(core.state());if(!state.length)throw new Error('中断状態を取得できませんでした。');}catch(e){stateError=e;}}
+    if(checkpoint){try{if(captured?.stateError)throw Error(captured.stateError);state=new Uint8Array(captured?captured.state:await core.state());if(!state.length)throw new Error('中断状態を取得できませんでした。');}catch(e){stateError=e;}}
     const save=bytes?{bytes,at,hash:await hash(bytes),coreId,reason}:null;
     let recovery=null;
     if(state){let image;try{image=core.screenshot?.();}catch{}recovery={bytes:state,hash:await hash(state),save:bytes,saveHash:save?.hash||null,at,coreId,sessionId:session,image};}
@@ -45,12 +46,12 @@ export class SaveProtection {
   });this.queue=next;return next;
  }
  async verify(record){if(!record?.bytes?.length)throw new Error('保存データがありません。');if(record.hash&&await hash(new Uint8Array(record.bytes))!==record.hash)throw new Error('保存データに破損が見つかりました。別のバックアップを選んでください。');return new Uint8Array(record.bytes);}
- compatible(record){return record?.coreId===this.coreId||(!record?.coreId&&this.coreId==='mgba-rom64-link-v1');}
+ compatible(record){return compatibleState(this.coreId,record);}
  async restoreState(core,record){
   if(!this.compatible(record))throw new Error('このステートは現在のコアで読み込めません。ゲーム内セーブから再開してください。');
   const bytes=await this.verify(record);
   if(record.save&&record.saveHash&&await hash(new Uint8Array(record.save))!==record.saveHash)throw new Error('復旧用のセーブに破損が見つかりました。');
-  core.loadState(bytes);if(record.save?.length&&!core.stateIncludesSave)core.restore(new Uint8Array(record.save));
+  await core.loadState(bytes);if(record.save?.length&&!core.stateIncludesSave)await core.restore(new Uint8Array(record.save));
   await core.restorePreview?.(record.image);
  }
  async close(){

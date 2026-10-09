@@ -56,7 +56,7 @@ const base=process.env.TEST_URL||'http://127.0.0.1:4173/';
    }
    // Also verify the common toast layer while a modal is open, and after it closes.
    if(scenario==='grant'){
-    await page.locator('#close-sheet').click();await page.locator('[data-action=skins]').click();await page.locator('.skin-mini').waitFor();
+    await page.locator('#close-sheet').click();await page.locator('[data-action=skins]').click();await page.locator('#skin-preview .skin-mini').waitFor();
     await page.locator('#import-skin').click();await page.locator('#skin-input').setInputFiles({name:'invalid.deltaskin',mimeType:'application/octet-stream',buffer:Buffer.from('invalid test fixture')});
     await page.locator('#toast.show').waitFor();assert.equal(await page.locator('#toast').evaluate(t=>t.parentElement===document.querySelector('#sheet')),true);
     await page.locator('#close-sheet').click();await page.waitForFunction(()=>document.querySelector('#toast').parentElement===document.body);

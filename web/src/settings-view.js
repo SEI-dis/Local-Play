@@ -36,7 +36,7 @@ function renderSettings(){
  ].map(([href,label,ic])=>`<a class="row" href="${href}">${icon(ic)}<span>${label}</span>${icon('chevron')}</a>`));
  // Describe the loaded distribution, including while offline or an update waits.
  const version=$('meta[name=app-version]').content,build=$('meta[name=app-build]').content;
- $('#content').innerHTML=`<div class="page settings-page"><h1>設定</h1>${general}${advanced}${support}${links}<p class="settings-footer" title="ビルド ${esc(build)}">LOCAL PLAY WEB · ${esc(version)} (${esc(build.slice(0,8))})</p></div>`;
+ $('#content').innerHTML=`<div class="page settings-page"><h1>設定</h1>${general}${advanced}${support}${links}<p class="settings-footer" title="ビルド ${esc(build)}">PalmoEMU · ${esc(version)} (${esc(build.slice(0,8))})</p></div>`;
  bindSettings($('#content'));bindActions($('#content'),{controllers:showControllers,skins:()=>showSkins(),storage:showStorage,offline:showOffline,video:showVideoSettings,audio:showAudioSettings,saveHelp:showSaveHelp});
  $$('[data-theme-choice]').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.themeChoice;applySettings();renderSettings();});
 }

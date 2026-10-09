@@ -22,13 +22,15 @@ function xram(){return program(({emit,ldr,position})=>{
  ldr(3,0x06000000);const loop=position();emit(0xe5902000);emit(0xe1c320b0);
  emit(0xea000000|((loop-position()-2)&0xffffff));
 });}
-function flash(){const rom=program(({emit,ldr})=>{
+function flash(bank=15,extraRam=false){const rom=program(({emit,ldr})=>{
  const write=(address,value)=>{ldr(0,address);ldr(1,value);emit(0xe5c01000);};
  const command=value=>{write(0x0e005555,0xaa);write(0x0e002aaa,0x55);write(0x0e005555,value);};
- command(0xb0);write(0x0e000000,15);command(0xa0);write(0x0e000000,0x3c);
+ command(0xb0);write(0x0e000000,bank);command(0xa0);write(0x0e000000,0x3c);
  // Let the flash program operation settle before the next command.
  ldr(2,10000);emit(0xe2522001);emit(0x1afffffd);
- command(0xb0);write(0x0e000000,0);command(0xa0);write(0x0e000000,0x5a);emit(0xeafffffe);
+ command(0xb0);write(0x0e000000,0);command(0xa0);write(0x0e000000,0x5a);
+ if(extraRam){ldr(0,0x01fffffc);ldr(1,0x03e0);emit(0xe5801000);ldr(0,0x04000000);ldr(1,0x403);emit(0xe1c010b0);ldr(0,0x06000000);ldr(2,0x01fffffc);emit(0xe5921000);emit(0xe1c010b0);}
+ emit(0xeafffffe);
  });rom.set(new TextEncoder().encode('FLASH1M_V103'),0x1000);return rom;}
 
 async function check(baselineFile,candidateFile){
@@ -49,6 +51,23 @@ async function check(baselineFile,candidateFile){
   load(candidate,flash());frames(candidate,30);const extended=battery(candidate);
   if(extended.length>=1048576){assert.equal(extended[15*65536],0x3c);assert.equal(extended[0],0x5a);assert.equal(input(candidate,extended,(p,n)=>candidate._web_save_import(p,n)),1);assert.deepEqual(battery(candidate),extended);console.log('PASS: extended-flash');}
   else console.log('SKIP: extended-flash');
+  if(candidate._web_save_limit?.()>=6*1048576){
+   console.log('CHECK: six-mib-save');
+   load(candidate,flash(95,true));frames(candidate,30);const fullSave=battery(candidate);
+   assert.equal(fullSave.length,6*1048576);assert.equal(fullSave[95*65536],0x3c);assert.equal(fullSave[0],0x5a);assert.ok(green(candidate));
+   const checkpoint=state(candidate);assert.ok(checkpoint.length>22*1048576,'Snapshot must include both 16 MiB RAM and 6 MiB flash');
+   candidate._web_reset();assert.equal(input(candidate,checkpoint,(p,n)=>candidate._web_state_import(p,n)),1);assert.deepEqual(battery(candidate),fullSave);frames(candidate);assert.ok(green(candidate));
+   assert.equal(input(candidate,fullSave,(p,n)=>candidate._web_save_import(p,n)),1);assert.deepEqual(battery(candidate),fullSave);
+   // A 1 MiB save from the previous extension retains its contents; new banks are erased.
+   const legacy=new Uint8Array(1048576).fill(0xff);legacy[0]=0x41;legacy[legacy.length-1]=0x27;
+   load(candidate,flash());frames(candidate,30);assert.equal(input(candidate,legacy,(p,n)=>candidate._web_save_import(p,n)),1);const migrated=battery(candidate);
+   assert.equal(migrated.length,6*1048576);assert.deepEqual(migrated.subarray(0,legacy.length),legacy);assert.ok(migrated.subarray(legacy.length).every(b=>b===255));
+   // App startup restores the battery before the first emulated frame.
+   load(candidate,flash());assert.equal(input(candidate,legacy,(p,n)=>candidate._web_save_import(p,n)),1);assert.deepEqual(battery(candidate),legacy);
+   frames(candidate,30);const startup=battery(candidate),expected=new Uint8Array(6*1048576).fill(255);expected.set(legacy);expected[0]=0x5a;expected[15*65536]=0x3c;assert.deepEqual(startup,expected);
+   const last=battery(candidate);assert.equal(input(candidate,new Uint8Array(6*1048576+17),(p,n)=>candidate._web_save_import(p,n)),0);assert.deepEqual(battery(candidate),last);
+   console.log('PASS: six-mib-save');
+  }else if(process.env.MGBA_REQUIRE_6M==='1')throw Error('Candidate lacks 6 MiB save support');
   console.log('CHECK: extended-ram-state');
   load(candidate,xram());frames(candidate);
   if(green(candidate)){const full=state(candidate);candidate._web_reset();assert.equal(input(candidate,full,(p,n)=>candidate._web_state_import(p,n)),1);frames(candidate);assert.ok(green(candidate),'Extra RAM lost during state restore');console.log('PASS: extended-ram-state');}

@@ -2,7 +2,7 @@
 Regression tests for the previously missed archive contents and stale source.
 """
 from pathlib import Path
-import importlib.util, io, json, tarfile, tempfile, unittest, zipfile, sys
+import importlib.util, io, json, tarfile, tempfile, unittest, zipfile, sys, shutil
 sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location('audit', Path(__file__).resolve().parents[1] / 'scripts/audit-content.py')
 audit = importlib.util.module_from_spec(spec)
@@ -76,5 +76,27 @@ class AuditTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'unregistered'): audit.run(root)
             (root/'unknown.js').unlink(); (root/'app.js').write_text('changed', encoding='utf8')
             with self.assertRaisesRegex(ValueError, 'changed'): audit.run(root)
+
+class BundledSkinRights(unittest.TestCase):
+    def test_unreviewed_artwork_and_missing_notices_are_rejected(self):
+        root = Path(__file__).resolve().parents[1]
+        spec = importlib.util.spec_from_file_location('bundled', root/'scripts/check-bundled-skins.py')
+        bundled = importlib.util.module_from_spec(spec); spec.loader.exec_module(bundled)
+        manifest = json.loads((root/'BUNDLED_SKINS.json').read_text())
+        with tempfile.TemporaryDirectory() as d:
+            copy = Path(d)
+            for name in ['BUNDLED_SKINS.json', *manifest['files']]:
+                dest = copy/name; dest.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(root/name, dest)
+            bundled.verify(copy)
+            extra = copy/'assets/skins/unreviewed.png'; extra.write_bytes(b'unapproved fixture')
+            with self.assertRaisesRegex(AssertionError, 'Unreviewed'): bundled.verify(copy)
+            extra.unlink()
+            image = next(copy.glob('assets/skins/manic/gb/*.png')); original = image.read_bytes()
+            image.write_bytes(b'changed fixture')
+            with self.assertRaisesRegex(AssertionError, 'Changed reviewed'): bundled.verify(copy)
+            image.write_bytes(original)
+            (copy/manifest['licenseFile']).unlink()
+            with self.assertRaises(FileNotFoundError): bundled.verify(copy)
 
 if __name__ == '__main__': unittest.main()

@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {guardUpdateTask} from './update-activity.js';
 import {coreRegistry,supportsGame} from './core-registry.js';
+import {withSkinChoice,withoutSkinChoice} from './skin-selection.js';
 const stores=['library','roms','saves','states','backups','recoveries','sessions','skins','coverCatalogs'];
 const database=new Promise((resolve,reject)=>{
  const r=indexedDB.open('manicemu-web',4);let blocked=false;
@@ -33,10 +34,10 @@ async function setGameCover(id,cover,{onlyMissing=false}={}){const db=await data
  tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(tx.error||new Error('カバーを保存できませんでした。'));tx.onerror=()=>{};
 });}
 // Change only the skin field; do not overwrite newer names, favorites or cheats.
-async function setGameSkin(id,skinId){const db=await database;return new Promise((resolve,reject)=>{
- const tx=write(db,['library']),store=tx.objectStore('library'),request=store.get(id);let failure;
- request.onsuccess=()=>{const game=request.result;if(!game){failure=new Error('ゲームが見つかりません。');tx.abort();return;}if(skinId)game.skinId=skinId;else delete game.skinId;store.put(game,id);};
- tx.oncomplete=resolve;tx.onabort=()=>reject(failure||tx.error||new Error('スキン設定を保存できませんでした。'));tx.onerror=()=>{};
+async function setGameSkin(id,skinId,orientation){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=write(db,['library']),store=tx.objectStore('library'),request=store.get(id);let failure,result;
+ request.onsuccess=()=>{const game=request.result;if(!game){failure=new Error('ゲームが見つかりません。');tx.abort();return;}try{result=orientation===undefined?skinId:withSkinChoice(game.skinId,orientation,skinId);}catch(e){failure=e;tx.abort();return;}if(result)game.skinId=result;else delete game.skinId;store.put(game,id);};
+ tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||new Error('スキン設定を保存できませんでした。'));tx.onerror=()=>{};
 });}
 // Preserve ROM/save data and other game metadata when editing control positions.
 async function setGameControls(id,layout){const db=await database;return new Promise((resolve,reject)=>{
@@ -47,7 +48,7 @@ async function setGameControls(id,layout){const db=await database;return new Pro
 // Deleted skins cannot leave game-specific overrides pointing to missing artwork.
 async function removeSkin(id){const db=await database;return new Promise((resolve,reject)=>{
  const tx=write(db,['skins','library']);tx.objectStore('skins').delete(id);
- const request=tx.objectStore('library').openCursor();request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;const game=cursor.value;if(game.skinId===id){delete game.skinId;cursor.update(game);}cursor.continue();};
+ const request=tx.objectStore('library').openCursor();request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;const game=cursor.value,next=withoutSkinChoice(game.skinId,id);if(next!==game.skinId){if(next)game.skinId=next;else delete game.skinId;cursor.update(game);}cursor.continue();};
  tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||new Error('スキンを削除できませんでした。'));tx.onerror=()=>{};
 });}
 async function removeGame(id){if(!navigator.locks)throw new Error('保存を保護するため、最新版のブラウザを使用してください。');return navigator.locks.request('local-game:'+id,{ifAvailable:true},lock=>{if(!lock)throw new Error('このゲームは別のタブでプレイ中です。終了してから削除してください。');return deleteGame(id);});}

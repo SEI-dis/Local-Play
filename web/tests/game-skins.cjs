@@ -15,11 +15,11 @@ const {cartridge}=require('./link.cjs');
   const openGameSkin=async name=>{await p.getByRole('button',{name:name+'のメニュー',exact:true}).click();await p.locator('[data-action=gameSkin]').click();await p.locator('.skin-mini').first().waitFor();};
   const openDefaults=async()=>{await p.locator('[data-tab=settings]').click();await p.locator('#content [data-action=skins]').click();await p.locator('.skin-mini').first().waitFor();};
   const close=()=>p.locator('#close-sheet').click();
-  const shared=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('manic-settings')).skins.gba);
+  const shared=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('manic-settings')).skins.gba.portrait);
   const expectColor=async color=>p.waitForFunction(color=>decodeURIComponent(document.querySelector('#skin').style.backgroundImage).includes(color),color);
   await openDefaults();await choose('builtin:mint');assert.equal(await shared(),'builtin:mint');await close();await p.locator('[data-tab=games]').click();
   await openGameSkin('Demo One');assert.equal(await p.locator('#skin-grid').getAttribute('data-selection'),'');assert.equal(await p.locator('#skin-system').count(),0);await choose('builtin:sunset');
-  let games=await stored();assert.equal(games[0].skinId,'builtin:sunset');assert.equal(games[1].skinId,undefined);assert.equal(await shared(),'builtin:mint');
+  let games=await stored();assert.equal(games[0].skinId.portrait,'builtin:sunset');assert.equal(games[1].skinId,undefined);assert.equal(await shared(),'builtin:mint');
   if(process.env.SCREENSHOT_DIR){fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await p.screenshot({path:path.join(process.env.SCREENSHOT_DIR,'game-skin-picker.png')});}
   await close();await p.reload();await p.getByRole('button',{name:'Demo Oneの設定を開く',exact:true}).click();await p.locator('.game-info-play').click();await p.locator('#loading').waitFor({state:'hidden'});await expectColor('#dfa58f');
   await p.locator('#player-menu').click();await p.locator('#sheet [data-action=skins]').click();await choose('builtin:graphite');await expectColor('#566374');assert.equal(await shared(),'builtin:mint');await close();
@@ -30,7 +30,7 @@ const {cartridge}=require('./link.cjs');
   // Original, local-only skin fixture; shared by two game overrides.
   await p.evaluate(async()=>{const db=await import('./src/storage.js');const canvas=document.createElement('canvas');canvas.width=390;canvas.height=844;const ctx=canvas.getContext('2d');ctx.fillStyle='#244034';ctx.fillRect(0,0,390,844);const blob=await new Promise(r=>canvas.toBlob(r));await db.put('skins','skin:fixture',{id:'skin:fixture',name:'Local fixture',system:'gba',images:{background:blob},portrait:{mappingSize:{width:390,height:844},assets:{resizable:'background'},screens:[{outputFrame:{x:20,y:20,width:350,height:233}}],items:[]}});});
   for(const name of ['Demo One','Demo Two']){await openGameSkin(name);await choose('skin:fixture');await close();}
-  await openGameSkin('Demo One');await p.locator('#manage-skins').click();await p.locator('[data-delete-skin="skin:fixture"]').click();await p.locator('#cancel-skin-delete').click();assert.ok((await stored()).every(g=>g.skinId==='skin:fixture'));
+  await openGameSkin('Demo One');await p.locator('#manage-skins').click();await p.locator('[data-delete-skin="skin:fixture"]').click();await p.locator('#cancel-skin-delete').click();assert.ok((await stored()).every(g=>g.skinId?.portrait==='skin:fixture'));
   await p.locator('#manage-skins').click();await p.locator('[data-delete-skin="skin:fixture"]').click();await p.locator('#confirm-skin-delete').click();await p.waitForFunction(()=>document.querySelector('#skin-grid')?.dataset.selection==='');assert.ok((await stored()).every(g=>!g.skinId));
   assert.equal(await p.evaluate(async()=>{const db=await import('./src/storage.js');return(await db.all('roms')).length;}),2);
   // Missing overrides inherit the platform default; compatibility works for GB/GBC.

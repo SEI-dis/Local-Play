@@ -1,6 +1,6 @@
 {
-  "name": "manicemu-web-64",
-  "version": "0.3.2",
+  "name": "palmoemu",
+  "version": "0.3.4",
   "private": true,
   "scripts": {
     "dev": "node scripts/serve.cjs",
@@ -21,6 +21,8 @@
     "test:save": "node tests/save-safety.cjs",
     "test:state-ui": "node tests/state-ui.cjs",
     "test:skins": "node tests/skins.cjs",
+    "test:bundled-skins": "node tests/bundled-skins.cjs",
+    "test:skin-orientation": "node tests/skin-orientation.cjs",
     "test:cores": "node tests/core-container.cjs",
     "test:responsive": "node tests/responsive-skins.cjs",
     "test:storage": "node tests/storage-protection.cjs",
@@ -42,7 +44,9 @@
     "test:system-skins": "node tests/system-skins.cjs",
     "test:covers": "node tests/covers.cjs",
     "test:multicore": "node tests/multicore.cjs",
-    "test:skin-compatibility": "node tests/skin-compatibility.cjs"
+    "test:skin-compatibility": "node tests/skin-compatibility.cjs",
+    "test:3ds-save": "node tests/three-ds-save.cjs",
+    "test:extended-save": "node tests/extended-save.cjs"
   },
   "license": "AGPL-3.0-or-later"
 }

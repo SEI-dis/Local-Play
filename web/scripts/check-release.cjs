@@ -5,11 +5,12 @@ const {spawnSync}=require('node:child_process');
 function run(command,args){const r=spawnSync(command,args,{stdio:'inherit'});assert.equal(r.status,0,'Release verification failed: '+command+' '+args.join(' '));}
 const python=process.env.PYTHON||(process.platform==='win32'?'python':'python3');
 run(python,['-B','-X','utf8',path.join(__dirname,'audit-content.py')]);
+run(python,['-B','-X','utf8',path.join(__dirname,'check-bundled-skins.py')]);
 run(python,['-B','-X','utf8',path.join(__dirname,'package_source.py'),'--check']);
 run(process.execPath,[path.join(__dirname,'build-offline.cjs'),'--check']);
 run(process.execPath,[path.join(__dirname,'build-icons.cjs'),'--check']);
 for(const [file,expected] of Object.entries(manifest.files)){const bytes=fs.readFileSync(path.join(root,file));assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),expected,'Changed upstream asset: '+file);}
-function scan(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);assert.ok(!entry.isSymbolicLink(),'Symlink in deployment');if(entry.isDirectory()){assert.ok(!['node_modules','.git','test-results','playwright-report'].includes(entry.name),'Non-release directory: '+entry.name);scan(file);}else {assert.ok(!/\.(nds|dsv|gba|gb|gbc|nes|sfc|smc|smd|gen|bin|sav|srm|state|ss\d)$/i.test(entry.name),'ROM/save in release: '+file);if(/\.md$/i.test(entry.name)){const b=fs.readFileSync(file);assert.notEqual(b.subarray(256,260).toString(),'SEGA','MD ROM in release');}assert.ok(fs.statSync(file).size<100*1024*1024,'File exceeds GitHub limit: '+file);}}}
+function scan(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);assert.ok(!entry.isSymbolicLink(),'Symlink in deployment');if(entry.isDirectory()){assert.ok(!['node_modules','.git','test-results','playwright-report'].includes(entry.name),'Non-release directory: '+entry.name);scan(file);}else {assert.ok(!/\.(3ds|3dsx|cci|cxi|lp3sav|nds|dsv|gba|gb|gbc|nes|sfc|smc|smd|gen|bin|sav|srm|state|ss\d)$/i.test(entry.name),'ROM/save in release: '+file);if(/\.md$/i.test(entry.name)){const b=fs.readFileSync(file);assert.notEqual(b.subarray(256,260).toString(),'SEGA','MD ROM in release');}assert.ok(fs.statSync(file).size<100*1024*1024,'File exceeds GitHub limit: '+file);}}}
 scan(root);for(const name of ['index.html']){const s=fs.readFileSync(path.join(root,name),'utf8');assert.ok(s.includes("connect-src 'self' blob:"));assert.ok(s.includes('Content-Security-Policy'));}
 assert.ok(fs.existsSync(path.join(root,'sources/web-ui-source.zip')),'Run package_source.py');console.log('PASS: source hashes, release content, file sizes, source package and static CSP checks.');
 const review=JSON.parse(fs.readFileSync(path.join(root,'RELEASE_REVIEW.json'),'utf8'));
@@ -21,7 +22,7 @@ if(review.status!=='ready'||review.openItems.length||manifest.otherCores.corresp
 }else{
   // A status flip alone cannot clear an unresolved rights review.
   assert.equal(review.reviewedContentSha256,crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'RELEASE_CONTENT.json'))).digest('hex'),'Approval must identify the exact reviewed inventory');
-  for(const id of ['corresponding-source','nds-corresponding-source','alternate-corresponding-source','noncommercial-core-combination','asset-rights','source-archive-materials','external-artwork-policy','runtime-validation']){
+  for(const id of ['corresponding-source','nds-corresponding-source','alternate-corresponding-source','noncommercial-core-combination','asset-rights','bundled-skin-rights','source-archive-materials','external-artwork-policy','runtime-validation']){
     const e=review.resolutions?.find(item=>item.id===id);
     assert.ok(e?.evidenceFile&&e?.sha256,'Documented resolution required: '+id);
     const p=path.resolve(root,e.evidenceFile);assert.ok(p.startsWith(root+path.sep),'Evidence must be in the release');

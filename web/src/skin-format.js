@@ -2,7 +2,7 @@
 // Data-only implementation of the published Delta / Manic skin formats.
 // https://noah978.gitbook.io/delta-docs/skins
 // https://manicemu.site/guides/homemade-skins/
-export const skinSize={gba:[240,160],gb:[160,144],gbc:[160,144],nes:[256,240],snes:[256,224],md:[320,224],nds:[256,384]};
+export const skinSize={gba:[240,160],gb:[160,144],gbc:[160,144],nes:[256,240],snes:[256,224],md:[320,224],nds:[256,384],'3ds':[400,480]};
 export const gameInputs=new Set(['a','b','x','y','c','z','l','r','l1','r1','start','select','up','down','left','right']);
 export const skinActions=new Set(['menu','quickSave','quickLoad','fastForward','fastForward2x','fastForward3x','fastForward4x','toggleFastForward','reverseScreens','volume','saveStates','cheatCodes','skins','filters','screenshot','haptics','controllers','restart','quit','toggleControlls','resolution']);
 const aliases={mode:'select',analogStickUp:'up',analogStickDown:'down',analogStickLeft:'left',analogStickRight:'right'};

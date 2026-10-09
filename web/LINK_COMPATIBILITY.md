@@ -15,7 +15,7 @@ celio-server.up.railway.appへWSS接続します。部屋番号は4桁で、パ�
 
 | 対象 | 固定版 |
 | --- | --- |
-| このWeb版のコア | onikoro334274-cell/mGBA_celio_edition dee555365ec5e4a2d21ee24f6f409412fa62cd94 |
+| このWeb版のコア | onikoro334274-cell/mGBA_celio_edition 0ba86121bd92aa570d38301086d8e8f584238d62 |
 | 移植元の通信コード | liru55/mgba-celio-web 58d463ebe2302e4fc70098760dcfc84ca69329db / web/link-session.js |
 | 比較用の公開版 | liru55/mgba-celio-web gh-pages eb441dc2e4ddec951c70c413599ab2a0e77a739b |
 | ローカル検査用サーバー | Celio-Link/Celio-Server d19ad22a0c6a11467c9234c6cacd291eb0f15dbd |

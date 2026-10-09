@@ -6,12 +6,14 @@ import {guardUpdateTask} from './update-activity.js';
 import * as db from './storage.js';
 import {systems,escapeHTML as esc,icon} from './shared.js';
 import {row} from './ui.js';
-import {builtins,loadSkin,importSkin,previewSkin,skinSupportsSystem} from './skins.js';
+import {builtins,importSkin,previewSkin,skinSupportsSystem} from './skins.js';
+import {skinChoice,withSkinChoice,withoutSkinChoice} from './skin-selection.js';
+import {bundledSkins} from './bundled-skins.js';
 import {builtinColors} from './skin-profiles.js';
 import {mountSkinPreview} from './skin-preview.js';
 import {mountControlEditor} from './control-editor.js';
 export function createSkinSettings(api){
- const {runtime,settings,setPause,sheet,applySettings,layoutSkin,refresh,toast,error,controlLayout,playerSize,frameStyle}=api;
+ const {runtime,settings,setPause,sheet,applySettings,layoutSkin,reloadSkins,refresh,toast,error,controlLayout,playerSize,frameStyle}=api;
  const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
  let skinOrientation='portrait';
 async function editControls(system,game,id){
@@ -30,20 +32,24 @@ async function editControls(system,game,id){
  });
  runtime.cleanup=()=>{cleanup();$('#sheet').classList.remove('control-edit');preview.urls.forEach(URL.revokeObjectURL);};
 }
-async function showSkins(system=settings.skinSystem||'gba',game=null){
+async function showSkins(system=settings.skinSystem||'gba',game=null,orientation=skinOrientation){
+ skinOrientation=orientation==='landscape'?'landscape':'portrait';
  if(!systems[system])system='gba';
  if(game){const record=await db.get('library',game.id);if(!record)throw new Error('ゲームが見つかりません。');game.skinId=record.skinId;game.controlLayout=record.controlLayout;system=game.system;}
  else if(settings.skinSystem!==system){settings.skinSystem=system;applySettings();}
  const saved=(await db.skinCatalog()).filter(s=>skinSupportsSystem(s.system,system)).sort((a,b)=>(a.importedAt||0)-(b.importedAt||0)||a.name.localeCompare(b.name));
+ const bundled=bundledSkins.filter(s=>s.system===system);
  const colors=builtinColors(system);
- const choices=[...builtins.map(([id,name])=>({id:'builtin:'+id,name})),...saved];
- const shared=choices.some(s=>s.id===settings.skins?.[system])?settings.skins[system]:'builtin:classic';
- let selected=game?(choices.some(s=>s.id===game.skinId)?game.skinId:''):shared,effective=selected||shared;
+ const choices=[...builtins.map(([id,name])=>({id:'builtin:'+id,name})),...bundled,...saved];
+ const valid=(value,fallback='')=>choices.some(s=>s.id===value)?value:fallback;
+ let shared,selected,effective;
+ function readSelection(){shared=valid(skinChoice(settings.skins?.[system],skinOrientation),'builtin:classic');selected=game?valid(skinChoice(game.skinId,skinOrientation)):shared;effective=selected||shared;}
+ readSelection();
  let standardId=effective.startsWith('builtin:')?effective:shared.startsWith('builtin:')?shared:'builtin:classic',editing=false,alive=true,busy=false;
  const mounted=new Map(),pending=new Set(),zoomCleanups=new Set();
- const syncCurrent=async()=>{if(runtime.current){runtime.current.skinId=(await db.get('library',runtime.current.id))?.skinId;runtime.skinData=await loadSkin(runtime.current.system,runtime.current.skinId||settings.skins?.[runtime.current.system],settings.skins?.[runtime.current.system]);layoutSkin();}};
+ const syncCurrent=async()=>{const live=runtime.current;if(live){const stored=await db.get('library',live.id);if(runtime.current===live){live.skinId=stored?.skinId;await reloadSkins();}}};
  const card=(id,name)=>`<article class="skin-card" data-skin-card="${esc(id)}"><button class="skin-use" data-skin-choice="${esc(id)}" aria-label="${esc(name)}を使う" aria-pressed="false"><span class="skin-card-preview" role="img"></span><span class="skin-current" aria-hidden="true"></span></button><button class="skin-preview-open" data-preview-skin="${esc(id)}" aria-label="${esc(name)}をプレビュー">${icon('expand')}<span>プレビュー</span></button><p class="skin-card-name">${esc(name)}</p>${id.startsWith('skin:')?`<button class="skin-delete danger" data-delete-skin="${esc(id)}" aria-label="${esc(name)}を削除" hidden>${icon('trash')}<span>削除</span></button>`:''}</article>`;
- sheet('スキン',`${game?`<p class="sheet-note skin-target">${esc(game.name)}</p><label class="row skin-inherit"><span>機種の設定を使う</span><input type="checkbox" id="skin-inherit" ${!selected?'checked':''}></label>`:`<div class="settings-group">${row('機種',`<select id="skin-system">${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${k===system?'selected':''}>${s.short}</option>`).join('')}</select>`,'game')}</div>`}<div class="segmented skin-orientation" role="group" aria-label="プレビューの向き"><button data-skin-orientation="portrait">縦画面</button><button data-skin-orientation="landscape">横画面</button></div><div id="skin-grid" class="skin-grid">${card(standardId,'標準')}${saved.map(s=>card(s.id,s.name)).join('')}<button id="import-skin" class="skin-add">${icon('plus')}<span>新規スキン追加</span></button></div><div class="skin-standard-options" hidden><div id="skin-palette" hidden><p class="label">標準スキンの色</p><div id="skin-colors" aria-label="標準スキンの色">${colors.map(([id,name])=>`<button data-skin-color="${id}" aria-label="${name}" title="${name}"><i class="swatch-${id}"></i></button>`).join('')}</div></div><button class="secondary" id="edit-controls">画面・ボタンのレイアウト</button></div><details class="sheet-note skin-help"><summary>スキンについて</summary><p id="skin-description"></p><p>選んだスキンを縦・横の両方で使います。追加済みのスキンは、別のスキンに切り替えても残ります。</p><p>Delta／Manic形式に対応しています。スキンは端末内だけで使用します。作者の利用条件をご確認ください。</p><a class="row" href="https://faq.deltaemulator.com/using-delta/controller-skins" target="_blank" rel="noopener">Delta公式のスキン案内</a><a class="row" href="https://manicemu.site/guides/homemade-skins/#-official-skins-downloads" target="_blank" rel="noopener">Manic公式のスキン案内</a></details>`,!!runtime.engine);
+ sheet('スキン',`${game?`<p class="sheet-note skin-target">${esc(game.name)}</p><label class="row skin-inherit"><span id="skin-inherit-label">機種の設定を使う</span><input type="checkbox" id="skin-inherit" ${!selected?'checked':''}></label>`:`<div class="settings-group">${row('機種',`<select id="skin-system">${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${k===system?'selected':''}>${s.short}</option>`).join('')}</select>`,'game')}</div>`}<div class="segmented skin-orientation" role="group" aria-label="設定する画面の向き"><button data-skin-orientation="portrait">縦画面</button><button data-skin-orientation="landscape">横画面</button></div><p class="sheet-note" id="skin-orientation-label"></p><div id="skin-grid" class="skin-grid">${card(standardId,'標準')}${[...bundled,...saved].map(s=>card(s.id,s.name)).join('')}<button id="import-skin" class="skin-add">${icon('plus')}<span>新規スキン追加</span></button></div><div class="skin-standard-options" hidden><div id="skin-palette" hidden><p class="label">標準スキンの色</p><div id="skin-colors" aria-label="標準スキンの色">${colors.map(([id,name])=>`<button data-skin-color="${id}" aria-label="${name}" title="${name}"><i class="swatch-${id}"></i></button>`).join('')}</div></div><button class="secondary" id="edit-controls">画面・ボタンのレイアウト</button></div>${bundled.length?'<p class="sheet-note"><a href="licenses.html#skins" target="_blank" rel="noopener">Manic EMU · CC BY 4.0 — スキンのクレジット</a></p>':''}<details class="sheet-note skin-help"><summary>スキンについて</summary><p id="skin-description"></p><p>Delta／Manic形式に対応しています。スキンは端末内だけで使用します。作者の利用条件をご確認ください。</p><a class="row" href="https://faq.deltaemulator.com/using-delta/controller-skins" target="_blank" rel="noopener">Delta公式のスキン案内</a><a class="row" href="https://manicemu.site/guides/homemade-skins/#-official-skins-downloads" target="_blank" rel="noopener">Manic公式のスキン案内</a></details>`,!!runtime.engine);
  const grid=$('#skin-grid'),standard=grid.firstElementChild;
  $('#sheet').classList.add('skin-manager');
  $('#sheet-tools').innerHTML=`<button class="sheet-tool skin-edit-toggle" id="manage-skins" ${saved.length?'':'disabled'}>編集</button>`;
@@ -56,7 +62,7 @@ async function showSkins(system=settings.skinSystem||'gba',game=null){
    preview=await previewSkin(system,id);
    if(!alive||!node.isConnected||node.dataset.skinCard!==id){preview.urls.forEach(URL.revokeObjectURL);return;}
    const host=node.querySelector('.skin-card-preview'),entry={preview,cleanup:mountSkinPreview(host,preview.skin,previewOptions())};mounted.set(node,entry);
-   if(id===effective)$('#skin-description').textContent=[preview.skin.description,...(preview.skin.warnings||[])].filter(Boolean).join('\n');
+   if(id===effective)$('#skin-description').textContent=(preview.skin.warnings||[]).join('\n');
   }catch(e){preview?.urls.forEach(URL.revokeObjectURL);if(alive){const host=node.querySelector('.skin-card-preview');host.textContent='プレビューを表示できません';host.setAttribute('aria-label','プレビューを表示できません');}}
   finally{pending.delete(node);if(alive&&node.dataset.skinCard!==id)mountCard(node);}
  }
@@ -66,15 +72,23 @@ async function showSkins(system=settings.skinSystem||'gba',game=null){
   grid.dataset.selection=selected;grid.dataset.effective=effective;
   grid.querySelectorAll('.skin-card').forEach(node=>{const active=node.dataset.skinCard===effective;node.classList.toggle('is-current',active);node.querySelector('.skin-use').setAttribute('aria-pressed',String(active));const host=node.querySelector('.skin-card-preview');if(active)host.id='skin-preview';else host.removeAttribute('id');});
   $$('[data-skin-color]').forEach(b=>b.setAttribute('aria-pressed',String(effective==='builtin:'+b.dataset.skinColor)));
-  if($('#skin-inherit'))$('#skin-inherit').checked=!selected;
+  const direction=skinOrientation==='portrait'?'縦画面':'横画面';
+  $('#skin-orientation-label').textContent=direction+'のスキン';
+  if($('#skin-inherit')){$('#skin-inherit').checked=!selected;$('#skin-inherit-label').textContent=direction+'は機種の設定を使う';}
   const standardSelected=effective.startsWith('builtin:');
   $('.skin-standard-options').hidden=!standardSelected;
   $('#skin-palette').hidden=!standardSelected||colors.length<2;
   $('#edit-controls').hidden=!standardSelected;
   const entry=[...mounted.entries()].find(([node])=>node.dataset.skinCard===effective)?.[1];
-  $('#skin-description').textContent=entry?[entry.preview.skin.description,...(entry.preview.skin.warnings||[])].filter(Boolean).join('\n'):'';
+  $('#skin-description').textContent=entry?(entry.preview.skin.warnings||[]).join('\n'):'';
+ }
+ function syncStandard(){
+  const next=effective.startsWith('builtin:')?effective:shared.startsWith('builtin:')?shared:'builtin:classic';
+  if(next===standardId)return;
+  standardId=next;disposeCard(standard);standard.dataset.skinCard=standardId;standard.querySelector('.skin-use').dataset.skinChoice=standardId;standard.querySelector('[data-preview-skin]').dataset.previewSkin=standardId;mountCard(standard);
  }
  function refreshOrientation(){
+  readSelection();syncStandard();updateSelection();
   $$('[data-skin-orientation]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.skinOrientation===skinOrientation)));
   grid.dataset.orientation=skinOrientation;
   for(const [node,entry] of mounted){entry.cleanup();entry.cleanup=mountSkinPreview(node.querySelector('.skin-card-preview'),entry.preview.skin,previewOptions());}
@@ -82,21 +96,19 @@ async function showSkins(system=settings.skinSystem||'gba',game=null){
  function enableControls(){
   if(!alive)return;
   grid.querySelectorAll('.skin-use,.skin-preview-open').forEach(b=>b.disabled=busy||editing);
-  $$('[data-skin-color],#skin-inherit,#edit-controls,[data-skin-orientation]').forEach(b=>b.disabled=busy||editing);
+  $$('[data-skin-color],#skin-inherit,#skin-system,#edit-controls,[data-skin-orientation]').forEach(b=>b.disabled=busy||editing);
   $('#manage-skins').disabled=busy||!saved.length;$('#import-skin').disabled=busy;
  }
- const apply=async(id,targetSystem=system)=>{
-  if(game){await db.setGameSkin(game.id,id);game.skinId=id||undefined;}
-  else{const next={...settings,skins:{...settings.skins,[targetSystem]:id}};localStorage.setItem('manic-settings',JSON.stringify(next));Object.assign(settings,next);applySettings();}
+ const apply=async(id,targetSystem=system,orientation=skinOrientation)=>{
+  if(game){game.skinId=await db.setGameSkin(game.id,id,orientation);}
+  else{const next={...settings,skins:{...settings.skins,[targetSystem]:withSkinChoice(settings.skins?.[targetSystem],orientation,id)}};localStorage.setItem('manic-settings',JSON.stringify(next));Object.assign(settings,next);applySettings();}
   await syncCurrent();await refresh();
  };
  const choose=async id=>{
-  if(busy||editing)return;busy=true;enableControls();
+  if(busy||editing)return;const orientation=skinOrientation;busy=true;enableControls();
   try{
-   await apply(id);selected=id;effective=id||shared;
-   if(effective.startsWith('builtin:')&&effective!==standardId){
-    standardId=effective;disposeCard(standard);standard.dataset.skinCard=standardId;standard.querySelector('.skin-use').dataset.skinChoice=standardId;standard.querySelector('[data-preview-skin]').dataset.previewSkin=standardId;await mountCard(standard);
-   }
+   if(id.startsWith('bundled:'))await previewSkin(system,id);
+   await apply(id,system,orientation);readSelection();if(alive)syncStandard();
    if(alive)updateSelection();
   }catch(e){error(e);}finally{busy=false;enableControls();}
  };
@@ -115,12 +127,12 @@ async function showSkins(system=settings.skinSystem||'gba',game=null){
   let closed=false;const close=()=>{if(closed)return;closed=true;unmount();preview.urls.forEach(URL.revokeObjectURL);zoom.close();zoom.remove();zoomCleanups.delete(close);};zoomCleanups.add(close);zoom.querySelector('button').onclick=close;zoom.addEventListener('cancel',e=>{e.preventDefault();close();});
  }
  grid.querySelectorAll('[data-preview-skin]').forEach(b=>b.onclick=()=>openPreview(b.dataset.previewSkin).catch(error));
- $('#import-skin').onclick=()=>{$('#skin-input').onchange=guardUpdateTask(async e=>{const file=e.target.files[0];if(!file)return;try{toast('スキンを読み込み中…');const skin=await importSkin(file,game?.system);await apply(skin.id,skin.system);await showSkins(game?.system||skin.system,game);toast('スキンを追加しました。');}catch(e){error(e);}finally{e.target.value='';}});$('#skin-input').click();};
+ $('#import-skin').onclick=()=>{const orientation=skinOrientation;$('#skin-input').onchange=guardUpdateTask(async e=>{const file=e.target.files[0];if(!file)return;try{toast('スキンを読み込み中…');const skin=await importSkin(file,game?.system);await apply(skin.id,skin.system,orientation);await showSkins(game?.system||skin.system,game);toast('スキンを追加しました。');}catch(e){error(e);}finally{e.target.value='';}});$('#skin-input').click();};
  grid.querySelectorAll('[data-delete-skin]').forEach(b=>b.onclick=()=>{
   const id=b.dataset.deleteSkin,skin=saved.find(s=>s.id===id);
   sheet('スキンを削除しますか？',`<p class="sheet-note">${esc(skin.name)}</p><p class="sheet-note">このスキンを使っているゲームは、機種の設定に戻ります。ゲームやセーブは残ります。</p><div class="sheet-actions"><button class="secondary" id="cancel-skin-delete">キャンセル</button><button class="secondary danger" id="confirm-skin-delete">削除</button></div>`,!!runtime.engine);
   $('#cancel-skin-delete').onclick=()=>showSkins(system,game);
-  $('#confirm-skin-delete').onclick=guardUpdateTask(async()=>{const button=$('#confirm-skin-delete');button.disabled=true;try{await db.removeSkin(id);for(const k of Object.keys(settings.skins||{}))if(settings.skins[k]===id)delete settings.skins[k];applySettings();await syncCurrent();await refresh();await showSkins(system,game);}catch(e){error(e);if(button.isConnected)button.disabled=false;}});
+  $('#confirm-skin-delete').onclick=guardUpdateTask(async()=>{const button=$('#confirm-skin-delete');button.disabled=true;try{await db.removeSkin(id);for(const k of Object.keys(settings.skins||{})){const next=withoutSkinChoice(settings.skins[k],id);if(next)settings.skins[k]=next;else delete settings.skins[k];}applySettings();await syncCurrent();await refresh();await showSkins(system,game);}catch(e){error(e);if(button.isConnected)button.disabled=false;}});
  });
  runtime.cleanup=()=>{alive=false;observer.disconnect();for(const close of [...zoomCleanups])close();for(const node of [...mounted.keys()])disposeCard(node);$('#sheet').classList.remove('skin-manager');};
  updateSelection();refreshOrientation();enableControls();await mountCard(standard);

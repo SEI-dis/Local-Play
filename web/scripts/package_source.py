@@ -11,9 +11,9 @@ def source_files():
         if any(part in {'node_modules','test-results','playwright-report','__pycache__','.git'} for part in rel.parts): continue
         if file.is_symlink(): raise ValueError('Symlink in source tree: '+str(rel))
         if not file.is_file() or rel.parts[0]=='cores': continue
-        if rel.parts[0]=='sources' and rel.parts[1:2] not in [('mgba-web-port',),('libretro-web',),('nds-web',),('alternate-web',),('manicemu-ui',),('celio-web-transport',)]: continue
+        if rel.parts[0]=='sources' and rel.parts[1:2] not in [('mgba-web-port',),('libretro-web',),('nds-web',),('alternate-web',),('manicemu-ui',),('manic-skins',),('celio-web-transport',)]: continue
         if rel.parts[:3]==('vendor','emulatorjs','cores'): continue
-        if file.suffix.lower() in ['.nds','.dsv','.gba','.gb','.gbc','.nes','.sfc','.smc','.smd','.gen','.bin','.sav','.srm','.state','.bios','.iso','.3ds','.cia','.chd','.deltaskin','.manicskin']: raise ValueError('User data in source tree: '+str(rel))
+        if file.suffix.lower() in ['.nds','.dsv','.gba','.gb','.gbc','.nes','.sfc','.smc','.smd','.gen','.bin','.sav','.srm','.state','.bios','.iso','.3ds','.3dsx','.cci','.cxi','.lp3sav','.cia','.chd','.deltaskin','.manicskin']: raise ValueError('User data in source tree: '+str(rel))
         yield file,rel.as_posix()
     workflow=root.parent/'.github/workflows/web-pages.yml'
     if not workflow.is_file(): workflow=root.parent/'deployment/web-pages.yml'

@@ -65,7 +65,7 @@ const mdBits={...retroBits,a:1,c:8,x:10,y:9,z:11};
   }
   await p.locator('[data-tab=settings]').click();await p.locator('#content [data-action=skins]').click();
   for(const system of Object.keys(buttons)){
-   await p.locator('#skin-system').selectOption(system);await p.locator('#skin-preview .skin-mini').waitFor();assert.ok((await p.locator('#skin-description').textContent()).length>20);
+   await p.locator('#skin-system').selectOption(system);await p.locator('#skin-preview .skin-mini').waitFor();assert.equal(await p.locator('#skin-description').textContent(),'','Standard skins have no compatibility warnings');
    assert.equal(await p.locator('#skin-grid').getAttribute('data-selection'),'builtin:classic');
   }
   for(const [width,height]of [[240,320],[320,568],[390,844],[844,390]]){
@@ -81,7 +81,7 @@ const mdBits={...retroBits,a:1,c:8,x:10,y:9,z:11};
    await p.setViewportSize({width:1200,height:wide?580:550});
    await p.evaluate(async wide=>{
     const {builtinSkin,builtinLayout}=await import('./src/skin-art.js');document.body.replaceChildren();document.body.style.cssText='margin:0;padding:24px;background:#101114;color:#ededf1;font-family:Arial,sans-serif;overflow:hidden';
-    const title=document.createElement('div');title.textContent='LOCAL PLAY / SYSTEM SKINS · '+(wide?'LANDSCAPE':'PORTRAIT');title.style.cssText='font-size:13px;letter-spacing:2px;margin-bottom:20px';document.body.append(title);
+    const title=document.createElement('div');title.textContent='PalmoEMU / SYSTEM SKINS · '+(wide?'LANDSCAPE':'PORTRAIT');title.style.cssText='font-size:13px;letter-spacing:2px;margin-bottom:20px';document.body.append(title);
     const gallery=document.createElement('div');gallery.style.cssText=`display:grid;grid-template-columns:repeat(${wide?3:6},1fr);gap:20px`;document.body.append(gallery);
     const css=(f,map)=>`left:${f.x/map.width*100}%;top:${f.y/map.height*100}%;width:${f.width/map.width*100}%;height:${f.height/map.height*100}%;`;
     for(const system of ['gb','gbc','gba','nes','snes','md']){

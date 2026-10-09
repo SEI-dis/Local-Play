@@ -3,7 +3,7 @@
 This is an MPL-2.0 C bridge derived from `liru55/mgba-celio-web`
 `de2c446e7369610f3ab402dd775e81d6a1661608`, compiled against
 `onikoro334274-cell/mGBA_celio_edition`
-`dee555365ec5e4a2d21ee24f6f409412fa62cd94` (`rom64`).
+`0ba86121bd92aa570d38301086d8e8f584238d62` (`rom64`).
 The core source is in `../mgba-celio-rom64-source.tar.gz`.
 The original bridge source is in `../mgba-celio-web-source.tar.gz`.
 
@@ -37,3 +37,20 @@ To check a newer upstream revision without replacing this distribution, see
 `../../CORE_UPDATES.md`. The compiler build hash above belongs to
 `emscripten-releases`, not the emsdk installer Git repository. The candidate
 recipe in `upstream.json` pins those two repositories separately.
+
+## 2026-10-09 core update
+
+The pinned rom64 revision supports 6 MiB flash (96 banks), 16 MiB extra RAM,
+and shorter flash programming/erase timing. The bridge accepts up to 6 MiB
+plus the 16-byte RTC footer and raises the state limit to 32 MiB so a state
+can retain both extra RAM and flash. Old 1 MiB saves and baseline states are
+covered by authored compatibility tests. The adapter preserves save storage
+keys and accepts the verified previous state ID; it does not promise backward
+compatibility when returning to the old core.
+
+The Web bridge explicitly sets CPU overclock to 1, overriding the upstream
+new default of 2. This preserves hardware timing and avoids doubling CPU work
+on phones. The existing 1–5x play-speed control remains separate.
+Qt automatic backup and physical USB link features are not compiled into this
+Web target. Web saves retain the existing five local backup generations and
+five recovery snapshots. No upload endpoint is added.

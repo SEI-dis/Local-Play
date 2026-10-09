@@ -26,13 +26,13 @@ const sizes=[[240,320],[280,240],[320,320],[400,360],[480,240],[320,568],[360,80
    await p.locator('[data-action=video]').click();await fits('#sheet');await p.locator('#close-sheet').click();
   }
   await p.setViewportSize({width:390,height:844});
-  await p.locator('[data-tab=settings]').click();await p.locator('[data-action=skins]').click();await p.locator('.skin-mini').waitFor();
+  await p.locator('[data-tab=settings]').click();await p.locator('[data-action=skins]').click();await p.locator('#skin-preview .skin-mini').waitFor();
   for(const color of ['mint','sunset','graphite','purple']){
    await p.locator(`[data-skin-color=${color}]`).click();await p.waitForFunction(c=>document.querySelector('#skin-preview')?.getAttribute('aria-label')?.includes(c),{mint:'ミント',sunset:'サンセット',graphite:'グラファイト',purple:'パープル'}[color]);
    assert.equal(await p.locator(`[data-skin-color=${color}]`).getAttribute('aria-pressed'),'true');
   }
   await p.locator('[data-skin-orientation=landscape]').click();assert.match(await p.locator('#skin-preview').getAttribute('aria-label'),/横/);
-  await p.locator('#skin-system').selectOption('md');await p.waitForFunction(()=>document.querySelectorAll('.skin-mini-button').length===9);
+  await p.locator('#skin-system').selectOption('md');await p.waitForFunction(()=>document.querySelectorAll('#skin-preview .skin-mini-button').length===9);
   await p.locator('#skin-system').selectOption('gba');await p.locator('[data-skin-orientation=portrait]').click();
   const out=process.env.SCREENSHOT_DIR;if(out){fs.mkdirSync(out,{recursive:true});await p.screenshot({path:path.join(out,'skin-picker.png')});}
   // Inspect all systems and widths, including split view. Screen/control rectangles may touch, never overlap.

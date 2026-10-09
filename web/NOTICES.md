@@ -2,6 +2,10 @@
 
 This is an unofficial Web port of ManicEMU, not a release endorsed by its authors.
 
+Current bundled-artwork exception: seven ManicEMU standard skins under CC BY 4.0,
+with separate attribution below and in sources/manic-skins/README.md. Earlier
+entries describing no third-party skins refer to the distribution at that change.
+
 Modified 2026-10-09: removed native file-picker extension filters for ROMs,
 controller skins and saves because iOS file providers may disable supported
 custom extensions. Format and size checks remain local; skin/save extensions
@@ -345,3 +349,38 @@ SkinSettingsView, SkinCollectionViewCell, AddSkinCollectionViewCell and
 SkinPreviewViewController. Preserve original Swift headers and AGPL notices.
 The Web port retains the last platform and requires edit mode plus confirmation
 to delete an imported skin. No third-party skin artwork is included.
+
+Modified 2026-10-09: renamed the application from Local Play to PalmoEMU (0.3.4).
+Updated display names, installation metadata, built-in skin labels and documentation.
+Original author notices, licenses, corresponding source and upstream references are retained.
+Existing storage identifiers, update coordination, save formats and publication URLs remain unchanged.
+The name change does not indicate endorsement by ManicEMU or emulator core authors.
+Removed redundant skin appearance/selection help; format guidance and compatibility warnings remain.
+
+
+Modified 2026-10-09: bundle seven standard skins from Manic-EMU/ManicEMUSkins,
+commit 63c04f92febba461d10ea16ef00b0f76199a5b20, under CC BY 4.0.
+Attribution: Manic EMU / Manic-EMU contributors. Titles: ManicEMU GB / GBC / MD
+Skin Standard; ManicEmu GBA / NES / SNES / DS Skin Standard.
+Source: https://github.com/Manic-EMU/ManicEMUSkins/tree/63c04f92febba461d10ea16ef00b0f76199a5b20
+License: https://creativecommons.org/licenses/by/4.0/ (unmodified local text and
+warranty disclaimer: licenses/ManicEMUSkins-CC-BY-4.0.txt).
+PDF artwork was converted to PNG and layouts normalized for the Web renderer.
+Original artwork/creator labels are retained. Local source ZIPs omit unused assets
+and macOS metadata; original info.json and used PDF bytes are unchanged.
+See BUNDLED_SKINS.json and sources/manic-skins/README.md for titles, hashes and
+changes. This artwork remains CC BY 4.0, separately from the AGPL application.
+No additional restrictions, DRM or endorsement claim are made. Trademark/patent
+rights and unrelated user artwork/ROMs are outside this license grant.
+
+
+Modified 2026-10-09: independent portrait and landscape skin selections, for
+platform defaults and game overrides. Legacy string selections remain readable
+for both orientations; editing one preserves the other. Per-game inheritance and
+skin deletion clear only the relevant orientation. Both skins are prepared before
+play so rotation swaps presentation without restarting the core; stale/failed
+loads release temporary URLs and preserve current images. Retained ManicEMU code
+attribution and the separate CC BY 4.0 artwork/credits; no new assets or dependencies.
+
+Modified 2026-10-09: stabilize skin picker preview, add-card and dialog heights
+when switching portrait/landscape selections. Artwork and license terms unchanged.

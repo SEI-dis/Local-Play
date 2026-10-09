@@ -1,5 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
+import {development3DS} from './development.js';
 export const systems = {
+  ...(development3DS?{'3ds':{name:'ニンテンドー3DS（開発版）',short:'3DS',core:'azahar',ext:['3ds','cci','cxi','3dsx'],color:'#d85569'}}:{}),
   nds:{name:'ニンテンドーDS',short:'NDS',core:'desmume2015',ext:['nds'],color:'#a5adbb'},
   gba:{name:'Game Boy Advance',short:'GBA',core:'mgba64',ext:['gba'],color:'#7984ff'},
   gb:{name:'Game Boy',short:'GB',core:'mgba64',ext:['gb'],color:'#b4c596'},

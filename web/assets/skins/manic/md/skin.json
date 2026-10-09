@@ -1,0 +1,1977 @@
+{
+  "id": "bundled:manic-md",
+  "name": "ManicEMU MD Skin Standard",
+  "system": "md",
+  "images": {
+    "ipad_standard_portrait.pdf": "ipad_standard_portrait.pdf.png",
+    "dpad.pdf": "dpad.pdf.png",
+    "a_button.pdf": "a_button.pdf.png",
+    "b_button.pdf": "b_button.pdf.png",
+    "c_button.pdf": "c_button.pdf.png",
+    "x_button.pdf": "x_button.pdf.png",
+    "y_button.pdf": "y_button.pdf.png",
+    "z_button.pdf": "z_button.pdf.png",
+    "fuction_button.pdf": "fuction_button.pdf.png",
+    "menu_button.pdf": "menu_button.pdf.png",
+    "ipad_standard_landscape.pdf": "ipad_standard_landscape.pdf.png",
+    "iphone_edgetoedge_portrait.pdf": "iphone_edgetoedge_portrait.pdf.png",
+    "iphone_edgetoedge_landscape.pdf": "iphone_edgetoedge_landscape.pdf.png",
+    "iphone_standard_portrait.pdf": "iphone_standard_portrait.pdf.png",
+    "iphone_standard_landscape.pdf": "iphone_standard_landscape.pdf.png"
+  },
+  "variants": [
+    {
+      "device": "ipad",
+      "trait": "standard",
+      "orientation": "portrait",
+      "mappingSize": {
+        "width": 609,
+        "height": 812
+      },
+      "assets": {
+        "resizable": "ipad_standard_portrait.pdf"
+      },
+      "items": [
+        {
+          "inputs": {
+            "down": "down",
+            "left": "left",
+            "right": "right",
+            "up": "up"
+          },
+          "frame": {
+            "x": 9,
+            "y": 577.44,
+            "width": 144,
+            "height": 144
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 9
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "dpad.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "a"
+          ],
+          "frame": {
+            "x": 427,
+            "y": 664,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "a_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "b"
+          ],
+          "frame": {
+            "x": 486,
+            "y": 638,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "b_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "c"
+          ],
+          "frame": {
+            "x": 551,
+            "y": 631,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "c_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "x"
+          ],
+          "frame": {
+            "x": 425,
+            "y": 597,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "x_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "y"
+          ],
+          "frame": {
+            "x": 478,
+            "y": 573,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "y_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "z"
+          ],
+          "frame": {
+            "x": 537,
+            "y": 567,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "z_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "start"
+          ],
+          "frame": {
+            "x": 283,
+            "y": 706,
+            "width": 44,
+            "height": 14
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "fuction_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "menu"
+          ],
+          "frame": {
+            "x": 293,
+            "y": 751,
+            "width": 24,
+            "height": 24
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "menu_button.pdf"
+          },
+          "selfRetracting": true
+        }
+      ],
+      "screens": [
+        {
+          "outputFrame": {
+            "x": 8,
+            "y": 45,
+            "width": 593,
+            "height": 415
+          },
+          "filters": []
+        }
+      ]
+    },
+    {
+      "device": "ipad",
+      "trait": "standard",
+      "orientation": "landscape",
+      "mappingSize": {
+        "width": 812,
+        "height": 609
+      },
+      "assets": {
+        "resizable": "ipad_standard_landscape.pdf"
+      },
+      "items": [
+        {
+          "inputs": {
+            "down": "down",
+            "left": "left",
+            "right": "right",
+            "up": "up"
+          },
+          "frame": {
+            "x": 7,
+            "y": 452.44,
+            "width": 144,
+            "height": 144
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 9
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "dpad.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "a"
+          ],
+          "frame": {
+            "x": 630,
+            "y": 548,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "a_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "b"
+          ],
+          "frame": {
+            "x": 689,
+            "y": 522,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "b_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "c"
+          ],
+          "frame": {
+            "x": 754,
+            "y": 515,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "c_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "x"
+          ],
+          "frame": {
+            "x": 628,
+            "y": 481,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "x_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "y"
+          ],
+          "frame": {
+            "x": 681,
+            "y": 457,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "y_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "z"
+          ],
+          "frame": {
+            "x": 740,
+            "y": 451,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "z_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "start"
+          ],
+          "frame": {
+            "x": 739,
+            "y": 369,
+            "width": 44,
+            "height": 14
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "fuction_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "menu"
+          ],
+          "frame": {
+            "x": 39,
+            "y": 359,
+            "width": 24,
+            "height": 24
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "menu_button.pdf"
+          },
+          "selfRetracting": true
+        }
+      ],
+      "screens": [
+        {
+          "outputFrame": {
+            "x": 110,
+            "y": 0,
+            "width": 593,
+            "height": 415
+          },
+          "filters": []
+        }
+      ]
+    },
+    {
+      "device": "iphone",
+      "trait": "edgeToEdge",
+      "orientation": "portrait",
+      "mappingSize": {
+        "width": 375,
+        "height": 812
+      },
+      "assets": {
+        "resizable": "iphone_edgetoedge_portrait.pdf"
+      },
+      "items": [
+        {
+          "inputs": {
+            "down": "down",
+            "left": "left",
+            "right": "right",
+            "up": "up"
+          },
+          "frame": {
+            "x": 9,
+            "y": 538,
+            "width": 144,
+            "height": 144
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 9
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "dpad.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "a"
+          ],
+          "frame": {
+            "x": 193,
+            "y": 625,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "a_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "b"
+          ],
+          "frame": {
+            "x": 252,
+            "y": 599,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "b_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "c"
+          ],
+          "frame": {
+            "x": 317,
+            "y": 592,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "c_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "x"
+          ],
+          "frame": {
+            "x": 191,
+            "y": 558,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "x_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "y"
+          ],
+          "frame": {
+            "x": 244,
+            "y": 534,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "y_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "z"
+          ],
+          "frame": {
+            "x": 303,
+            "y": 528,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "z_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "start"
+          ],
+          "frame": {
+            "x": 166,
+            "y": 706,
+            "width": 44,
+            "height": 14
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "fuction_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "menu"
+          ],
+          "frame": {
+            "x": 176,
+            "y": 751,
+            "width": 24,
+            "height": 24
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "menu_button.pdf"
+          },
+          "selfRetracting": true
+        }
+      ],
+      "screens": [
+        {
+          "outputFrame": {
+            "x": 8,
+            "y": 110,
+            "width": 359,
+            "height": 251
+          },
+          "filters": []
+        }
+      ]
+    },
+    {
+      "device": "iphone",
+      "trait": "edgeToEdge",
+      "orientation": "landscape",
+      "mappingSize": {
+        "width": 812,
+        "height": 375
+      },
+      "assets": {
+        "resizable": "iphone_edgetoedge_landscape.pdf"
+      },
+      "items": [
+        {
+          "inputs": {
+            "down": "down",
+            "left": "left",
+            "right": "right",
+            "up": "up"
+          },
+          "frame": {
+            "x": 55,
+            "y": 138,
+            "width": 144,
+            "height": 144
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 9
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "dpad.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "a"
+          ],
+          "frame": {
+            "x": 622,
+            "y": 225,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "a_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "b"
+          ],
+          "frame": {
+            "x": 681,
+            "y": 199,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "b_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "c"
+          ],
+          "frame": {
+            "x": 746,
+            "y": 192,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "c_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "x"
+          ],
+          "frame": {
+            "x": 620,
+            "y": 158,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "x_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "y"
+          ],
+          "frame": {
+            "x": 673,
+            "y": 134,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "y_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "z"
+          ],
+          "frame": {
+            "x": 732,
+            "y": 128,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "z_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "start"
+          ],
+          "frame": {
+            "x": 610,
+            "y": 331,
+            "width": 44,
+            "height": 14
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "fuction_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "menu"
+          ],
+          "frame": {
+            "x": 173,
+            "y": 321,
+            "width": 24,
+            "height": 24
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "menu_button.pdf"
+          },
+          "selfRetracting": true
+        }
+      ],
+      "screens": [
+        {
+          "outputFrame": {
+            "x": 216,
+            "y": 54,
+            "width": 380,
+            "height": 266
+          },
+          "filters": []
+        }
+      ]
+    },
+    {
+      "device": "iphone",
+      "trait": "standard",
+      "orientation": "portrait",
+      "mappingSize": {
+        "width": 375,
+        "height": 667
+      },
+      "assets": {
+        "resizable": "iphone_standard_portrait.pdf"
+      },
+      "items": [
+        {
+          "inputs": {
+            "down": "down",
+            "left": "left",
+            "right": "right",
+            "up": "up"
+          },
+          "frame": {
+            "x": 9,
+            "y": 403,
+            "width": 144,
+            "height": 144
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 9
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "dpad.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "a"
+          ],
+          "frame": {
+            "x": 193,
+            "y": 490,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "a_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "b"
+          ],
+          "frame": {
+            "x": 252,
+            "y": 464,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "b_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "c"
+          ],
+          "frame": {
+            "x": 317,
+            "y": 457,
+            "width": 50,
+            "height": 50
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "c_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "x"
+          ],
+          "frame": {
+            "x": 191,
+            "y": 423,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "x_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "y"
+          ],
+          "frame": {
+            "x": 244,
+            "y": 399,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "y_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "z"
+          ],
+          "frame": {
+            "x": 303,
+            "y": 393,
+            "width": 44,
+            "height": 44
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "z_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "start"
+          ],
+          "frame": {
+            "x": 166,
+            "y": 565,
+            "width": 44,
+            "height": 14
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "fuction_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "menu"
+          ],
+          "frame": {
+            "x": 176,
+            "y": 610,
+            "width": 24,
+            "height": 24
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "menu_button.pdf"
+          },
+          "selfRetracting": true
+        }
+      ],
+      "screens": [
+        {
+          "outputFrame": {
+            "x": 8,
+            "y": 45,
+            "width": 359,
+            "height": 251
+          },
+          "filters": []
+        }
+      ]
+    },
+    {
+      "device": "iphone",
+      "trait": "standard",
+      "orientation": "landscape",
+      "mappingSize": {
+        "width": 667,
+        "height": 375
+      },
+      "assets": {
+        "resizable": "iphone_standard_landscape.pdf"
+      },
+      "items": [
+        {
+          "inputs": {
+            "down": "down",
+            "left": "left",
+            "right": "right",
+            "up": "up"
+          },
+          "frame": {
+            "x": 0,
+            "y": 138,
+            "width": 144,
+            "height": 144
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 0
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "dpad.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "a"
+          ],
+          "frame": {
+            "x": 521,
+            "y": 226,
+            "width": 42,
+            "height": 42
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "a_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "b"
+          ],
+          "frame": {
+            "x": 569,
+            "y": 203,
+            "width": 42,
+            "height": 42
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "b_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "c"
+          ],
+          "frame": {
+            "x": 622,
+            "y": 199,
+            "width": 42,
+            "height": 42
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "c_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "x"
+          ],
+          "frame": {
+            "x": 523,
+            "y": 168,
+            "width": 32,
+            "height": 32
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "x_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "y"
+          ],
+          "frame": {
+            "x": 565,
+            "y": 147,
+            "width": 32,
+            "height": 32
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "y_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "z"
+          ],
+          "frame": {
+            "x": 612,
+            "y": 145,
+            "width": 32,
+            "height": 32
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 5,
+            "right": 5,
+            "bottom": 5,
+            "left": 5
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "z_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "start"
+          ],
+          "frame": {
+            "x": 526,
+            "y": 331,
+            "width": 44,
+            "height": 14
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "fuction_button.pdf"
+          },
+          "selfRetracting": true
+        },
+        {
+          "inputs": [
+            "menu"
+          ],
+          "frame": {
+            "x": 115,
+            "y": 321,
+            "width": 24,
+            "height": 24
+          },
+          "placement": "controller",
+          "extendedEdges": {
+            "top": 10,
+            "right": 10,
+            "bottom": 10,
+            "left": 10
+          },
+          "touch": false,
+          "opacity": 1,
+          "asset": {
+            "normal": "menu_button.pdf"
+          },
+          "selfRetracting": true
+        }
+      ],
+      "screens": [
+        {
+          "outputFrame": {
+            "x": 154,
+            "y": 62,
+            "width": 359,
+            "height": 251
+          },
+          "filters": []
+        }
+      ]
+    }
+  ],
+  "portrait": {
+    "device": "ipad",
+    "trait": "standard",
+    "orientation": "portrait",
+    "mappingSize": {
+      "width": 609,
+      "height": 812
+    },
+    "assets": {
+      "resizable": "ipad_standard_portrait.pdf"
+    },
+    "items": [
+      {
+        "inputs": {
+          "down": "down",
+          "left": "left",
+          "right": "right",
+          "up": "up"
+        },
+        "frame": {
+          "x": 9,
+          "y": 577.44,
+          "width": 144,
+          "height": 144
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 9
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "dpad.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "a"
+        ],
+        "frame": {
+          "x": 427,
+          "y": 664,
+          "width": 50,
+          "height": 50
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "a_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "b"
+        ],
+        "frame": {
+          "x": 486,
+          "y": 638,
+          "width": 50,
+          "height": 50
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "b_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "c"
+        ],
+        "frame": {
+          "x": 551,
+          "y": 631,
+          "width": 50,
+          "height": 50
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "c_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "x"
+        ],
+        "frame": {
+          "x": 425,
+          "y": 597,
+          "width": 44,
+          "height": 44
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "x_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "y"
+        ],
+        "frame": {
+          "x": 478,
+          "y": 573,
+          "width": 44,
+          "height": 44
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "y_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "z"
+        ],
+        "frame": {
+          "x": 537,
+          "y": 567,
+          "width": 44,
+          "height": 44
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "z_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "start"
+        ],
+        "frame": {
+          "x": 283,
+          "y": 706,
+          "width": 44,
+          "height": 14
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 10
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "fuction_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "menu"
+        ],
+        "frame": {
+          "x": 293,
+          "y": 751,
+          "width": 24,
+          "height": 24
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 10
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "menu_button.pdf"
+        },
+        "selfRetracting": true
+      }
+    ],
+    "screens": [
+      {
+        "outputFrame": {
+          "x": 8,
+          "y": 45,
+          "width": 593,
+          "height": 415
+        },
+        "filters": []
+      }
+    ]
+  },
+  "landscape": {
+    "device": "ipad",
+    "trait": "standard",
+    "orientation": "landscape",
+    "mappingSize": {
+      "width": 812,
+      "height": 609
+    },
+    "assets": {
+      "resizable": "ipad_standard_landscape.pdf"
+    },
+    "items": [
+      {
+        "inputs": {
+          "down": "down",
+          "left": "left",
+          "right": "right",
+          "up": "up"
+        },
+        "frame": {
+          "x": 7,
+          "y": 452.44,
+          "width": 144,
+          "height": 144
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 9
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "dpad.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "a"
+        ],
+        "frame": {
+          "x": 630,
+          "y": 548,
+          "width": 50,
+          "height": 50
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "a_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "b"
+        ],
+        "frame": {
+          "x": 689,
+          "y": 522,
+          "width": 50,
+          "height": 50
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "b_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "c"
+        ],
+        "frame": {
+          "x": 754,
+          "y": 515,
+          "width": 50,
+          "height": 50
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "c_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "x"
+        ],
+        "frame": {
+          "x": 628,
+          "y": 481,
+          "width": 44,
+          "height": 44
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "x_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "y"
+        ],
+        "frame": {
+          "x": 681,
+          "y": 457,
+          "width": 44,
+          "height": 44
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "y_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "z"
+        ],
+        "frame": {
+          "x": 740,
+          "y": 451,
+          "width": 44,
+          "height": 44
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 5,
+          "right": 5,
+          "bottom": 5,
+          "left": 5
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "z_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "start"
+        ],
+        "frame": {
+          "x": 739,
+          "y": 369,
+          "width": 44,
+          "height": 14
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 10
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "fuction_button.pdf"
+        },
+        "selfRetracting": true
+      },
+      {
+        "inputs": [
+          "menu"
+        ],
+        "frame": {
+          "x": 39,
+          "y": 359,
+          "width": 24,
+          "height": 24
+        },
+        "placement": "controller",
+        "extendedEdges": {
+          "top": 10,
+          "right": 10,
+          "bottom": 10,
+          "left": 10
+        },
+        "touch": false,
+        "opacity": 1,
+        "asset": {
+          "normal": "menu_button.pdf"
+        },
+        "selfRetracting": true
+      }
+    ],
+    "screens": [
+      {
+        "outputFrame": {
+          "x": 110,
+          "y": 0,
+          "width": 593,
+          "height": 415
+        },
+        "filters": []
+      }
+    ]
+  },
+  "warnings": []
+}

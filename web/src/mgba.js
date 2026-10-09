@@ -5,6 +5,7 @@ import {TimeStretch} from './time-stretch.js';
 export class MGBACore {
   constructor(canvas){this.canvas=canvas;this.keys=0;this.speed=1;this.volume=.7;this.paused=true;this.sources=new Set();this.frames=0;this.presented=0;this.cheatCount=0;this.preservePitch=false;}
   async load(bytes){
+    this.stateIncludesSave=true; // The bridge restores SAVESTATE_SAVEDATA, including the active flash bank.
     this.m=await window.createMGBA({locateFile:p=>new URL('../cores/mgba/'+p,import.meta.url).href});
     this.copyIn(bytes,(p,n)=>{if(!this.m._web_load(p,n))throw new Error('このROMを読み込めませんでした。形式を確認してください。');});
     this.width=this.m._web_width();this.height=this.m._web_height();this.video=new VideoOutput(this.canvas,this.width,this.height);this.image=new ImageData(this.width,this.height);this.fps=this.m._web_fps();this.startLoop();

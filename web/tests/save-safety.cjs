@@ -15,6 +15,15 @@ const {chromium}=require('./browser-runtime.cjs');
   return {legacy:[...(await db.get('saves','legacy')).bytes],history:backups.map(r=>r.bytes[0]),states:states.map(r=>r.bytes[0]),restoredState,restoredSave,corrupt,aborted,unchanged:before.hash===(await db.get('saves','test')).hash};
  });
  assert.deepEqual(result,{legacy:[90],history:[6,5,4,3,2],states:[7,6,5,4,3],restoredState:[7,42],restoredSave:[7],corrupt:true,aborted:true,unchanged:true});
+ const asynchronous=await p.evaluate(async()=>{
+  const {SaveProtection}=await import('./src/save-safety.js');const p=new SaveProtection(()=>{});await p.open({id:'async-checkpoint',system:'gba'},'mgba-rom64-link-v1');
+  const core={save:async()=>{throw Error('Must use paired worker snapshot');},state:async()=>{throw Error('Must use paired worker snapshot');},checkpoint:async()=>({save:new Uint8Array([4]),state:new Uint8Array([5]),stateError:null})};
+  await p.save(core,{checkpoint:true});let failed=false;core.checkpoint=async()=>({save:new Uint8Array([6]),state:null,stateError:'state unavailable'});
+  try{await p.save(core,{checkpoint:true});}catch{failed=true;}
+  const d=await import('./src/storage.js'),save=await d.get('saves','async-checkpoint'),states=await d.get('recoveries','async-checkpoint');await p.close();
+  return {failed,save:[...save.bytes],pairedSave:[...states[0].save],state:[...states[0].bytes]};
+ });assert.deepEqual(asynchronous,{failed:true,save:[6],pairedSave:[4],state:[5]});
+ assert.deepEqual(await p.evaluate(async()=>{const {compatibleState:c}=await import('./src/core-registry.js');return [c('mgba-rom64-save6-v2',{coreId:'mgba-rom64-link-v1'}),c('mgba-rom64-save6-v2',{}),c('mgba-rom64-link-v1',{coreId:'mgba-rom64-save6-v2'}),c('mgba-rom64-save6-v2',{coreId:'unknown'})];}),[true,true,false,false]);
  const p2=await c.newPage();await p2.goto(base+'privacy.html');assert.equal(await p2.evaluate(async()=>{const {SaveProtection}=await import('./src/save-safety.js');window.s2=new SaveProtection(()=>{});try{await s2.open({id:'test',system:'gba'},'mgba-rom64-link-v1');return false;}catch{return true;}}),true);
  const failure=await p.evaluate(async()=>{const old=IDBDatabase.prototype.transaction;IDBDatabase.prototype.transaction=function(names,mode,...args){if(mode==='readwrite')throw new DOMException('simulated full disk','QuotaExceededError');return old.call(this,names,mode,...args);};n=33;try{await s.save(core,{checkpoint:true});}catch{}finally{IDBDatabase.prototype.transaction=old;}return {error:statuses.at(-1).error,save:[...(await db.get('saves','test')).bytes],history:(await db.get('backups','test')).length};});assert.match(failure.error,/容量/);assert.deepEqual(failure.save,[7]);assert.equal(failure.history,5);
  // Closing without clean exit releases the lock but preserves the abnormal-exit marker.

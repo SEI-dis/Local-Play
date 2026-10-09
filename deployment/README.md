@@ -1,7 +1,8 @@
-# Local Play の公開・更新手順
+# PalmoEMU の公開・更新手順
 
-公開用ワークフローは [Publish Local Play](../.github/workflows/web-pages.yml) です。
-公開先は GitHub Pages、対象は `main` の検査済みコミットです。
+公開用ワークフローは [Publish PalmoEMU](../.github/workflows/web-pages.yml) です。
+公開先は [PalmoEMU](https://sei-dis.github.io/PalmoEMU/)、公開用リポジトリは
+[SEI-dis/PalmoEMU](https://github.com/SEI-dis/PalmoEMU) です。GitHub Pagesで `main` の検査済みコミットを公開します。
 push は検査だけを実行し、サイトの公開は手動実行に限定しています。
 
 ## 初回公開
@@ -13,7 +14,7 @@ push は検査だけを実行し、サイトの公開は手動実行に限定し
    **Build and deployment → Source → GitHub Actions** を選択します。
 3. **Actions → Validate Web release** で、
    公開する `main` のコミットが成功していることを確認します。
-4. **Actions → Publish Local Play** から
+4. **Actions → Publish PalmoEMU** から
    **Run workflow → Branch: main → Run workflow** を実行します。
 5. `build` と `deploy` が成功したら、実行結果の `github-pages` リンクを開きます。
    標準URLは `https://<アカウント名>.github.io/<リポジトリ名>/` です。
@@ -28,7 +29,7 @@ push は検査だけを実行し、サイトの公開は手動実行に限定し
    ライセンス・配布内容の確認記録を内容のレビュー後に更新します。
 2. コミットして `main` に push します。
 3. 同じコミットの **Validate Web release** が成功するまで待ちます。
-4. **Publish Local Play** を `main` で手動実行します。
+4. **Publish PalmoEMU** を `main` で手動実行します。
 5. 公開URLで確認します。初回利用では更新操作は不要です。準備済みの更新は、全タブでプレイや保存・取り込み・編集が終わり、ライブラリか設定の一覧に戻ると自動で反映します。手動で反映する場合は、
    ゲームを保存・終了後に「設定 → アプリの更新」を開き、その画面以外のアプリのタブを閉じて更新します。
    サイトデータは削除しないでください。準備済みの更新は、旧版を使うタブをすべて閉じた後にも切り替わります。
@@ -55,3 +56,12 @@ push は検査だけを実行し、サイトの公開は手動実行に限定し
 
 公式資料: [GitHub Pagesの作成](https://docs.github.com/en/pages/getting-started-with-github-pages/creating-a-github-pages-site)、
 [カスタムワークフロー](https://docs.github.com/en/pages/getting-started-with-github-pages/using-custom-workflows-with-github-pages)。
+
+## 公開URLの変更（2026-10-09）
+
+`Local-Play` を `PalmoEMU` へ改名し、新URLは `https://sei-dis.github.io/PalmoEMU/` です。
+GitHubのリポジトリURLは転送されますが、旧Pages URLは自動転送されません。
+ブックマークは新URLへ変更してください。旧URLで追加したホーム画面アイコンは、新URLから追加し直します。
+ホーム画面版の保存データが通常タブと共有されない環境もあるため、再追加前にセーブを書き出してください。
+通常タブでは同じ `https://sei-dis.github.io` の保存領域を使い、データベース名と設定キーは変更しません。
+オフライン用キャッシュはURLごとなので、新URLで再度保存します。開発用 `SEI-dis/Web-emu` は別リポジトリです。

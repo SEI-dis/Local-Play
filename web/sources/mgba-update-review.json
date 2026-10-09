@@ -1,0 +1,57 @@
+{
+  "schema": 1,
+  "repository": "https://github.com/onikoro334274-cell/mGBA_celio_edition.git",
+  "baselineCommit": "dee555365ec5e4a2d21ee24f6f409412fa62cd94",
+  "candidateCommit": "0ba86121bd92aa570d38301086d8e8f584238d62",
+  "compareUrl": "https://github.com/onikoro334274-cell/mGBA_celio_edition/compare/dee555365ec5e4a2d21ee24f6f409412fa62cd94...0ba86121bd92aa570d38301086d8e8f584238d62",
+  "binaries": {
+    "mgba.js": "3073b2a121db575fc9578646be5b5998ebe7a919a7db18cbd0dc82758720c000",
+    "mgba.wasm": "6d89f5476207465d2cee6bf57be75d673b4966a92b5dbbb87174fb1248b64510"
+  },
+  "sourceSha256": "fcd90d33ad210288a7f67e16a81878d0233e0a23cb1af27fb9756f6e26a2c1b8",
+  "toolchain": {
+    "emsdkCommit": "b44154299bdefe75ba287874bb63fc9806243771",
+    "emscripten": "4.0.15",
+    "emscriptenReleasesCommit": "b412b6307e541b93dd93f01b61181e15c17302ec",
+    "cmake": "cmake version 3.31.6",
+    "ninja": "1.11.1.git.kitware.jobserver-1"
+  },
+  "reviewedOn": "2026-10-09",
+  "sourceChanges": {
+    "added": [
+      "cinema/gb/mooneye-gb/LICENSE"
+    ],
+    "removed": [],
+    "changed": [
+      "CMakeLists.txt",
+      "README.md",
+      "include/mgba/internal/arm/arm.h",
+      "include/mgba/internal/gba/gba.h",
+      "include/mgba/internal/gba/memory.h",
+      "include/mgba/internal/gba/savedata.h",
+      "include/mgba/internal/gba/serialize.h",
+      "readme.txt",
+      "src/arm/arm.c",
+      "src/arm/isa-arm.c",
+      "src/arm/isa-thumb.c",
+      "src/gba/core.c",
+      "src/gba/dma.c",
+      "src/gba/gba.c",
+      "src/gba/memory.c",
+      "src/gba/savedata.c",
+      "src/platform/qt/CMakeLists.txt"
+    ]
+  },
+  "lineEndingOnlyFiles": 377,
+  "compiledNoticesUnchanged": 128,
+  "packagedSourceRebuildMatches": true,
+  "upgradeTests": [
+    "old-state",
+    "old-battery",
+    "extended-flash",
+    "six-mib-save",
+    "extended-ram-state"
+  ],
+  "testCorrection": "The first run assumed flash was initialized immediately after ROM load. The migration fixture now executes initialization before checking expanded size. The same candidate binaries passed the corrected test.",
+  "distribution": "Development repository only; no automatic public deployment."
+}

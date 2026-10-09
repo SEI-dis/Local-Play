@@ -3,20 +3,21 @@
 import {builtins,skinProfile} from './skin-profiles.js';
 import {singleScreenLayout} from './skin-layout.js';
 import {controllerAssets,controllerBody} from './skin-drawing.js';
+import {dualScreen} from './development.js';
 import {ndsSkinLayout} from './nds-skin.js';
 export {builtins};
 
 // Imported skins retain their author's mapping; only built-ins reflow.
 export function builtinLayout(skin,width,height,layout,topClearance=skin.system==='gba'?48:32){
  const w=Math.max(240,width),h=Math.max(200,height);
- if(skin.system==='nds')return ndsSkinLayout(skin,w,h,layout);
+ if(dualScreen(skin.system))return ndsSkinLayout(skin,w,h,layout);
  const rep=singleScreenLayout(skin.system,w,h,layout,topClearance);
  skin.images.responsive=controllerBody(skin.system,skin.palette,rep);return rep;
 }
 export function builtinSkin(system,palette='classic'){
  if(!builtins.some(([id])=>id===palette))palette='classic';
- const profile=system==='nds'?{name:'NDS デュアル',description:'縦は上下2画面、横は左の大画面と右上のサブ画面。2画面の位置・サイズを個別に調整できます。'}:skinProfile(system);
- const images=system==='nds'?{}:{...controllerAssets(system,palette)};
+ const profile=dualScreen(system)?{name:system==='3ds'?'3DS デュアル':'NDS デュアル',description:'縦は上下2画面、横は左の大画面と右上のサブ画面。2画面の位置・サイズを個別に調整できます。'}:skinProfile(system);
+ const images=dualScreen(system)?{}:{...controllerAssets(system,palette)};
  const skin={id:'builtin:'+palette,palette,name:profile.name+' · '+builtins.find(b=>b[0]===palette)[1],description:profile.description,system,screenRadius:0,images};
  skin.portrait=builtinLayout(skin,390,844);images.background=images.responsive;skin.portrait.assets={resizable:'background'};
  skin.landscape=builtinLayout(skin,844,390);images.landscape=images.responsive;skin.landscape.assets={resizable:'landscape'};

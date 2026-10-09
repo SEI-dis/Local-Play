@@ -3,6 +3,7 @@
 #include <mgba/core/core.h>
 #include <mgba/core/cheats.h>
 #include <mgba/core/serialize.h>
+#include <mgba/internal/gba/savedata.h>
 #include <mgba-util/audio-buffer.h>
 #include <mgba-util/image.h>
 #include <mgba-util/vfs.h>
@@ -14,6 +15,13 @@ static void* rom;
 static void* save;
 static void* state;
 static unsigned width, height;
+/* 16 MiB extra RAM + 6 MiB flash + core/RTC metadata. */
+#define WEB_STATE_LIMIT (32 * 1024 * 1024)
+#ifdef GBA_SIZE_FLASH_EXT
+#define WEB_GBA_SAVE_LIMIT (GBA_SIZE_FLASH_EXT + sizeof(struct GBASavedataRTCBuffer))
+#else
+#define WEB_GBA_SAVE_LIMIT (1024 * 1024)
+#endif
 #include "link.h"
 
 EMSCRIPTEN_KEEPALIVE void web_close(void) {
@@ -41,6 +49,8 @@ EMSCRIPTEN_KEEPALIVE int web_load(const void* data, size_t size) {
   if (!core) { vf->close(vf); web_close(); return 0; }
   if (!core->init(core)) { free(core); core = NULL; vf->close(vf); web_close(); return 0; }
   mCoreInitConfig(core, "web");
+  /* Preserve hardware CPU timing and browser workload; fast-forward is separate. */
+  mCoreConfigSetIntValue(&core->config, "overclock", 1);
   core->opts.volume = 256;
   core->opts.useBios = false;
   core->opts.skipBios = true;
@@ -70,7 +80,8 @@ EMSCRIPTEN_KEEPALIVE size_t web_save_export(void) {
   return core ? core->savedataClone(core, &save) : 0;
 }
 EMSCRIPTEN_KEEPALIVE void* web_save_data(void) { return save; }
-EMSCRIPTEN_KEEPALIVE int web_save_import(const void* data, size_t size) { return core && core->savedataRestore(core, data, size, false); }
+EMSCRIPTEN_KEEPALIVE size_t web_save_limit(void) { return core && core->platform(core) == mPLATFORM_GBA ? WEB_GBA_SAVE_LIMIT : 1024 * 1024; }
+EMSCRIPTEN_KEEPALIVE int web_save_import(const void* data, size_t size) { return core && data && size && size <= web_save_limit() && core->savedataRestore(core, data, size, false); }
 
 /* Sets belong to the core and are discarded when another ROM is loaded. */
 EMSCRIPTEN_KEEPALIVE int web_platform(void) { return core ? core->platform(core) : -1; }
@@ -131,7 +142,7 @@ EMSCRIPTEN_KEEPALIVE size_t web_state_export(void) {
   if (!vf) return 0;
   if (!mCoreSaveStateNamed(core, vf, SAVESTATE_SAVEDATA | SAVESTATE_RTC)) { vf->close(vf); return 0; }
   ssize_t size = vf->size(vf);
-  if (size <= 0 || size > 16 * 1024 * 1024) { vf->close(vf); return 0; }
+  if (size <= 0 || size > WEB_STATE_LIMIT) { vf->close(vf); return 0; }
   state = malloc(size);
   if (!state) { vf->close(vf); return 0; }
   vf->seek(vf, 0, SEEK_SET);
@@ -142,7 +153,7 @@ EMSCRIPTEN_KEEPALIVE size_t web_state_export(void) {
 }
 EMSCRIPTEN_KEEPALIVE void* web_state_data(void) { return state; }
 EMSCRIPTEN_KEEPALIVE int web_state_import(const void* data, size_t size) {
-  if (!core || !data || size < core->stateSize(core) || size > 16 * 1024 * 1024) return 0;
+  if (!core || !data || size < core->stateSize(core) || size > WEB_STATE_LIMIT) return 0;
   struct VFile* vf = VFileFromConstMemory(data, size);
   if (!vf) return 0;
   bool ok = mCoreLoadStateNamed(core, vf, SAVESTATE_SAVEDATA | SAVESTATE_RTC);

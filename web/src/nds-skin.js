@@ -66,7 +66,7 @@ export function ndsDisplayLayout(width,height,layout){
 }
 
 export function ndsSkinLayout(skin,width,height,layout){
- const rep=ndsLayout(width,height,layout),accent={purple:'#b1a3cf',graphite:'#95a2ab',mint:'#98c7b1',sunset:'#cfaa96'}[skin.palette]||'#95a2ab';
+ const rep=ndsLayout(width,height,layout);if(skin.system==='3ds'){const f=rep.screens[0].outputFrame;const h=f.width*.6;f.y+=(f.height-h)/2;f.height=h;}const accent={purple:'#b1a3cf',graphite:'#95a2ab',mint:'#98c7b1',sunset:'#cfaa96'}[skin.palette]||'#95a2ab';
  Object.assign(skin.images,assets);
  skin.images.responsive=svg(width,height,`<defs><linearGradient id="case" x2=".6" y2="1"><stop stop-color="#252729"/><stop offset=".5" stop-color="#111213"/><stop offset="1" stop-color="#292b2d"/></linearGradient><pattern id="grain" width="8" height="8" patternUnits="userSpaceOnUse"><path d="M0 8 8 0" stroke="#fff" stroke-opacity=".025"/></pattern></defs><rect width="${width}" height="${height}" rx="20" fill="url(#case)"/><rect x="2" y="2" width="${width-4}" height="${height-4}" rx="19" fill="url(#grain)" stroke="${accent}" stroke-opacity=".25"/>${rep.screens.map(({outputFrame:f})=>`<rect x="${f.x-2}" y="${f.y-2}" width="${f.width+4}" height="${f.height+4}" fill="#070809" stroke="#626568" stroke-opacity=".5"/>`).join('')}`);
  return rep;

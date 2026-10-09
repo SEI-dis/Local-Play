@@ -17,18 +17,18 @@ function pdf(){let s='%PDF-1.4\n',offset=[0];const stream='0.1 0.2 0.3 rg 0 0 39
  await p.locator('[data-skin-choice^="builtin:"]').click({position:{x:15,y:15}});
  await p.locator('#skin-palette').waitFor();
  await p.locator('[data-skin-color=classic]').click();await p.waitForFunction(()=>document.querySelector('#skin-grid').dataset.selection==='builtin:classic');
- assert.equal(await p.locator('.skin-card').count(),3,'Standard and both imported skins stay visible after changing color');
+ assert.equal(await p.locator('.skin-card').count(),4,'Standard and both imported skins stay visible after changing color');
  assert.equal(await p.evaluate(async()=>(await(await import('./src/storage.js')).all('skins')).length),2);
  await p.locator(`[data-skin-choice="${firstId}"]`).click({position:{x:15,y:15}});await p.waitForFunction(id=>document.querySelector('#skin-grid').dataset.selection===id,firstId);
  await p.locator(`[data-preview-skin="${secondId}"]`).click();await p.locator('.skin-zoom .skin-mini').waitFor();await p.getByRole('button',{name:'プレビューを閉じる',exact:true}).click();
  assert.equal(await p.locator('#skin-grid').getAttribute('data-selection'),firstId,'Preview does not change the selected skin');
  assert.equal(await p.locator('#skin-palette').isVisible(),false,'Selecting an imported skin hides the palette again');
- await p.locator('[data-skin-orientation=landscape]').click();assert.equal(await p.locator('.skin-card').count(),3,'Portrait-only files remain listed while previewing landscape');
+ await p.locator('[data-skin-orientation=landscape]').click();assert.equal(await p.locator('.skin-card').count(),4,'Portrait-only files remain listed while previewing landscape');
  await p.locator('[data-skin-orientation=portrait]').click();if(process.env.SCREENSHOT_DIR){const fs=require('node:fs'),path=require('node:path');fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await p.locator('#skin-grid').scrollIntoViewIfNeeded();await p.screenshot({path:path.join(process.env.SCREENSHOT_DIR,'skin-library-'+kind+'.png')});}
  for(const [width,height]of [[240,320],[320,568],[390,844],[844,390],[768,1024]]){await p.setViewportSize({width,height});assert.equal(await p.locator('#skin-grid').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'Skin cards fit the viewport');}
  await p.setViewportSize({width:390,height:844});
  await importAgain('Original GB fixture','com.rileytestut.delta.game.gb');await p.locator('#close-sheet').click();await p.reload();await p.locator('[data-action=skins]').click();await p.locator('#skin-system').waitFor();assert.equal(await p.locator('#skin-system').inputValue(),'gb','Remember the last platform across reloads');
- await p.locator('#skin-system').selectOption('gba');await p.locator(`[data-skin-choice="${firstId}"]`).waitFor();assert.equal(await p.locator('.skin-card').count(),3);
+ await p.locator('#skin-system').selectOption('gba');await p.locator(`[data-skin-choice="${firstId}"]`).waitFor();assert.equal(await p.locator('.skin-card').count(),4);
  assert.equal(await p.locator(`[data-delete-skin="${secondId}"]`).isVisible(),false);
  await p.locator('#manage-skins').click();await p.locator(`[data-delete-skin="${secondId}"]`).click();await p.locator('#cancel-skin-delete').click();await p.locator(`[data-skin-choice="${secondId}"]`).waitFor();
  await p.locator('#manage-skins').click();await p.locator(`[data-delete-skin="${secondId}"]`).click();await p.locator('#confirm-skin-delete').click();await p.locator('#skin-grid').waitFor();

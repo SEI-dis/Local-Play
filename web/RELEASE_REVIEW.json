@@ -1,15 +1,15 @@
 {
   "reviewedOn": "2026-10-09",
   "status": "ready",
-  "scope": "This exact static Web distribution, pinned core sources and manually dispatched workflows. No user ROM/save, extracted commercial BIOS, third-party skin or artwork is included. Open-source replacement implementations retain their notices.",
+  "scope": "This exact static Web distribution, pinned core sources and manually dispatched deployment. The 3DS host adapter is disabled in the static distribution; Azahar binaries are excluded and their distribution audit is separate. No user ROM/save or extracted commercial BIOS is included. Third-party artwork is limited to the seven explicitly reviewed CC BY 4.0 ManicEMUSkins standard skins pinned in BUNDLED_SKINS.json; newer System.core assets and unrelated skins are excluded. Open-source replacement implementations retain their notices.",
   "openItems": [],
   "note": "Engineering review of pinned dependencies, corresponding source, notices, distribution contents and runtime regression tests. Not a legal opinion or a grant of rights in user ROMs/artwork. iPhone hardware and commercial-game compatibility remain unverified; see RELEASE_VALIDATION.md. Any distribution/workflow change requires renewed review.",
-  "reviewedContentSha256": "5506449e6975f97619ef0b070f65e9242a7b087769fdeaa0e5227abada100366",
+  "reviewedContentSha256": "1c8f73a417fd3535effdbb6e06c119c109a831c6d3d45f597f6615ba747cc476",
   "resolutions": [
     {
       "id": "corresponding-source",
       "evidenceFile": "sources/build-evidence.json",
-      "sha256": "9b13bb6e65de957329c1c4afaa03631b121535e810ef37269db57022230d489a"
+      "sha256": "0a0fdafb76b5fca1d09218d6717ed4c4896ec424c870206b16a36cf0d75cc030"
     },
     {
       "id": "nds-corresponding-source",
@@ -19,37 +19,47 @@
     {
       "id": "noncommercial-core-combination",
       "evidenceFile": "LICENSE_AUDIT.md",
-      "sha256": "ebec2d0f342b670c30daa6489804cb20ebc5781085e23949aa09214fdc81c922"
+      "sha256": "4b381f0d953c46551ace0a6fe3341c82221f37a68830dfd9a67927add9d6b34f"
     },
     {
       "id": "asset-rights",
       "evidenceFile": "NOTICES.md",
-      "sha256": "01a1e1d42e84bd9b18b4f144e16cbce4ecaf6adeaccd015c62a7afa626a95f13"
+      "sha256": "d519b918bf9071591fbc41af29a47c6a1a7bdf7922fb3fff0213df0c7425ccec"
     },
     {
       "id": "source-archive-materials",
       "evidenceFile": "SOURCES.json",
-      "sha256": "f5411c381b60c92a8b151e76a8ca6b56e88e108eef693b64b38924e5c79a9e49"
+      "sha256": "3575827118915fd6b6f050eeeb35cb78aff454b1b540120a5c63a40a90c4cdc8"
     },
     {
       "id": "external-artwork-policy",
       "evidenceFile": "LICENSE_AUDIT.md",
-      "sha256": "ebec2d0f342b670c30daa6489804cb20ebc5781085e23949aa09214fdc81c922"
+      "sha256": "4b381f0d953c46551ace0a6fe3341c82221f37a68830dfd9a67927add9d6b34f"
     },
     {
       "id": "runtime-validation",
       "evidenceFile": "RELEASE_VALIDATION.md",
-      "sha256": "beeb8230c61e03c399cceb9c310f7cc39ef88e2eaaf3ed2310ed86c25e5d7feb"
+      "sha256": "75b8e5ad5ec1092edd4617f6267a64f01482c18354bfa7b37e50f88a1d73cc89"
     },
     {
       "id": "alternate-corresponding-source",
       "evidenceFile": "sources/alternate-build-evidence.json",
       "sha256": "b276f6652da551330a35af356d1058e7a03ab7f7ddee2bc6f11e36b2d7798150"
+    },
+    {
+      "id": "mgba-save6-update",
+      "evidenceFile": "sources/mgba-update-review.json",
+      "sha256": "2ca4ccec1c962577181fec33f29ad1115c96e255c10d94863476e45d9297811d"
+    },
+    {
+      "id": "bundled-skin-rights",
+      "evidenceFile": "BUNDLED_SKINS.json",
+      "sha256": "d7df7ff622187c11c438f7104f3dd2b1377a729faeda6176d1d61abc982ffb2d"
     }
   ],
   "workflows": {
     "ci.yml": "fba1138172cf37c7848b284fa0df6e9e34fbd608b881dcf5ae2335f85e12cdbe",
-    "web-pages.yml": "8cf08043e85451cb6a72825014e82a852b68e6f793bf1ac017919f091ba431f1",
+    "web-pages.yml": "c43b41a0749f6d449c570c066aca03e4695d62b86ca1a900da2428d686b1d4bc",
     "core-candidate.yml": "1086407f787e74fa47dcbdc24121d2d82a0f758e4d07969091f573c789859c26"
   }
 }

@@ -38,17 +38,19 @@
     },
     "mgba": {
       "js": {
-        "sha256": "5d64b5f2086bbc35f2eaca246399d4424b5cc2087f10c4e41eb8cfb5cca71de6",
+        "sha256": "3073b2a121db575fc9578646be5b5998ebe7a919a7db18cbd0dc82758720c000",
         "rebuildMatches": true
       },
       "wasm": {
-        "sha256": "81d064195d3733cc65aaa79fbf32251336968a1cdc5f7e8171b18c8a2b464691",
+        "sha256": "6d89f5476207465d2cee6bf57be75d673b4966a92b5dbbb87174fb1248b64510",
         "rebuildMatches": true
       }
     }
   },
   "archives": {
     "libretro-cores-source.tar.gz": "d987a765bf09b4e7d6b5e0c856e1cc12bbbf4690ba142bf5eaf9827d53e915ed",
-    "mgba-celio-rom64-source.tar.gz": "ffa96ad0ebb5b84e34f816af426631b71016a97cf930d6557b38090a8c4b8f85"
-  }
+    "mgba-celio-rom64-source.tar.gz": "fcd90d33ad210288a7f67e16a81878d0233e0a23cb1af27fb9756f6e26a2c1b8"
+  },
+  "mgbaUpdatedOn": "2026-10-09",
+  "mgbaCommit": "0ba86121bd92aa570d38301086d8e8f584238d62"
 }

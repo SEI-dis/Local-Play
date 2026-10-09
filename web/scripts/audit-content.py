@@ -9,7 +9,7 @@ import hashlib, io, json, re, sys, tarfile, zipfile
 ROOT = Path(__file__).resolve().parent.parent
 PIN = 'RELEASE_CONTENT.json'
 GENERATED = {PIN, 'offline-manifest.js', 'sources/web-ui-source.zip', 'RELEASE_REVIEW.json'}
-FORBIDDEN = {'.gba', '.gb', '.gbc', '.nes', '.sfc', '.smc', '.smd', '.gen', '.bin', '.sav', '.srm', '.jgsav', '.state', '.ss0', '.ss1', '.ss2', '.ss3', '.dsv', '.nds', '.cia', '.ipa', '.bios', '.3ds', '.iso', '.chd', '.z64', '.v64', '.n64', '.deltaskin', '.manicskin'}
+FORBIDDEN = {'.gba', '.gb', '.gbc', '.nes', '.sfc', '.smc', '.smd', '.gen', '.bin', '.sav', '.srm', '.jgsav', '.state', '.ss0', '.ss1', '.ss2', '.ss3', '.dsv', '.nds', '.cia', '.ipa', '.bios', '.3ds', '.3dsx', '.cci', '.cxi', '.lp3sav', '.iso', '.chd', '.z64', '.v64', '.n64', '.deltaskin', '.manicskin'}
 SECRET = re.compile(rb'gh[pousr]_[A-Za-z0-9]{36,}|github_pat_[A-Za-z0-9_]{30,}|AKIA[0-9A-Z]{16}|-----BEGIN (?:RSA |EC |OPENSSH )?PRIVATE KEY-----')
 MAX_FILE = 100 * 1024 * 1024
 MAX_TOTAL = 1024 * 1024 * 1024
@@ -23,6 +23,7 @@ def check_name(name):
 
 def component(path):
     if path.startswith(('sources/alternate','sources/jgenesis','cores/jgenesis/','cores/melonds/','cores/vba-next/')): return 'source-built-alternate-cores'
+    if path.startswith(('assets/skins/manic/', 'sources/manic-skins/')): return 'manic-standard-skins-cc-by-4.0'
     if path.startswith('assets/') or path.startswith('sources/skins/'): return 'original-web-artwork'
     if path.startswith('cores/mgba/') or path.startswith('sources/mgba'): return 'mgba-and-web-bridge'
     if path.startswith('vendor/emulatorjs/cores/') or re.match(r'sources/(retroarch|fceumm|snes9x|genesis_plus_gx|ejs-build)', path): return 'retired-core-path-requires-review'
