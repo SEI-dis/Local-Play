@@ -82,7 +82,9 @@ class Scanner:
 
 def run(root=ROOT, record=False):
     scanner = Scanner()
-    for file in sorted(root.rglob('*')):
+    # Path ordering differs between Windows and POSIX (notably case folding).
+    # Pin a portable, case-sensitive relative POSIX order on every platform.
+    for file in sorted(root.rglob('*'), key=lambda p: p.relative_to(root).as_posix()):
         rel = file.relative_to(root).as_posix()
         if file.is_symlink(): raise ValueError('Symlink in release: ' + rel)
         if any(p in {'.git', 'node_modules', '__pycache__', 'test-results', 'playwright-report'} for p in file.relative_to(root).parts): raise ValueError('Non-release directory: ' + rel)

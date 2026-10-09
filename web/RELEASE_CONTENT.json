@@ -16,6 +16,60 @@
       "component": "web-port-code-and-documentation"
     },
     {
+      "path": "CORE_UPDATES.md",
+      "bytes": 3849,
+      "sha256": "1f62f5356b6d5e52329016142ce763190f782efa5f46cac7c7facb73d6d8e6db",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "LICENSE",
+      "bytes": 35184,
+      "sha256": "6f1e622c82a380075843bb084a7ec3b1f1d12a4a02526d75e78b0924a860aa75",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "LICENSE_AUDIT.md",
+      "bytes": 11729,
+      "sha256": "00873bbc6b0be758fea061686ad51c4f07c919a39f35298952cf3786a1e6b288",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "LINK_COMPATIBILITY.md",
+      "bytes": 5099,
+      "sha256": "a5fa0ef6798bc50f0c8bacdba1068620108a927b464cda00896a975441b0a62f",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "NOTICES.md",
+      "bytes": 18270,
+      "sha256": "d31e82db6f4a02b60401b3820b63d74b18d525e068d17e8b9da2b5bd63acc01d",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "PRIVACY_AUDIT.md",
+      "bytes": 9495,
+      "sha256": "8d506d030619cbb677fad186ba86aba8eec0e7260cf8b87c75ea4ccf8a1fef8b",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "README.md",
+      "bytes": 32462,
+      "sha256": "ad1919a57080f48ab11b39d5798ccd4d94ba54c9c340e1528b130113536d8a21",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "RELEASE_VALIDATION.md",
+      "bytes": 7851,
+      "sha256": "a30c06bb4caee42915e7ca1d1732fdde9244b92c7ac64ce6a137013d7736bbfb",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "SOURCES.json",
+      "bytes": 19114,
+      "sha256": "e8557f85cae8d91715bcbea90c3181463d4dfd133053986c8bc53590c38646db",
+      "component": "web-port-code-and-documentation"
+    },
+    {
       "path": "assets/controller.svg",
       "bytes": 440,
       "sha256": "54b0d8289d04e610aabdd79a4e3246e0a9e9089510ef1d35dc284fc7901b130a",
@@ -43,12 +97,6 @@
       "path": "controls.css",
       "bytes": 1680,
       "sha256": "7bd5fe337f662d0b931d21b54dc6a5b90046a537f3f6783d58af1c02b8fd3c0b",
-      "component": "web-port-code-and-documentation"
-    },
-    {
-      "path": "CORE_UPDATES.md",
-      "bytes": 3849,
-      "sha256": "1f62f5356b6d5e52329016142ce763190f782efa5f46cac7c7facb73d6d8e6db",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -160,15 +208,9 @@
       "component": "web-port-code-and-documentation"
     },
     {
-      "path": "LICENSE",
-      "bytes": 35184,
-      "sha256": "6f1e622c82a380075843bb084a7ec3b1f1d12a4a02526d75e78b0924a860aa75",
-      "component": "web-port-code-and-documentation"
-    },
-    {
-      "path": "LICENSE_AUDIT.md",
-      "bytes": 11729,
-      "sha256": "00873bbc6b0be758fea061686ad51c4f07c919a39f35298952cf3786a1e6b288",
+      "path": "licenses.html",
+      "bytes": 12938,
+      "sha256": "bb3065d395b627134a6d40e18f784a046e154569136b3980520df62f0093e6c6",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -178,27 +220,21 @@
       "component": "retained-license-notices"
     },
     {
+      "path": "licenses/CRC32-zlib.txt",
+      "bytes": 861,
+      "sha256": "ec641331ce2a5e7152e056a5afc5c92823a068aa79ee09ff7db6bd5f0b64d0f7",
+      "component": "retained-license-notices"
+    },
+    {
       "path": "licenses/ClownMDEmu-AGPL-3.0.txt",
       "bytes": 35184,
       "sha256": "6f1e622c82a380075843bb084a7ec3b1f1d12a4a02526d75e78b0924a860aa75",
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/compiler-rt-LICENSE.txt",
-      "bytes": 16708,
-      "sha256": "1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d",
-      "component": "retained-license-notices"
-    },
-    {
       "path": "licenses/Core-file-notices.txt",
       "bytes": 518706,
       "sha256": "3507425a8bde97640c25bd256f728587d9bb9c85db7ace9a75f55f21fa227552",
-      "component": "retained-license-notices"
-    },
-    {
-      "path": "licenses/CRC32-zlib.txt",
-      "bytes": 861,
-      "sha256": "ec641331ce2a5e7152e056a5afc5c92823a068aa79ee09ff7db6bd5f0b64d0f7",
       "component": "retained-license-notices"
     },
     {
@@ -214,12 +250,6 @@
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/dlmalloc-notice.txt",
-      "bytes": 27794,
-      "sha256": "14220848a620e445a7b470aff843669e3a38842ff7f75128c8d8af05f62da73b",
-      "component": "retained-license-notices"
-    },
-    {
       "path": "licenses/Emscripten-4.0.15.txt",
       "bytes": 5093,
       "sha256": "620a78084fc7ca97c0b5dea9abf891f3ffcadfdbf305276f099c9c4e12fc1d86",
@@ -232,15 +262,69 @@
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/fceumm.txt",
-      "bytes": 18010,
-      "sha256": "a6996dcf0c334281f734560926e079b2dbbd5b78e81c0ca00a413ec01e1cd2fb",
-      "component": "retained-license-notices"
-    },
-    {
       "path": "licenses/FreeBIOS-BSD-2-Clause.txt",
       "bytes": 1452,
       "sha256": "1a38ce51d2886c1876cda31829214a3236f578fc28797bbbb41a45ee4cd723ab",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/LGPL-2.1.txt",
+      "bytes": 26527,
+      "sha256": "a9bdde5616ecdd1e980b44f360600ee8783b1f99b8cc83a2beb163a0a390e861",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/ManicEMU-AGPL-3.0.txt",
+      "bytes": 35184,
+      "sha256": "6f1e622c82a380075843bb084a7ec3b1f1d12a4a02526d75e78b0924a860aa75",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/ManicEMU-ANTI-PIRACY.md",
+      "bytes": 2312,
+      "sha256": "78b1c1005b78f346e5f177c3588563a523784a76ba0539d7f8edd908f0c83987",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/Mesen-S-GPL-3.0.txt",
+      "bytes": 35821,
+      "sha256": "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/PDFjs-Apache-2.0.txt",
+      "bytes": 10174,
+      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/RUST-COPYRIGHT-library.html",
+      "bytes": 1499465,
+      "sha256": "5647be074c8edf7339fd863055923a8fc80bc5610a8d4661ec3b767b9d392c27",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/VBA-Next-GPL-2.0.txt",
+      "bytes": 17796,
+      "sha256": "aa14a9da0c5d0721ccd98840ad6b1739312e71b0756cd21f1abda5cca68eaf56",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/compiler-rt-LICENSE.txt",
+      "bytes": 16708,
+      "sha256": "1a8f1058753f1ba890de984e48f0242a3a5c29a6a8f2ed9fd813f36985387e8d",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/dlmalloc-notice.txt",
+      "bytes": 27794,
+      "sha256": "14220848a620e445a7b470aff843669e3a38842ff7f75128c8d8af05f62da73b",
+      "component": "retained-license-notices"
+    },
+    {
+      "path": "licenses/fceumm.txt",
+      "bytes": 18010,
+      "sha256": "a6996dcf0c334281f734560926e079b2dbbd5b78e81c0ca00a413ec01e1cd2fb",
       "component": "retained-license-notices"
     },
     {
@@ -250,21 +334,15 @@
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/jgenesis-dependency-notices.txt",
-      "bytes": 1062806,
-      "sha256": "deb2b3a9b8eab1930f3429112bbfdfc4871ba7da8ce5408ad8aea13f187c48a8",
-      "component": "retained-license-notices"
-    },
-    {
       "path": "licenses/jgenesis-GPL-3.0.txt",
       "bytes": 35823,
       "sha256": "230184f60bae2feaf244f10a8bac053c8ff33a183bcc365b4d8b876d2b7f4809",
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/LGPL-2.1.txt",
-      "bytes": 26527,
-      "sha256": "a9bdde5616ecdd1e980b44f360600ee8783b1f99b8cc83a2beb163a0a390e861",
+      "path": "licenses/jgenesis-dependency-notices.txt",
+      "bytes": 1062806,
+      "sha256": "deb2b3a9b8eab1930f3429112bbfdfc4871ba7da8ce5408ad8aea13f187c48a8",
       "component": "retained-license-notices"
     },
     {
@@ -292,27 +370,9 @@
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/ManicEMU-AGPL-3.0.txt",
-      "bytes": 35184,
-      "sha256": "6f1e622c82a380075843bb084a7ec3b1f1d12a4a02526d75e78b0924a860aa75",
-      "component": "retained-license-notices"
-    },
-    {
-      "path": "licenses/ManicEMU-ANTI-PIRACY.md",
-      "bytes": 2312,
-      "sha256": "78b1c1005b78f346e5f177c3588563a523784a76ba0539d7f8edd908f0c83987",
-      "component": "retained-license-notices"
-    },
-    {
-      "path": "licenses/melonDS-GPL-3.0.txt",
-      "bytes": 35821,
-      "sha256": "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b",
-      "component": "retained-license-notices"
-    },
-    {
-      "path": "licenses/Mesen-S-GPL-3.0.txt",
-      "bytes": 35821,
-      "sha256": "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b",
+      "path": "licenses/mGBA-MPL-2.0.txt",
+      "bytes": 16726,
+      "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
       "component": "retained-license-notices"
     },
     {
@@ -322,9 +382,9 @@
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/mGBA-MPL-2.0.txt",
-      "bytes": 16726,
-      "sha256": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
+      "path": "licenses/melonDS-GPL-3.0.txt",
+      "bytes": 35821,
+      "sha256": "0b383d5a63da644f628d99c33976ea6487ed89aaa59f0b3257992deac1171e6b",
       "component": "retained-license-notices"
     },
     {
@@ -334,39 +394,9 @@
       "component": "retained-license-notices"
     },
     {
-      "path": "licenses/PDFjs-Apache-2.0.txt",
-      "bytes": 10174,
-      "sha256": "0d542e0c8804e39aa7f37eb00da5a762149dc682d7829451287e11b938e94594",
-      "component": "retained-license-notices"
-    },
-    {
-      "path": "licenses/RUST-COPYRIGHT-library.html",
-      "bytes": 1499465,
-      "sha256": "5647be074c8edf7339fd863055923a8fc80bc5610a8d4661ec3b767b9d392c27",
-      "component": "retained-license-notices"
-    },
-    {
-      "path": "licenses/VBA-Next-GPL-2.0.txt",
-      "bytes": 17796,
-      "sha256": "aa14a9da0c5d0721ccd98840ad6b1739312e71b0756cd21f1abda5cca68eaf56",
-      "component": "retained-license-notices"
-    },
-    {
-      "path": "licenses.html",
-      "bytes": 12938,
-      "sha256": "bb3065d395b627134a6d40e18f784a046e154569136b3980520df62f0093e6c6",
-      "component": "web-port-code-and-documentation"
-    },
-    {
       "path": "link-panel.css",
       "bytes": 3620,
       "sha256": "701ca1867bd4fa69faa03961ac1ac52a336e26abe5a3a0a2129585e2adb4ccc6",
-      "component": "web-port-code-and-documentation"
-    },
-    {
-      "path": "LINK_COMPATIBILITY.md",
-      "bytes": 5099,
-      "sha256": "a5fa0ef6798bc50f0c8bacdba1068620108a927b464cda00896a975441b0a62f",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -388,12 +418,6 @@
       "component": "web-port-code-and-documentation"
     },
     {
-      "path": "NOTICES.md",
-      "bytes": 18270,
-      "sha256": "d31e82db6f4a02b60401b3820b63d74b18d525e068d17e8b9da2b5bd63acc01d",
-      "component": "web-port-code-and-documentation"
-    },
-    {
       "path": "package.json",
       "bytes": 2165,
       "sha256": "f17ab32e6a05274c7c09ebdeef4c67833c2ef024b82250c83dedca6a9d33fda9",
@@ -406,27 +430,9 @@
       "component": "web-port-code-and-documentation"
     },
     {
-      "path": "PRIVACY_AUDIT.md",
-      "bytes": 9495,
-      "sha256": "8d506d030619cbb677fad186ba86aba8eec0e7260cf8b87c75ea4ccf8a1fef8b",
-      "component": "web-port-code-and-documentation"
-    },
-    {
-      "path": "README.md",
-      "bytes": 32462,
-      "sha256": "ad1919a57080f48ab11b39d5798ccd4d94ba54c9c340e1528b130113536d8a21",
-      "component": "web-port-code-and-documentation"
-    },
-    {
-      "path": "RELEASE_VALIDATION.md",
-      "bytes": 7631,
-      "sha256": "546aed2650ff188f68767e4f79c7ab83564217f2c938c36c62404686914ed47c",
-      "component": "web-port-code-and-documentation"
-    },
-    {
       "path": "scripts/audit-content.py",
-      "bytes": 7282,
-      "sha256": "96998f240e926852e8e18f9d570745996b1f86cdfa04cfd63ba42b254981c393",
+      "bytes": 7485,
+      "sha256": "2cd4fbb25f141f250e51de100c59b70a9ca338742474ae9dd28b8c8d44bf5b7e",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -2104,12 +2110,6 @@
       "component": "source-built-alternate-cores"
     },
     {
-      "path": "sources/alternate-web/battery.cpp",
-      "bytes": 790,
-      "sha256": "52f9f71d55b34510b9de832dc1c70ccdb471eb73c2077d3c435ef1ac3cdd5982",
-      "component": "source-built-alternate-cores"
-    },
-    {
       "path": "sources/alternate-web/BUILD.md",
       "bytes": 5587,
       "sha256": "91a5ee8f70d12ec308d7eb07e9a020e443ff630c0d1ccf03380fad5b94a58d36",
@@ -2125,6 +2125,12 @@
       "path": "sources/alternate-web/DEPENDENCIES.json",
       "bytes": 17853,
       "sha256": "6b3746a6f99ece4a2a8f6840ae9e7a189ab3b5e9ae0444205c9d5075c350470e",
+      "component": "source-built-alternate-cores"
+    },
+    {
+      "path": "sources/alternate-web/battery.cpp",
+      "bytes": 790,
+      "sha256": "52f9f71d55b34510b9de832dc1c70ccdb471eb73c2077d3c435ef1ac3cdd5982",
       "component": "source-built-alternate-cores"
     },
     {
@@ -33298,12 +33304,6 @@
       "component": "source-built-libretro-cores"
     },
     {
-      "path": "sources/libretro-web/bridge.c",
-      "bytes": 6430,
-      "sha256": "ba747e845011559f03e6e84d52733bec533b63027a8afe5ad37cb0d9a84aba76",
-      "component": "source-built-libretro-cores"
-    },
-    {
       "path": "sources/libretro-web/BUILD.md",
       "bytes": 2043,
       "sha256": "f005ed306fc85d20dc24767427a5c02c15d7ff1639e038c157dc2b464988a4b0",
@@ -33313,6 +33313,12 @@
       "path": "sources/libretro-web/CMakeLists.txt",
       "bytes": 3283,
       "sha256": "709f75293f65d477cd19df9c633bb339167b34f6ed45f01b63cf3c2452f1e1e8",
+      "component": "source-built-libretro-cores"
+    },
+    {
+      "path": "sources/libretro-web/bridge.c",
+      "bytes": 6430,
+      "sha256": "ba747e845011559f03e6e84d52733bec533b63027a8afe5ad37cb0d9a84aba76",
       "component": "source-built-libretro-cores"
     },
     {
@@ -35908,12 +35914,6 @@
       "component": "mgba-and-web-bridge"
     },
     {
-      "path": "sources/mgba-web-port/bridge.c",
-      "bytes": 6092,
-      "sha256": "d960f7543ae5a08c2fa9b52552f82d9a18526f691825368c3d1cda7f91315955",
-      "component": "mgba-and-web-bridge"
-    },
-    {
       "path": "sources/mgba-web-port/BUILD.md",
       "bytes": 2269,
       "sha256": "5e3bb26b4c299a94f89a34f560074b09972513dc879c0530374f1c25cd74418b",
@@ -35923,6 +35923,12 @@
       "path": "sources/mgba-web-port/CMakeLists.txt",
       "bytes": 1024,
       "sha256": "43b4e296249f68ed7f4b69176afd59ae1693a109f0c66db91ae5ecd9d0f3fee2",
+      "component": "mgba-and-web-bridge"
+    },
+    {
+      "path": "sources/mgba-web-port/bridge.c",
+      "bytes": 6092,
+      "sha256": "d960f7543ae5a08c2fa9b52552f82d9a18526f691825368c3d1cda7f91315955",
       "component": "mgba-and-web-bridge"
     },
     {
@@ -35944,18 +35950,6 @@
       "component": "source-built-nds-core"
     },
     {
-      "path": "sources/nds-web/battery.cpp",
-      "bytes": 1133,
-      "sha256": "7c8d71adaa2405e908ee653c63463e66c32e90e46eb5c6743e28a30abf740c9d",
-      "component": "source-built-nds-core"
-    },
-    {
-      "path": "sources/nds-web/bridge.c",
-      "bytes": 6826,
-      "sha256": "4e0b2b0ee88883dbd3908825f90fdb4af63f1634c34dfbd8672f3133f2201651",
-      "component": "source-built-nds-core"
-    },
-    {
       "path": "sources/nds-web/BUILD.md",
       "bytes": 3414,
       "sha256": "10afc7b31d641b9f7e8c5a29911057fe7d3c1d26bb176d72028fbf57c7f545a1",
@@ -35965,6 +35959,18 @@
       "path": "sources/nds-web/CMakeLists.txt",
       "bytes": 1341,
       "sha256": "bd856f7a3f2afc9b56b521a4ad7b24d398da35974ae3dd6bee28b4718cf412eb",
+      "component": "source-built-nds-core"
+    },
+    {
+      "path": "sources/nds-web/battery.cpp",
+      "bytes": 1133,
+      "sha256": "7c8d71adaa2405e908ee653c63463e66c32e90e46eb5c6743e28a30abf740c9d",
+      "component": "source-built-nds-core"
+    },
+    {
+      "path": "sources/nds-web/bridge.c",
+      "bytes": 6826,
+      "sha256": "4e0b2b0ee88883dbd3908825f90fdb4af63f1634c34dfbd8672f3133f2201651",
       "component": "source-built-nds-core"
     },
     {
@@ -37882,12 +37888,6 @@
       "component": "pdfjs-apache-2.0"
     },
     {
-      "path": "SOURCES.json",
-      "bytes": 19114,
-      "sha256": "e8557f85cae8d91715bcbea90c3181463d4dfd133053986c8bc53590c38646db",
-      "component": "web-port-code-and-documentation"
-    },
-    {
       "path": "src/app.js",
       "bytes": 51890,
       "sha256": "2ba4946266c513ceb248e1c68b8299f4ab8c5d096b5a504dd81822b7bb784128",
@@ -38117,8 +38117,8 @@
     },
     {
       "path": "tests/audit-content.py",
-      "bytes": 3249,
-      "sha256": "6ea9b85c24bfb145191334adf97fc04031d73bbe056a7f54aa5df4b5a83d1a19",
+      "bytes": 4268,
+      "sha256": "4960dbf09fbb83f969ebd42c96715dbb699de5b029e7f1be2f409023bd3113fb",
       "component": "web-port-code-and-documentation"
     },
     {

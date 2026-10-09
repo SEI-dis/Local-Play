@@ -2,7 +2,7 @@
 Regression tests for the previously missed archive contents and stale source.
 """
 from pathlib import Path
-import importlib.util, io, tarfile, tempfile, unittest, zipfile, sys
+import importlib.util, io, json, tarfile, tempfile, unittest, zipfile, sys
 sys.dont_write_bytecode = True
 spec = importlib.util.spec_from_file_location('audit', Path(__file__).resolve().parents[1] / 'scripts/audit-content.py')
 audit = importlib.util.module_from_spec(spec)
@@ -21,6 +21,24 @@ def zip(name, content):
     return out.getvalue()
 
 class AuditTests(unittest.TestCase):
+    def test_portable_release_inventory_order(self):
+        # Windows Path ordering folds case; Linux Path ordering does not.
+        # The same source tree must produce a pin that either OS can verify.
+        with tempfile.TemporaryDirectory() as d:
+            root = Path(d)
+            names = ['src/app.txt', 'assets/icon.svg', 'NOTICE.txt', 'src/App.js', 'LICENSE.txt']
+            for name in names:
+                file = root / name
+                file.parent.mkdir(parents=True, exist_ok=True)
+                file.write_bytes(b'original fixture')
+            (root/'sources').mkdir()
+            (root/'sources/web-ui-source.zip').write_bytes(zip('source.txt', b'original fixture'))
+            (root/'offline-manifest.js').write_bytes(b'// original fixture')
+            audit.run(root, record=True)
+            inventory = json.loads((root/audit.PIN).read_text(encoding='utf8'))
+            self.assertEqual([row['path'] for row in inventory['files']], sorted(names))
+            audit.run(root)
+
     def test_rom_signature_with_an_innocent_extension(self):
         for offset, signature in [(0x104, 'ceed6666cc0d'), (4, '24ffae51699aa221'), (0xc0, '24ffae51699aa221')]:
             data = bytearray(1024); data[offset:offset+len(bytes.fromhex(signature))] = bytes.fromhex(signature)

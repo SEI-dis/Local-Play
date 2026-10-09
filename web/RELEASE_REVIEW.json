@@ -4,7 +4,7 @@
   "scope": "This exact static Web distribution, pinned core sources and manually dispatched workflows. No user ROM/save, extracted commercial BIOS, third-party skin or artwork is included. Open-source replacement implementations retain their notices.",
   "openItems": [],
   "note": "Engineering review of pinned dependencies, corresponding source, notices, distribution contents and runtime regression tests. Not a legal opinion or a grant of rights in user ROMs/artwork. iPhone hardware and commercial-game compatibility remain unverified; see RELEASE_VALIDATION.md. Any distribution/workflow change requires renewed review.",
-  "reviewedContentSha256": "3b0adb8d6dc73138efe8e3e0170b6e318621c1469d4665b9ae71a31783bac54a",
+  "reviewedContentSha256": "70af73bcfb8bf3581e5ae55c4273d5c6284baf692cd704c6342e6b0be7c4560a",
   "resolutions": [
     {
       "id": "corresponding-source",
@@ -39,7 +39,7 @@
     {
       "id": "runtime-validation",
       "evidenceFile": "RELEASE_VALIDATION.md",
-      "sha256": "546aed2650ff188f68767e4f79c7ab83564217f2c938c36c62404686914ed47c"
+      "sha256": "a30c06bb4caee42915e7ca1d1732fdde9244b92c7ac64ce6a137013d7736bbfb"
     },
     {
       "id": "alternate-corresponding-source",
@@ -48,7 +48,7 @@
     }
   ],
   "workflows": {
-    "ci.yml": "58477c29be0f1ea35ea9da1f0fcec6f96ef015bab15f589808d69aeda4f79701",
+    "ci.yml": "fba1138172cf37c7848b284fa0df6e9e34fbd608b881dcf5ae2335f85e12cdbe",
     "web-pages.yml": "8cf08043e85451cb6a72825014e82a852b68e6f793bf1ac017919f091ba431f1",
     "core-candidate.yml": "1086407f787e74fa47dcbdc24121d2d82a0f758e4d07969091f573c789859c26"
   }
