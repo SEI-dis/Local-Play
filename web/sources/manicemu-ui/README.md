@@ -124,7 +124,8 @@ network safeguards and browser audio/video code remain deliberate Web adaptation
 
 The original Web import hero and hardware chips were replaced by the source's
 compact Files service card. Supported extensions are in a collapsible helper.
-The About entry is in Other, following SettingsListView. Shared native row
+The redundant About entry is omitted; credits and licenses remain in Other.
+Shared native row
 builders now live in ui.js and are re-exported by manic-ui.js for its callers;
 their DOM and escaping behavior are unchanged. The original Swift references
 remain byte-identical. Local recovery, offline updates and file validation are

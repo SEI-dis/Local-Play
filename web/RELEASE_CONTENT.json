@@ -78,7 +78,7 @@
     {
       "path": "SOURCES.json",
       "bytes": 20374,
-      "sha256": "c055f0b5122f7c78101bad7f1ffb77bc37de82d56144abd6996169cabfb9760c",
+      "sha256": "f5411c381b60c92a8b151e76a8ca6b56e88e108eef693b64b38924e5c79a9e49",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -252,7 +252,7 @@
     {
       "path": "index.html",
       "bytes": 4630,
-      "sha256": "e75faddf4a21f8a05f2580a3f49c6e0350f5fafdddbba77380cf6bd60e701c8b",
+      "sha256": "478a9499aa3627e88a6edbe7e9800362a292c5ad5a3ebb64fd083d259b173e32",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -33521,8 +33521,8 @@
     },
     {
       "path": "sources/manicemu-ui/README.md",
-      "bytes": 11444,
-      "sha256": "9e9f26535cc9644fd39a941ba79a2d0f9aafb770479a20cf24a7d71b13ccd508",
+      "bytes": 11464,
+      "sha256": "02425edc08bec672a71f2ebca9e04a9045375b2b6cd6014b28ceb65418d9c2aa",
       "component": "web-port-code-and-documentation"
     },
     {
