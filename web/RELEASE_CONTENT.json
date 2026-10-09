@@ -60,13 +60,13 @@
     {
       "path": "README.md",
       "bytes": 35748,
-      "sha256": "b84334f8ca391b5cfba0bfa625d03654c360425d55d4c02e40efc27ab6e6c0c7",
+      "sha256": "9a495eb228b5204cfa70edf47a4479e1465760d0cba33b378cabbcddee598d40",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "RELEASE_VALIDATION.md",
-      "bytes": 18056,
-      "sha256": "6d403e6cba0fe977354329bbe3aebe92af1f9db2fcbe0907ca0c35ff04ea08a1",
+      "bytes": 18435,
+      "sha256": "beeb8230c61e03c399cceb9c310f7cc39ef88e2eaaf3ed2310ed86c25e5d7feb",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -252,7 +252,7 @@
     {
       "path": "index.html",
       "bytes": 4630,
-      "sha256": "478a9499aa3627e88a6edbe7e9800362a292c5ad5a3ebb64fd083d259b173e32",
+      "sha256": "84c9863f2aaf2942e08581e2766409167902954a955fe2392e4bf443efe180e6",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -468,7 +468,7 @@
     {
       "path": "package.json",
       "bytes": 2234,
-      "sha256": "b37aee1554f32be5c393fe06be6043cb3795237fd2b7a95527658dfb648a7686",
+      "sha256": "6648df470e4bbc7f93c987fa4f5cdbd7a60aef548d1fd990f0dddd32d5e95e5e",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38177,8 +38177,8 @@
     },
     {
       "path": "src/skin-profiles.js",
-      "bytes": 3148,
-      "sha256": "61f79dfb1382d4b21527416e7419ac60cf8cd0dc344bccd26fa7601a992c4544",
+      "bytes": 3307,
+      "sha256": "5ec53986f3e370252e99508a024a21284556b94b471ca3ddf94df2781766a94e",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38189,8 +38189,8 @@
     },
     {
       "path": "src/skin-settings.js",
-      "bytes": 14477,
-      "sha256": "2c760708b0d6536b3e03d1d199fb61453be20334f2b81d7226ada759a5a92eb5",
+      "bytes": 14773,
+      "sha256": "9a4aa7261ba8b947eaeb258bb81735875fa792a9b61cf8a73a94ceb31a142365",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38333,8 +38333,8 @@
     },
     {
       "path": "tests/game-skins.cjs",
-      "bytes": 7276,
-      "sha256": "7318638873a41c5d7992c37e94fa780405d6645726e5c6e4916fd419a609213b",
+      "bytes": 7407,
+      "sha256": "2cb231274e3ebc7505af38e83c176c2e7eea1eb6b715c9d8e2049ab4da17ed7e",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38447,8 +38447,8 @@
     },
     {
       "path": "tests/skins.cjs",
-      "bytes": 8457,
-      "sha256": "a5a204bba5b9bdbf39dfd0ed40611839e01cc43f515e706e1d3c57dfae0e0ab0",
+      "bytes": 9223,
+      "sha256": "5aafff79c303bcef5d01f37bb007fce2ebc047c50aac8ede8b7e76c0c86b8c10",
       "component": "web-port-code-and-documentation"
     },
     {

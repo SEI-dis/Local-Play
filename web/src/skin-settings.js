@@ -7,6 +7,7 @@ import * as db from './storage.js';
 import {systems,escapeHTML as esc,icon} from './shared.js';
 import {row} from './ui.js';
 import {builtins,loadSkin,importSkin,previewSkin,skinSupportsSystem} from './skins.js';
+import {builtinColors} from './skin-profiles.js';
 import {mountSkinPreview} from './skin-preview.js';
 import {mountControlEditor} from './control-editor.js';
 export function createSkinSettings(api){
@@ -34,6 +35,7 @@ async function showSkins(system=settings.skinSystem||'gba',game=null){
  if(game){const record=await db.get('library',game.id);if(!record)throw new Error('ゲームが見つかりません。');game.skinId=record.skinId;game.controlLayout=record.controlLayout;system=game.system;}
  else if(settings.skinSystem!==system){settings.skinSystem=system;applySettings();}
  const saved=(await db.skinCatalog()).filter(s=>skinSupportsSystem(s.system,system)).sort((a,b)=>(a.importedAt||0)-(b.importedAt||0)||a.name.localeCompare(b.name));
+ const colors=builtinColors(system);
  const choices=[...builtins.map(([id,name])=>({id:'builtin:'+id,name})),...saved];
  const shared=choices.some(s=>s.id===settings.skins?.[system])?settings.skins[system]:'builtin:classic';
  let selected=game?(choices.some(s=>s.id===game.skinId)?game.skinId:''):shared,effective=selected||shared;
@@ -41,7 +43,7 @@ async function showSkins(system=settings.skinSystem||'gba',game=null){
  const mounted=new Map(),pending=new Set(),zoomCleanups=new Set();
  const syncCurrent=async()=>{if(runtime.current){runtime.current.skinId=(await db.get('library',runtime.current.id))?.skinId;runtime.skinData=await loadSkin(runtime.current.system,runtime.current.skinId||settings.skins?.[runtime.current.system],settings.skins?.[runtime.current.system]);layoutSkin();}};
  const card=(id,name)=>`<article class="skin-card" data-skin-card="${esc(id)}"><button class="skin-use" data-skin-choice="${esc(id)}" aria-label="${esc(name)}を使う" aria-pressed="false"><span class="skin-card-preview" role="img"></span><span class="skin-current" aria-hidden="true"></span></button><button class="skin-preview-open" data-preview-skin="${esc(id)}" aria-label="${esc(name)}をプレビュー">${icon('expand')}<span>プレビュー</span></button><p class="skin-card-name">${esc(name)}</p>${id.startsWith('skin:')?`<button class="skin-delete danger" data-delete-skin="${esc(id)}" aria-label="${esc(name)}を削除" hidden>${icon('trash')}<span>削除</span></button>`:''}</article>`;
- sheet('スキン',`${game?`<p class="sheet-note skin-target">${esc(game.name)}</p><label class="row skin-inherit"><span>機種の設定を使う</span><input type="checkbox" id="skin-inherit" ${!selected?'checked':''}></label>`:`<div class="settings-group">${row('機種',`<select id="skin-system">${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${k===system?'selected':''}>${s.short}</option>`).join('')}</select>`,'game')}</div>`}<div class="segmented skin-orientation" role="group" aria-label="プレビューの向き"><button data-skin-orientation="portrait">縦画面</button><button data-skin-orientation="landscape">横画面</button></div><div id="skin-grid" class="skin-grid">${card(standardId,'標準')}${saved.map(s=>card(s.id,s.name)).join('')}<button id="import-skin" class="skin-add">${icon('plus')}<span>新規スキン追加</span></button></div><div class="skin-standard-options"><p class="label">標準スキンの色</p><div id="skin-colors" aria-label="標準スキンの色">${builtins.map(([id,name])=>`<button data-skin-color="${id}" aria-label="${name}" title="${name}"><i class="swatch-${id}"></i></button>`).join('')}</div><button class="secondary" id="edit-controls">画面・ボタンのレイアウト</button></div><details class="sheet-note skin-help"><summary>スキンについて</summary><p id="skin-description"></p><p>選んだスキンを縦・横の両方で使います。追加済みのスキンは、別のスキンに切り替えても残ります。</p><p>Delta／Manic形式に対応しています。スキンは端末内だけで使用します。作者の利用条件をご確認ください。</p><a class="row" href="https://faq.deltaemulator.com/using-delta/controller-skins" target="_blank" rel="noopener">Delta公式のスキン案内</a><a class="row" href="https://manicemu.site/guides/homemade-skins/#-official-skins-downloads" target="_blank" rel="noopener">Manic公式のスキン案内</a></details>`,!!runtime.engine);
+ sheet('スキン',`${game?`<p class="sheet-note skin-target">${esc(game.name)}</p><label class="row skin-inherit"><span>機種の設定を使う</span><input type="checkbox" id="skin-inherit" ${!selected?'checked':''}></label>`:`<div class="settings-group">${row('機種',`<select id="skin-system">${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${k===system?'selected':''}>${s.short}</option>`).join('')}</select>`,'game')}</div>`}<div class="segmented skin-orientation" role="group" aria-label="プレビューの向き"><button data-skin-orientation="portrait">縦画面</button><button data-skin-orientation="landscape">横画面</button></div><div id="skin-grid" class="skin-grid">${card(standardId,'標準')}${saved.map(s=>card(s.id,s.name)).join('')}<button id="import-skin" class="skin-add">${icon('plus')}<span>新規スキン追加</span></button></div><div class="skin-standard-options" hidden><div id="skin-palette" hidden><p class="label">標準スキンの色</p><div id="skin-colors" aria-label="標準スキンの色">${colors.map(([id,name])=>`<button data-skin-color="${id}" aria-label="${name}" title="${name}"><i class="swatch-${id}"></i></button>`).join('')}</div></div><button class="secondary" id="edit-controls">画面・ボタンのレイアウト</button></div><details class="sheet-note skin-help"><summary>スキンについて</summary><p id="skin-description"></p><p>選んだスキンを縦・横の両方で使います。追加済みのスキンは、別のスキンに切り替えても残ります。</p><p>Delta／Manic形式に対応しています。スキンは端末内だけで使用します。作者の利用条件をご確認ください。</p><a class="row" href="https://faq.deltaemulator.com/using-delta/controller-skins" target="_blank" rel="noopener">Delta公式のスキン案内</a><a class="row" href="https://manicemu.site/guides/homemade-skins/#-official-skins-downloads" target="_blank" rel="noopener">Manic公式のスキン案内</a></details>`,!!runtime.engine);
  const grid=$('#skin-grid'),standard=grid.firstElementChild;
  $('#sheet').classList.add('skin-manager');
  $('#sheet-tools').innerHTML=`<button class="sheet-tool skin-edit-toggle" id="manage-skins" ${saved.length?'':'disabled'}>編集</button>`;
@@ -65,7 +67,10 @@ async function showSkins(system=settings.skinSystem||'gba',game=null){
   grid.querySelectorAll('.skin-card').forEach(node=>{const active=node.dataset.skinCard===effective;node.classList.toggle('is-current',active);node.querySelector('.skin-use').setAttribute('aria-pressed',String(active));const host=node.querySelector('.skin-card-preview');if(active)host.id='skin-preview';else host.removeAttribute('id');});
   $$('[data-skin-color]').forEach(b=>b.setAttribute('aria-pressed',String(effective==='builtin:'+b.dataset.skinColor)));
   if($('#skin-inherit'))$('#skin-inherit').checked=!selected;
-  $('#edit-controls').hidden=!effective.startsWith('builtin:');
+  const standardSelected=effective.startsWith('builtin:');
+  $('.skin-standard-options').hidden=!standardSelected;
+  $('#skin-palette').hidden=!standardSelected||colors.length<2;
+  $('#edit-controls').hidden=!standardSelected;
   const entry=[...mounted.entries()].find(([node])=>node.dataset.skinCard===effective)?.[1];
   $('#skin-description').textContent=entry?[entry.preview.skin.description,...(entry.preview.skin.warnings||[])].filter(Boolean).join('\n'):'';
  }

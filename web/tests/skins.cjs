@@ -13,12 +13,16 @@ function pdf(){let s='%PDF-1.4\n',offset=[0];const stream='0.1 0.2 0.3 rg 0 0 39
  const firstId=await p.locator('#skin-grid').getAttribute('data-selection');
  const importAgain=async(name,gameTypeIdentifier=info.gameTypeIdentifier)=>{const bytes=zip({'info.json':JSON.stringify({...info,name,gameTypeIdentifier}),'controller.pdf':pdf()});await p.locator('#import-skin').click();await p.locator('#skin-input').setInputFiles({name:'another.deltaskin',mimeType:'application/zip',buffer:bytes});await p.locator('.skin-card-name',{hasText:name}).waitFor();await p.locator('#skin-preview .skin-mini').waitFor();return p.locator('#skin-grid').getAttribute('data-selection');};
  const secondId=await importAgain('Second original fixture');
+ assert.equal(await p.locator('.skin-standard-options').isVisible(),false,'Imported skins do not expose standard-only options');
+ await p.locator('[data-skin-choice^="builtin:"]').click({position:{x:15,y:15}});
+ await p.locator('#skin-palette').waitFor();
  await p.locator('[data-skin-color=classic]').click();await p.waitForFunction(()=>document.querySelector('#skin-grid').dataset.selection==='builtin:classic');
  assert.equal(await p.locator('.skin-card').count(),3,'Standard and both imported skins stay visible after changing color');
  assert.equal(await p.evaluate(async()=>(await(await import('./src/storage.js')).all('skins')).length),2);
  await p.locator(`[data-skin-choice="${firstId}"]`).click({position:{x:15,y:15}});await p.waitForFunction(id=>document.querySelector('#skin-grid').dataset.selection===id,firstId);
  await p.locator(`[data-preview-skin="${secondId}"]`).click();await p.locator('.skin-zoom .skin-mini').waitFor();await p.getByRole('button',{name:'プレビューを閉じる',exact:true}).click();
  assert.equal(await p.locator('#skin-grid').getAttribute('data-selection'),firstId,'Preview does not change the selected skin');
+ assert.equal(await p.locator('#skin-palette').isVisible(),false,'Selecting an imported skin hides the palette again');
  await p.locator('[data-skin-orientation=landscape]').click();assert.equal(await p.locator('.skin-card').count(),3,'Portrait-only files remain listed while previewing landscape');
  await p.locator('[data-skin-orientation=portrait]').click();if(process.env.SCREENSHOT_DIR){const fs=require('node:fs'),path=require('node:path');fs.mkdirSync(process.env.SCREENSHOT_DIR,{recursive:true});await p.locator('#skin-grid').scrollIntoViewIfNeeded();await p.screenshot({path:path.join(process.env.SCREENSHOT_DIR,'skin-library-'+kind+'.png')});}
  for(const [width,height]of [[240,320],[320,568],[390,844],[844,390],[768,1024]]){await p.setViewportSize({width,height});assert.equal(await p.locator('#skin-grid').evaluate(el=>el.scrollWidth<=el.clientWidth),true,'Skin cards fit the viewport');}
@@ -30,6 +34,11 @@ function pdf(){let s='%PDF-1.4\n',offset=[0];const stream='0.1 0.2 0.3 rg 0 0 39
  await p.locator('#manage-skins').click();await p.locator(`[data-delete-skin="${secondId}"]`).click();await p.locator('#confirm-skin-delete').click();await p.locator('#skin-grid').waitFor();
  assert.equal(await p.locator(`[data-skin-choice="${secondId}"]`).count(),0);assert.equal(await p.locator(`[data-skin-choice="${firstId}"]`).count(),1,'Explicit deletion affects only the selected imported file');
  assert.equal(await p.evaluate(async()=>(await(await import('./src/storage.js')).all('skins')).length),2,'The other platform also retains its imported skin');
+ for(const system of ['gb','gbc','gba','nes','snes','md','nds']){
+  await p.locator('#skin-system').selectOption(system);await p.locator('[data-skin-choice^="builtin:"]').click({position:{x:15,y:15}});
+  await p.locator('#edit-controls').waitFor();
+  assert.equal(await p.locator('#skin-palette').isVisible(),system!=='nds',system+' palette follows actual body-color support');
+ }
  const wrongGame=await p.evaluate(async bytes=>{const{importSkin}=await import('./src/skins.js');try{await importSkin(new File([new Uint8Array(bytes)],'wrong-game.deltaskin'),'snes');return false;}catch(e){return e.message==='このゲーム用のスキンではありません。';}},[...payload]);assert.equal(wrongGame,true);
  const malicious=zip({'../info.json':'{}'});assert.equal(await p.evaluate(async bytes=>{const{readSkinZip}=await import('./src/skin-zip.js');try{await readSkinZip(new Uint8Array(bytes).buffer);return false;}catch{return true;}},[...malicious]),true);
  for(const name of ['not-a-skin.txt','game.gba'])assert.equal(await p.evaluate(async({name,bytes})=>{const{importSkin}=await import('./src/skins.js');try{await importSkin(new File([new Uint8Array(bytes)],name));return false;}catch(e){return e.message.includes('スキンを選択');}},{name,bytes:[...payload]}),true,'Reject non-skin extensions even if their contents look like a skin ZIP');

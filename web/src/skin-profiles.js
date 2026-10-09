@@ -30,3 +30,5 @@ export const skinProfiles={
 };
 export const skinProfile=system=>skinProfiles[system]||skinProfiles.gba;
 export const skinTheme=(system,palette)=>palettes[palette]||skinProfile(system).classic;
+// These profiles recolor the case; the NDS artwork has a fixed body color.
+export const builtinColors=system=>Object.hasOwn(skinProfiles,system)?builtins:[];
