@@ -1,0 +1,58 @@
+# SPDX-License-Identifier: AGPL-3.0-or-later
+name: Validate Web release
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: validate-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  validate:
+    runs-on: windows-latest
+    timeout-minutes: 25
+    env:
+      BROWSER_CHANNEL: msedge
+      PLAYWRIGHT_MODULE: ${{ github.workspace }}/work/test-deps/node_modules/playwright
+      CELIO_SERVER_ROOT: ${{ github.workspace }}/work/celio-server
+      CELIO_REFERENCE_ROOT: ${{ github.workspace }}/work/celio-reference
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
+        with:
+          node-version: '24'
+      - uses: actions/setup-python@ece7cb06caefa5fff74198d8649806c4678c61a1 # v6
+        with:
+          python-version: '3.13'
+      - name: Audit repository and reviewed distribution
+        run: |
+          python -B -X utf8 web/scripts/audit-git.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -B -X utf8 web/scripts/prepare-release.py
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          node work/release/web/scripts/check-release.cjs
+      - name: Prepare isolated browser and local relay fixtures
+        run: |
+          npm install --prefix work/test-deps --no-audit --no-fund --ignore-scripts playwright@1.62.1
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          node work/test-deps/node_modules/playwright/cli.js install webkit
+          if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          python -B -X utf8 web/scripts/prepare-link-tests.py
+      - name: Full Edge suite
+        run: node web/scripts/test-all.cjs --serve
+      - name: Supported WebKit suite
+        if: success() || failure()
+        run: node web/scripts/test-all.cjs --serve --webkit
+      - name: Keep synthetic test diagnostics
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
+        with:
+          name: test-results
+          path: web/test-results/
+          retention-days: 7

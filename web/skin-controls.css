@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Emulator controls sit on their system's artwork; application buttons keep
+   the shared red accent in controls.css. External skin artwork is untouched. */
+/* Explicit stacking also contains filtered video, canvas and iframe surfaces.
+   Only the buttons catch input; empty areas still reach the NDS touch screen. */
+#skin{isolation:isolate;z-index:0}
+#screen{z-index:0}
+#touch-controls{z-index:1}
+.skin-mini{isolation:isolate}
+.skin-mini-screen{z-index:0}
+.skin-mini-button,.skin-mini-tool{z-index:1}
+.swatch-classic{background:conic-gradient(#9b3050 0 25%,#c6c8cf 25% 50%,#25282e 50% 75%,#e1d9bf 75%)}
+#skin-colors{--palette-gap:clamp(6px,3vw,18px);gap:var(--palette-gap)}
+#skin-colors button{width:min(42px,calc((100% - 4*var(--palette-gap))/5));height:auto;aspect-ratio:1;flex-shrink:0}
+#player[data-builtin=true]:not([data-system=nds]) :is(#quick-actions button,#boost,#player-menu){background:#252932b3;color:#fff;border:1px solid #ffffff80;box-shadow:0 1px 2px #0003}
+#player[data-builtin=true]:not([data-system=nds]) #boost.fast{background:var(--accent);border-color:var(--accent)}
+#skin-description{margin:8px 0 12px;font-size:12px;line-height:1.7}

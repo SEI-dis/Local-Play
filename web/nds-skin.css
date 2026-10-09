@@ -1,0 +1,17 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Independent screen slots leave the surrounding skin and controls visible. */
+#player[data-system=nds] #screen{background:transparent;pointer-events:none}
+.nds-display{position:relative;display:flex;flex-direction:column;width:100%;height:100%;gap:0;touch-action:none;pointer-events:none}
+#screen .nds-display canvas{display:block;position:static;min-width:0;min-height:0;width:100%;height:50%;object-fit:contain;background:#000;touch-action:none;pointer-events:auto}
+#screen .nds-display[data-wide=true]{flex-direction:row}
+#screen .nds-display[data-wide=true] canvas{width:50%;height:100%}
+#screen .nds-display[data-swap=true] .nds-bottom{order:-1}
+#screen .nds-display[data-framed=true] canvas{position:absolute}
+#player[data-system=nds] #screen.scanlines:after{content:none}
+#screen.scanlines .nds-display[data-framed=true]::before,#screen.scanlines .nds-display[data-framed=true]::after{content:'';position:absolute;z-index:1;pointer-events:none;background:repeating-linear-gradient(transparent 0 2px,#0004 2px 3px)}
+#screen.scanlines .nds-display:before{left:var(--screen-0-x);top:var(--screen-0-y);width:var(--screen-0-w);height:var(--screen-0-h)}
+#screen.scanlines .nds-display:after{left:var(--screen-1-x);top:var(--screen-1-y);width:var(--screen-1-w);height:var(--screen-1-h)}
+#screen[data-scaling=stretch] .nds-display canvas{object-fit:fill}
+#screen[data-scaling=fill] .nds-display canvas{object-fit:cover}
+#player[data-system=nds] :is(#quick-actions button,#boost,#player-menu){background:#202224b3;border:1px solid #ffffff80;color:#f5f5f5;box-shadow:0 1px 3px #0006}
+#player[data-system=nds] #boost.fast{background:var(--accent);border-color:var(--accent)}

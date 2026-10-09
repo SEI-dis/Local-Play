@@ -1,0 +1,58 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+/* Editor layout adapted from ManicEMU, Copyright © 2025–2026 Manic EMU.
+   Created by Daiuno. Modified for Web 2026-10-09; alignment aids are original.
+   See sources/manicemu-ui/README.md. */
+/* Alignment overlays never intercept touch, mouse, or keyboard input. */
+.edit-guides{position:absolute;inset:0;z-index:4;pointer-events:none;overflow:hidden}
+.edit-guides.show-grid{background-image:linear-gradient(to right,#ffffff14 1px,transparent 1px),linear-gradient(to bottom,#ffffff14 1px,transparent 1px);background-size:var(--grid-step) var(--grid-step)}
+.edit-center-axis,.edit-snap-guide{position:absolute;pointer-events:none}
+.axis-x{top:0;bottom:0;width:0;border-left:1px solid #ffffff70}
+.axis-y{left:0;right:0;height:0;border-top:1px solid #ffffff70}
+.edit-center-axis.axis-x{left:50%;border-left-style:dashed}.edit-center-axis.axis-y{top:50%;border-top-style:dashed}
+.edit-snap-guide{border-color:#ff5275;filter:drop-shadow(0 0 2px #111);border-width:2px}
+.edit-alignment{display:grid;gap:8px;flex-shrink:0}
+.edit-aid-toggles,.edit-align-actions{display:flex;gap:8px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.edit-aid-toggles label{display:flex;align-items:center;gap:6px;flex:1;min-height:30px;font-size:13px;cursor:pointer}
+.edit-aid-toggles input{width:18px;height:18px;margin:0}
+.edit-align-actions:last-child{border:0}
+.edit-align-actions button{flex:1;min-width:0;min-height:38px;padding:7px 5px;border-radius:999px;background:var(--raised);font-size:12px}
+.edit-tools .edit-align-actions button:disabled{cursor:default}
+/* FlexSkinSettingViewController / FlexItemView: screen/button modes, direct
+   movement and resize handle. Web draft storage and inspector adapted 2026-10-09. */
+dialog.control-edit{width:min(1000px,calc(100% - 16px));height:calc(100dvh - 16px);max-height:calc(100dvh - 16px);margin:auto;padding:14px;overflow:hidden}
+.control-edit[open]{display:flex;flex-direction:column}
+.control-edit .sheet-handle{display:none}.control-edit .sheet-head{margin-bottom:10px;flex-shrink:0}
+.control-edit #sheet-body{flex:1;min-height:0}
+.control-editor{height:100%;display:grid;grid-template-rows:minmax(90px,1fr) minmax(0,auto);gap:12px}
+.edit-stage{min-width:0;min-height:0;display:grid;place-items:center;overflow:hidden;border-radius:12px;background:var(--bg)}
+.edit-preview{position:relative;isolation:isolate;flex-shrink:0;background-size:100% 100%;user-select:none;touch-action:none}
+.edit-control{position:absolute;z-index:2;min-width:0;min-height:0;padding:0;border:1px dashed #ffffff60;border-radius:8px;touch-action:none;cursor:grab;background:transparent}
+.edit-control[aria-pressed=true]{outline:2px solid var(--accent);outline-offset:-2px;z-index:3}.edit-control:active{cursor:grabbing;transform:none}
+.edit-control:focus-visible{outline:3px solid #fff;outline-offset:-3px}
+.edit-art{position:absolute;inset:0;background-size:100% 100%;pointer-events:none;background-repeat:no-repeat}
+.edit-tool{display:grid;place-items:center;background:#19192e70;color:#fff;border:1px solid #ffffff55;border-radius:8px}
+.edit-tool[data-control=player-menu],.edit-tool[data-control=boost]{border-radius:50%}
+.edit-tools{display:flex;flex-direction:column;gap:10px;min-width:0;min-height:0;max-height:53dvh}.edit-help{margin:0;font-size:11px;line-height:1.6;color:var(--secondary)}
+.edit-inspector{min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;gap:10px}
+.edit-tools .segmented{margin:0;flex-shrink:0}.edit-field{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:13px;min-height:44px;padding:8px 12px;border-bottom:1px solid var(--line)}
+.edit-field:last-child{border:0}
+.edit-field select{max-width:70%;background:var(--raised);color:var(--text);border:1px solid var(--line);border-radius:8px;padding:7px}
+.edit-field input{width:52%;min-width:0}.edit-field output{font-variant-numeric:tabular-nums;color:var(--secondary);font-size:12px}
+.edit-tools .secondary,.edit-tools .primary{padding:10px 12px;font-size:13px;min-height:40px}
+#edit-status{font-size:12px;color:var(--secondary);line-height:1.5;min-height:18px;margin:0}
+.edit-tools .sheet-actions{margin:0}.edit-tools button:disabled{opacity:.5;cursor:wait}
+.edit-mode button{display:flex;align-items:center;justify-content:center;gap:8px;min-height:38px}.edit-mode svg{width:18px;height:18px}
+.edit-field .edit-orientation{width:130px;padding:3px}.edit-orientation button{min-height:28px;padding:3px 12px}
+.edit-group{border-radius:18px;background:var(--panel);overflow:hidden;flex-shrink:0}
+.edit-reset-group button{display:flex;align-items:center;gap:12px;padding:12px;width:100%;min-height:48px;text-align:left;font-size:13px;border-bottom:1px solid var(--line)}
+.edit-reset-group button:last-child{border:0}.edit-reset-group svg{width:19px;height:19px}.edit-reset-group small{display:block;font-size:10px;margin-top:4px;color:var(--secondary)}
+.edit-footer{display:grid;gap:6px;flex-shrink:0}
+.edit-resize{position:absolute;z-index:5;width:30px;height:30px;padding:6px;display:grid;place-items:center;border-radius:50%;background:var(--accent);color:white;box-shadow:0 2px 8px #0006;touch-action:none;cursor:nwse-resize}
+.edit-resize:active{transform:none}.edit-resize svg{width:16px;height:16px}
+.edit-screen .skin-mini-screen{inset:0;width:100%;height:100%;pointer-events:none;overflow:hidden}
+.edit-control.edit-screen{z-index:0}
+.edit-control.edit-inactive{pointer-events:none;border-color:transparent;outline:none}.edit-control.edit-inactive:focus-visible{outline:none}
+dialog.control-edit{--bg:#111112;--panel:#1c1c1e;--raised:#303032;--secondary:#89898e;background:var(--bg);border:1px solid #ffffff12;border-radius:24px}
+.control-edit .sheet-head{background:transparent}.control-edit .sheet-head h2{font-size:17px}.edit-help{flex-shrink:0}
+html[data-theme=light] dialog.control-edit{--bg:#f2f2f7;--panel:#fff;--raised:#e5e5ea;--secondary:#77777d;border-color:#0001}
+@media(min-width:480px) and (orientation:landscape){.control-editor{grid-template-columns:minmax(0,1fr) min(300px,42vw);grid-template-rows:minmax(0,1fr)}.edit-tools{max-height:100%;padding:0 3px}}

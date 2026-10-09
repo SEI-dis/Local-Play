@@ -1,0 +1,81 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Browser adapter for the MPL-2.0 mGBA bridge; see licenses/ and SOURCES.json.
+import {VideoOutput} from './video.js';
+import {TimeStretch} from './time-stretch.js';
+export class MGBACore {
+  constructor(canvas){this.canvas=canvas;this.keys=0;this.speed=1;this.volume=.7;this.paused=true;this.sources=new Set();this.frames=0;this.presented=0;this.cheatCount=0;this.preservePitch=false;}
+  async load(bytes){
+    this.m=await window.createMGBA({locateFile:p=>new URL('../cores/mgba/'+p,import.meta.url).href});
+    this.copyIn(bytes,(p,n)=>{if(!this.m._web_load(p,n))throw new Error('このROMを読み込めませんでした。形式を確認してください。');});
+    this.width=this.m._web_width();this.height=this.m._web_height();this.video=new VideoOutput(this.canvas,this.width,this.height);this.image=new ImageData(this.width,this.height);this.fps=this.m._web_fps();this.startLoop();
+  }
+  // Display refresh can exceed emulation refresh (for example, 120 Hz phones).
+  // Present only new frames, and schedule no emulation callbacks while paused.
+  startLoop(){
+    cancelAnimationFrame(this.raf);this.raf=null;this.paused=false;this.clock=null;
+    this.tick=t=>{
+      this.raf=null;if(this.closed||this.paused)return;
+      try{
+        const step=1000/this.fps/this.speed;if(this.clock===null||t-this.clock>150)this.clock=t;
+        let frames=0;if(t>=this.clock)this.beforeFrame?.();
+        while(t>=this.clock&&frames<Math.ceil(this.speed*3)){this.m._web_frame(this.keys);this.frames++;frames++;this.audio();this.clock+=step;}
+        if(frames)this.draw();
+      }catch(e){this.pause(true);this.onError?.(e);}
+      this.scheduleFrame();
+    };this.scheduleFrame();
+  }
+  scheduleFrame(){if(!this.closed&&!this.paused&&this.tick&&this.raf==null)this.raf=requestAnimationFrame(this.tick);}
+  copyIn(bytes,fn){const p=this.m._malloc(bytes.length);if(!p)throw new Error('メモリを確保できませんでした。');try{this.m.HEAPU8.set(bytes,p);return fn(p,bytes.length);}finally{this.m._free(p);}}
+  draw(){
+    const ptr=this.m._web_pixels(),w=this.width,h=this.height,memory=this.m.HEAPU8.buffer;
+    if(this.pixelSource?.buffer!==memory||this.pixelSource.byteOffset!==ptr||this.pixelSource.length!==256*h)this.pixelSource=new Uint32Array(memory,ptr,256*h);
+    if(this.pixelTarget?.buffer!==this.image.data.buffer)this.pixelTarget=new Uint32Array(this.image.data.buffer);
+    const src=this.pixelSource,dst=this.pixelTarget;
+    for(let y=0;y<h;y++){const from=y*256,to=y*w;for(let x=0;x<w;x++)dst[to+x]=src[from+x]|0xff000000;}
+    this.video.draw(this.image);this.presented++;
+  }
+  async unlockAudio(){const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return;this.ac??=new AudioContext();if(!this.gain){this.gain=this.ac.createGain();this.gain.connect(this.ac.destination);this.gain.gain.value=this.volume;}if(this.ac.state!=='running')await this.ac.resume();}
+  audio(){
+    const m=this.m,n=m._web_audio_read();if(!n)return;
+    if(!this.ac||this.ac.state!=='running'||!this.volume||this.nextAudio>this.ac.currentTime+.18){this.stretch?.reset();return;}
+    const rate=m._web_audio_rate(),p=m._web_audio()>>1,pcm=m.HEAP16;
+    if(this.preservePitch&&this.speed>1){
+      if(this.stretch?.rate!==rate||this.stretch?.speed!==this.speed)this.stretch=new TimeStretch(rate,this.speed);
+      this.stretch.push(pcm,p,n,(left,right)=>{const buffer=this.ac.createBuffer(2,left.length,rate);buffer.getChannelData(0).set(left);buffer.getChannelData(1).set(right);this.queueAudio(buffer,1);});
+    }else{
+      // At 1x (or with preservation off), keep the native-rate path unchanged.
+      const buffer=this.ac.createBuffer(2,n,rate),left=buffer.getChannelData(0),right=buffer.getChannelData(1);
+      for(let i=0;i<n;i++){left[i]=pcm[p+i*2]/32768;right[i]=pcm[p+i*2+1]/32768;}
+      this.queueAudio(buffer,this.speed);
+    }
+  }
+  queueAudio(buffer,speed){
+    const source=this.ac.createBufferSource();source.buffer=buffer;source.playbackRate.value=speed;source.connect(this.gain);
+    source.onended=()=>{source.disconnect();this.sources.delete(source);};this.sources.add(source);
+    if(!this.nextAudio||this.nextAudio<this.ac.currentTime+.003)this.nextAudio=this.ac.currentTime+.025;
+    source.start(this.nextAudio);this.nextAudio+=buffer.duration/speed;
+  }
+  setFilter(mode){if(this.video?.mode!==mode)this.video?.setMode(mode);}
+  frameCount(){return this.frames;}
+  linkIO(){const m=this.m;if(!m._web_link_enable||m._web_platform()!==0)throw new Error('このコアはGBA通信に対応していません。');const io={event:null,enable:on=>{if(!m._web_link_enable(on?1:0))throw new Error('通信機能を開始できません。');},read:p=>m._web_link_read(p),write:(p,v)=>m._web_link_write(p,v),mask:v=>m._web_link_mask(v)};m.webLinkEvent=kind=>io.event?.(kind);return io;}
+  setCheats(list){for(let i=this.cheatCount-1;i>=0;i--)this.m._web_cheat_remove(i);this.cheatCount=0;const enc=new TextEncoder();for(const cheat of list){const index=this.copyIn(enc.encode(cheat.name+'\0'),p=>this.copyIn(enc.encode(cheat.code+'\0'),q=>this.m._web_cheat_add(p,q,Number(cheat.type))));if(index<0)throw new Error(index===-1000?'チートの数・長さを確認してください。':`「${cheat.name}」の${-index}行目を読み込めません。`);this.cheatCount++;this.m._web_cheat_enable(index,cheat.enabled?1:0);}}
+  setKeys(mask){this.keys=mask;}
+  stopAudio(){for(const s of this.sources){s.onended=null;try{s.stop();}catch{}s.disconnect();}this.sources.clear();this.nextAudio=0;this.stretch?.reset();}
+  pause(value){this.paused=value;this.keys=0;this.clock=null;if(value){cancelAnimationFrame(this.raf);this.raf=null;this.stopAudio();}else this.scheduleFrame();}
+  setVolume(v){if(!v&&this.volume)this.stopAudio();this.volume=v;if(this.gain)this.gain.gain.value=v;}
+  setPreservePitch(value){value=!!value;if(this.preservePitch===value)return;this.preservePitch=value;this.stopAudio();this.stretch=null;}
+  setSpeed(v){v=Math.max(1,Math.min(5,Number(v)||1));if(this.speed===v)return;this.speed=v;this.stopAudio();this.clock=null;}
+  save(){const n=this.m._web_save_export();return n?this.m.HEAPU8.slice(this.m._web_save_data(),this.m._web_save_data()+n):null;}
+  restore(bytes){this.copyIn(bytes,(p,n)=>{if(!this.m._web_save_import(p,n))throw new Error('セーブ形式が一致しません。');});}
+  state(){const n=this.m._web_state_export();if(!n)throw new Error('状態を保存できませんでした。');return this.m.HEAPU8.slice(this.m._web_state_data(),this.m._web_state_data()+n);}
+  loadState(bytes){this.stopAudio();this.copyIn(bytes,(p,n)=>{if(!this.m._web_state_import(p,n))throw new Error('このコアで読み込めるステートではありません。');});this.draw();}
+  async restorePreview(url){
+    // This bridge's states restore CPU/VRAM, but not the last rendered frame.
+    // Show the paired local screenshot while paused, until the next emulated frame.
+    if(typeof url!=='string'||!url.startsWith('data:image/png;base64,')||url.length>8*1024*1024)return;
+    try{const image=new Image();image.src=url;await image.decode();if(this.paused&&!this.closed)this.video.restorePreview(image);}catch{}
+  }
+  screenshot(){return this.canvas.toDataURL('image/png');}
+  reset(){this.stopAudio();this.m._web_reset();this.clock=null;}
+  close(){this.closed=true;cancelAnimationFrame(this.raf);this.stopAudio();this.ac?.close();this.m?._web_close();}
+}

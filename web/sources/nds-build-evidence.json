@@ -1,0 +1,28 @@
+{
+  "date": "2026-10-09",
+  "upstream": "https://github.com/libretro/desmume2015",
+  "commit": "422b688009ccb9f2917c086a8fe79c8cecb030ae",
+  "toolchain": {
+    "emscripten": "4.0.15",
+    "sdkBuild": "b412b6307e541b93dd93f01b61181e15c17302ec",
+    "cmake": "3.31.6",
+    "ninja": "1.11.1"
+  },
+  "archive": {
+    "path": "desmume2015-source.tar.gz",
+    "sha256": "966f3f2aee97124699cd385a35ec75f86c8ed95c49eb950b9bc09ff1359bb696"
+  },
+  "cores": {
+    "nds": {
+      "js": {
+        "sha256": "aaa6695c96d20f268d5a5cb7152f76ca793f48414c3d58127f79ac2dbeb6fe5c",
+        "rebuildMatches": true
+      },
+      "wasm": {
+        "sha256": "ea0b03591bedbfd59645b63a74e4d2a87bbfcc93ea92e26307e235fac3845ba5",
+        "rebuildMatches": true
+      }
+    }
+  },
+  "method": "Built once from the pinned checkout, then independently from the filtered source archive using the same Web bridge; JS/WASM SHA-256 match."
+}

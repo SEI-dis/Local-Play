@@ -1,0 +1,63 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// All test data is synthetic and stays in a separate browser context.
+const assert=require('node:assert/strict'),path=require('node:path'),os=require('node:os');
+const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./browser-runtime.cjs')[browserName];
+(async()=>{
+ const b=await browserType.launch({headless:true,...(browserName==='chromium'?{channel:process.env.BROWSER_CHANNEL||'msedge'}:{})});
+ try{
+  const c=await b.newContext({viewport:{width:390,height:844}}),base=process.env.TEST_URL||'http://127.0.0.1:4173/';let p=await c.newPage();
+  const errors=[];p.on('pageerror',e=>errors.push(e.message));p.setDefaultTimeout(15000);
+  const screenshot=async name=>{await p.locator('#toast.show').waitFor({state:'hidden'});await p.waitForTimeout(250);await p.screenshot({path:path.join(process.env.SCREENSHOT_DIR||os.tmpdir(),name+'.png')});};
+  const count=()=>p.evaluate(async()=>{const db=await import('./src/storage.js');return(await db.all('states')).length;});
+  const menu=async()=>{if(await p.locator('#sheet').isVisible())await p.locator('#close-sheet').click();await p.locator('#player-menu').click();};
+  const fits=async()=>{
+   await p.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+   const problems=await p.locator('#sheet').evaluate(d=>{
+    const issues=[],rect=d.getBoundingClientRect();if(d.scrollWidth>d.clientWidth+1)issues.push('dialog overflows');
+    for(const el of d.querySelectorAll('.sheet-actions button,.state-continue,.row>span:first-of-type,.sheet-head button')){
+     const r=el.getBoundingClientRect();if(r.left<rect.left||r.right>rect.right)issues.push(el.textContent+' outside dialog '+JSON.stringify({viewport:innerWidth,dialog:[rect.left,rect.right],element:[r.left,r.right]}));
+     if(el.matches('.row>span')&&r.width<55)issues.push(el.textContent+' label squeezed to '+r.width);
+     if(el.matches('.sheet-actions button')&&r.height>70)issues.push(el.textContent+' button too tall');
+    }return issues;
+   });assert.deepEqual(problems,[]);
+  };
+  await p.goto(base);await p.locator('#rom-input').setInputFiles({name:'Original-test.gb',mimeType:'application/octet-stream',buffer:Buffer.from(require('./cartridges.cjs').gb())});
+  await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.locator('#loading').waitFor({state:'hidden'});
+  for(let i=0;i<2;i++){await menu();await p.locator('[data-action=newState]').click();await p.locator('#confirm-state-save').click();await p.locator('[data-slot-load]').first().waitFor();}
+  assert.equal(await p.locator('[data-slot-load]').count(),2,'Append without replacing');assert.equal(await p.locator('[data-state-delete],[data-action=newState],#confirm-state-save').count(),0,'Read view has no adjacent save/delete action');assert.equal(await count(),2);
+  for(const width of [240,280,320,390,768]){await p.setViewportSize({width,height:844});await fits();if(width===280)await screenshot('state-list-narrow');}
+  await p.setViewportSize({width:390,height:844});await screenshot('state-list');
+  await menu();assert.equal(await p.locator('#sheet-title').textContent(),'MENU');assert.equal(await p.locator('.action-tile,.menu-resume').count(),0);assert.equal(await p.locator('[data-shortcut]').count(),4);
+  for(const [width,height] of [[240,844],[280,844],[320,844],[390,844],[844,390],[1024,768]]){await p.setViewportSize({width,height});await fits();if(width===280)await screenshot('game-menu-narrow');if(width===844)await screenshot('game-menu-landscape');}
+  await p.setViewportSize({width:390,height:844});await screenshot('game-menu');
+  await p.locator('[data-action=newState]').click();await p.locator('#cancel-state-save').click();assert.equal(await count(),2);await p.locator('[data-action=states]').click();
+  await p.locator('#edit-states').click();await p.locator('[data-state-select]').first().check();await p.locator('#delete-selected-states').click();assert.equal(await count(),2);
+  await p.setViewportSize({width:240,height:844});await fits();await p.locator('#cancel-state-delete').click();assert.equal(await count(),2);await p.setViewportSize({width:390,height:844});
+  await p.locator('#edit-states').click();await p.locator('[data-slot-load]').first().click();await p.locator('#sheet').waitFor({state:'hidden'});assert.equal(await count(),2,'Loading cannot overwrite manual states');
+  // Confirmed deletion changes only selected manual records, not another game's
+  // states, automatic checkpoints or battery save. Invalid mixed keys are atomic.
+  const before=await p.evaluate(async()=>{const db=await import('./src/storage.js');const [g]=await db.all('library'),states=await db.stateEntries(g.id);await db.put('states','other-game:keep',states[0].value);return {id:g.id,keys:states.map(s=>s.key),save:JSON.stringify(await db.get('saves',g.id)),auto:JSON.stringify(await db.get('recoveries',g.id))};});
+  assert.equal(await p.evaluate(async({id,keys})=>{const db=await import('./src/storage.js');try{await db.removeStates(id,[keys[0],'other-game:keep']);return false;}catch{return(await db.stateEntries(id)).length===2&&!!await db.get('states','other-game:keep');}},before),true,'Reject cross-game removal before any deletion');
+  await menu();await p.locator('[data-action=states]').click();await p.locator('#edit-states').click();await p.locator('[data-state-select]').first().check();await p.locator('#delete-selected-states').click();await p.locator('#confirm-state-delete').click();await p.locator('[data-slot-load]').first().waitFor();
+  assert.equal(await count(),2,'One manual and one other-game record remain');
+  assert.deepEqual(await p.evaluate(async id=>{const db=await import('./src/storage.js');return {other:!!await db.get('states','other-game:keep'),save:JSON.stringify(await db.get('saves',id)),auto:JSON.stringify(await db.get('recoveries',id))};},before.id),{other:true,save:before.save,auto:before.auto});
+  // Restart cannot happen before confirmation; cancelled restart leaves autos.
+  await menu();await p.locator('[data-shortcut=restart]').click();await p.locator('#cancel-restart').click();assert.equal(await p.evaluate(async id=>JSON.stringify(await (await import('./src/storage.js')).get('recoveries',id)),before.id),before.auto);
+  await p.locator('[data-action=restart]').click();await p.locator('#confirm-restart').click();await p.locator('#sheet').waitFor({state:'hidden'});
+  assert.ok(await p.evaluate(async ({id,auto})=>(await (await import('./src/storage.js')).get('recoveries',id))[0].at>JSON.parse(auto)[0].at,before),'Restart checkpoints before resetting');
+  // Battery backups are a separate operation and cannot restore on the first tap.
+  const battery=await p.evaluate(async id=>{const db=await import('./src/storage.js'),value=await db.get('saves',id);await db.put('backups',id,[value]);return JSON.stringify(value);},before.id);
+  await menu();await p.locator('[data-action=saveData]').click();await p.locator('[data-action=backups]').click();await p.locator('[data-backup-restore]').first().click();
+  await p.setViewportSize({width:240,height:844});await fits();await p.locator('#cancel-backup').click();
+  assert.equal(await p.evaluate(async id=>JSON.stringify(await (await import('./src/storage.js')).get('saves',id)),before.id),battery,'Cancelling backup restore leaves battery unchanged');
+  await p.setViewportSize({width:390,height:844});await p.locator('[data-backup-restore]').first().click();await p.locator('#confirm-backup').click();await p.locator('#sheet').waitFor({state:'hidden'});
+  assert.equal(await p.evaluate(async id=>(await (await import('./src/storage.js')).get('saves',id)).reason,before.id),'backup-restore');
+  await menu();await p.locator('[data-action=states]').click();await p.locator('[data-state-mode=auto]').click();await p.locator('[data-recover]').first().waitFor();assert.equal(await p.locator('#edit-states').count(),0,'Recovery checkpoints are protected');
+  await screenshot('automatic-state-list');await p.close();
+  p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.getByRole('heading',{name:'前回のプレイを復旧'}).waitFor();await p.locator('[data-recover]').first().click();await p.locator('#sheet').waitFor({state:'hidden'});
+  await menu();await p.locator('[data-action=exit]').click();await p.locator('#player').waitFor({state:'hidden'});
+  await p.locator('[data-tab=settings]').click();await p.locator('[data-theme-choice=auto]').click();await screenshot('settings-menu');assert.deepEqual(errors,[]);
+  console.log('PASS: native menu groups/shortcuts, 240–1024px layouts, append-only states, save/delete/restart cancellation, selected atomic deletion, other-game and battery preservation, real close/reopen recovery.');
+  await p.goto('about:blank');await c.close();
+ }finally{await Promise.race([b.close(),new Promise(r=>setTimeout(r,2500))]);}
+})().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1)});

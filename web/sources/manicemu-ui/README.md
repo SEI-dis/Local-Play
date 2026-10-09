@@ -1,0 +1,118 @@
+# ManicEMU UI port references
+
+The unmodified Swift files here are from Manic-EMU/ManicEMU commit
+fbaeab79c214d5920bb51afa6f2d786fb2b12a58, licensed under AGPL-3.0-or-later.
+Copyright © 2024–2026 Manic EMU. Created by Aoshuang Lee, Max, Daiuno and other credited authors; original headers are retained.
+Full license: ../../licenses/ManicEMU-AGPL-3.0.txt.
+Upstream: https://github.com/Manic-EMU/ManicEMU/tree/fbaeab79c214d5920bb51afa6f2d786fb2b12a58
+
+## Source-to-port mapping (modified 2026-10-08)
+
+| Upstream source | Web implementation |
+| --- | --- |
+| GameListView.shouldSelectItemAt / Game.handleTapAction / GameInfoDetailView.startGameButton | src/app.js: library and history selection share showDetails; src/game-info.js: explicit Play starts the core. The Web UI always uses the details-first route requested for this port. Selecting/closing a game does not load its core or change save sessions/playtime. |
+| FlexSkinSettingViewController / FlexItemView / SkinSettingsView | src/control-editor.js, src/control-layout.js, style.css and src/app.js: separate screen/button editing modes, inactive-layer dimming, drag/pinch, aspect-preserving corner resize, reset and skin-settings entry. Web slider, keyboard access and explicit save/cancel retain draft persistence. |
+| GameInfoView / GameInfoNavigationView / GameInfoDetailView / GameInfoCoverView | src/game-info.js, src/manic-ui.js, native-menu.css and index.html: game-detail sheet, info/more tools, cover, editable title, played time, fixed play/safe-mode header and independently scrolling options. |
+| GameOption.defaultGroupAndSort | src/manic-ui.js: gameOptionGroups preserves the source group/order after unsupported entries are removed. src/app.js: showGameMenu supplies the available controls. |
+| GameOption.Shortcut default list; GameOptionsView.getListPage(.gaming) | MENU title and quit/reload/saveState/quickLoadState navigation shortcuts. No custom resume banner or action-tile grid. Close resumes the game. |
+| ASListPage / ASListItemView / ASNavigationView | Shared grouped rows, leading icons, trailing value/switch/chevron, compact navigation tools and close button in native-menu.css, style.css, index.html and src/app.js. |
+| SaveStateListView.getSaveStatesSection / segmented control / editing actions | src/manic-ui.js: stateRow. src/app.js: showStates. Manual/automatic tabs, thumbnail, number, date, Continue button; editing replaces Continue with selection checkboxes. Select-all and confirmed deletion. Automatic tab opens first when no manual state exists. |
+| GameOptionPerform | Browser equivalents for save, quick load, volume, speed, screenshot, skin, cheat, restart and exit actions. |
+| SettingsListView / SettingItem | General, advanced, support and other groups; appearance controls, automatic states, controller skins and grouped settings rows in src/app.js and style.css. |
+
+UIKit layout and Realm persistence are replaced with HTML/CSS/JavaScript and
+IndexedDB. This is a source-based port, not the execution of Swift/UIKit in a browser.
+Each upstream filename can be located in the pinned repository; the three AS*
+files are from ManicEmu/ManicEmu/Sources/Business/Common (Models and Views).
+The Web source archive contains these references,
+the editable implementation, modification notices and the license.
+
+## Subtractions and necessary Web adaptations
+
+- Native purchases, iCloud/account features, achievements and unsupported
+  per-core/device options are omitted. State-file import/export is not exposed.
+- Native importSave/shareSave have their own rows, also available before play.
+  Existing local battery-save backups remain available from the additional
+  save-data row while playing. Checkpoints use the native automatic-state tab.
+- Manual saves append instead of overwriting. Existing numbered slots remain
+  readable. Selected manual records are deleted in one transaction only after
+  confirmation. Automatic checkpoints stay read-only to preserve crash recovery.
+- Recovery prompts, corruption checks, cross-tab locks and restart confirmations
+  preserve the existing Web safety features. Loading checkpoints remains local.
+- The native Japanese manual/automatic tab labels are shortened to 手動 / 自動
+  under the セーブステート title. Continue remains 続ける. Narrow views reflow
+  controls below labels instead of squeezing text into vertical columns.
+- Browser-only full-screen and FPS controls use the same row component. The
+  local save-data page uses the same grouping, without a separate tile layout.
+- Native images and Apple system symbols are not copied. Replacement vector
+  icons and standard-skin source artwork are authored for this AGPL Web port.
+  No third-party skin, ROM, BIOS, game image or downloaded font is bundled.
+
+## Game-detail behavior (modified 2026-10-09)
+
+GameInfo references are from ManicEmu/ManicEmu/Sources/Business/GameInfo/VIews/.
+The source views guide spacing, the red accent, rounded groups, switches
+and the pinned header. Native-only controls are filtered by available capabilities.
+Safe mode suppresses cheats and automatic state recovery for the launch; saved
+data remains intact. Preferences for audio, video and input remain global in the
+Web model (skin/control-layout overrides retain their existing per-game behavior).
+Played duration is recorded from this version onward; older playtime is not inferred.
+Option sorting and navigation shortcut choices persist locally. ROM sharing and
+its file-download fallback were removed on 2026-10-09. Save-data export remains.
+The launch link identifies a game already stored in the same browser.
+
+## Layout editor (modified 2026-10-09)
+
+FlexSkinSettingViewController is from Business/Skin/ViewControllers; FlexItemView
+and SkinSettingsView are from Business/Skin/Views at the same pinned revision.
+Unmodified files and original notices are retained. The Web editor applies sizes
+to artwork and hit rectangles together, stores positions/sizes by orientation and
+keeps the previous per-game/shared preference model. Unlike upstream free-form
+screen edge resizing, this port preserves aspect ratio and clamps to the viewport.
+NDS moves/resizes each screen independently and retains legacy grouped layouts.
+Imported skins stay unmodified.
+
+The editor styles now live in control-editor.css. Screen and button layers are
+explicit in editing, preview and gameplay; buttons keep their saved opacity while
+overlapping video. Unlike upstream mode dimming, inactive items retain their
+actual opacity so the overlap can be judged. src/control-alignment.js adds original
+Web grid/snapping, guides, centering, level and mirror placement helpers.
+
+## Shared controls and local artwork (modified 2026-10-09)
+
+Settings rows/groups/switches use src/ui.js, settings pages use
+src/settings-view.js, skin selection/layout settings use src/skin-settings.js,
+and state dialogs use src/state-dialogs.js. controls.css defines the shared red
+buttons and inputs.
+Screen-specific styles retain placement; the bottom tabs retain their gradient.
+
+The cover-change sheet retains GameInfoCoverView's local image selection. External
+catalog/search/automatic download code has been removed from the publication
+candidate. Existing cover pixels remain local; no third-party cover is shipped.
+The single available core is identified in Game Info; no ineffective switch-core
+row is shown. Native purchase/cloud/account/3DS-only controls remain omitted.
+
+## Game selection (reviewed 2026-10-09)
+
+The selection/start split was rechecked against the same pinned revision:
+[GameListView.swift](https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Games/Views/GameListView.swift)
+calls `game.handleTapAction()` for normal selection;
+[Game.swift](https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Play/Models/Game.swift)
+opens GameInfoView unless quick-start is enabled/forced. GameInfoDetailView's Play
+button explicitly passes `forceQuick: true`. This port always opens details from
+library/history selection; Play, safe-mode Play and state Continue remain explicit
+launch actions. There is no quick-start preference in this Web version.
+
+The retained GameOptionsView `.gameInfo` / `.gaming` scene split and
+GameOption.defaultGroupAndSort / availableOptions were also rechecked. The Web
+port shares grouped-option components between the two scenes, includes only the
+available core/browser controls, and retains the separate title/play section.
+
+## Publication audit (2026-10-09)
+
+The bundled Swift references were compared byte-for-byte with the pinned Git
+objects. Additional library/navigation references retain their original authors
+and notices. Web settings preserve the native general/advanced/support/other
+grouping; Web-only storage, offline/update, recovery and accessibility controls
+use the same row components. Framework bindings, geometry, original skin art,
+network safeguards and browser audio/video code remain deliberate Web adaptations.

@@ -1,0 +1,2 @@
+# Preserve the exact bytes recorded in the source and release hash manifests.
+* -text whitespace=cr-at-eol

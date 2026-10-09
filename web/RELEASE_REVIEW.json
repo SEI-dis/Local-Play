@@ -1,0 +1,55 @@
+{
+  "reviewedOn": "2026-10-09",
+  "status": "ready",
+  "scope": "This exact static Web distribution, pinned core sources and manually dispatched workflows. No user ROM/save, extracted commercial BIOS, third-party skin or artwork is included. Open-source replacement implementations retain their notices.",
+  "openItems": [],
+  "note": "Engineering review of pinned dependencies, corresponding source, notices, distribution contents and runtime regression tests. Not a legal opinion or a grant of rights in user ROMs/artwork. iPhone hardware and commercial-game compatibility remain unverified; see RELEASE_VALIDATION.md. Any distribution/workflow change requires renewed review.",
+  "reviewedContentSha256": "3b0adb8d6dc73138efe8e3e0170b6e318621c1469d4665b9ae71a31783bac54a",
+  "resolutions": [
+    {
+      "id": "corresponding-source",
+      "evidenceFile": "sources/build-evidence.json",
+      "sha256": "9b13bb6e65de957329c1c4afaa03631b121535e810ef37269db57022230d489a"
+    },
+    {
+      "id": "nds-corresponding-source",
+      "evidenceFile": "sources/nds-build-evidence.json",
+      "sha256": "7cbb452ba776bc5ae35e234286ae472435251e8564fb756b233c23c3b88be090"
+    },
+    {
+      "id": "noncommercial-core-combination",
+      "evidenceFile": "LICENSE_AUDIT.md",
+      "sha256": "00873bbc6b0be758fea061686ad51c4f07c919a39f35298952cf3786a1e6b288"
+    },
+    {
+      "id": "asset-rights",
+      "evidenceFile": "NOTICES.md",
+      "sha256": "d31e82db6f4a02b60401b3820b63d74b18d525e068d17e8b9da2b5bd63acc01d"
+    },
+    {
+      "id": "source-archive-materials",
+      "evidenceFile": "SOURCES.json",
+      "sha256": "e8557f85cae8d91715bcbea90c3181463d4dfd133053986c8bc53590c38646db"
+    },
+    {
+      "id": "external-artwork-policy",
+      "evidenceFile": "LICENSE_AUDIT.md",
+      "sha256": "00873bbc6b0be758fea061686ad51c4f07c919a39f35298952cf3786a1e6b288"
+    },
+    {
+      "id": "runtime-validation",
+      "evidenceFile": "RELEASE_VALIDATION.md",
+      "sha256": "546aed2650ff188f68767e4f79c7ab83564217f2c938c36c62404686914ed47c"
+    },
+    {
+      "id": "alternate-corresponding-source",
+      "evidenceFile": "sources/alternate-build-evidence.json",
+      "sha256": "b276f6652da551330a35af356d1058e7a03ab7f7ddee2bc6f11e36b2d7798150"
+    }
+  ],
+  "workflows": {
+    "ci.yml": "58477c29be0f1ea35ea9da1f0fcec6f96ef015bab15f589808d69aeda4f79701",
+    "web-pages.yml": "8cf08043e85451cb6a72825014e82a852b68e6f793bf1ac017919f091ba431f1",
+    "core-candidate.yml": "1086407f787e74fa47dcbdc24121d2d82a0f758e4d07969091f573c789859c26"
+  }
+}

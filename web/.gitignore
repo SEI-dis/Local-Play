@@ -1,0 +1,19 @@
+# User content must never be committed or deployed.
+*.gba
+*.gb
+*.gbc
+*.nes
+*.sfc
+*.smc
+*.mdx
+*.gen
+*.smd
+*.bin
+*.sav
+*.srm
+*.state
+*.ss0
+*.ss1
+node_modules/
+playwright-report/
+test-results/

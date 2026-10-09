@@ -1,0 +1,33 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later
+   Shared buttons, switches, checkboxes and inputs. Screen files own layout;
+   this file owns control colors and shape. The bottom tabs keep their gradient. */
+:root{
+ --accent:#ef0030;
+ --button-secondary:#303032;
+ --tab-gradient:linear-gradient(110deg,#e8203c,#e88a58 33%,#6d77e5 68%,#2e98e5);
+}
+html[data-theme=light]{--button-secondary:#e5e5ea}
+.primary,.secondary{
+ display:inline-flex;align-items:center;justify-content:center;gap:10px;
+ min-height:44px;padding:13px 20px;border-radius:999px;
+ font-weight:600;line-height:1.4;text-decoration:none;text-align:center;
+}
+.primary,.state-continue,.boost.fast,.resume-game strong{background:var(--accent);color:#fff}
+.danger,.slot button,.state-edit-tools button{color:var(--accent)}
+.secondary{background:var(--button-secondary);color:var(--text)}
+.secondary.danger{color:var(--accent)}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{
+ outline:2px solid var(--accent);outline-offset:4px;
+}
+input[type=checkbox],input[type=radio],input[type=range]{accent-color:var(--accent)}
+.row input[type=checkbox]{
+ appearance:none;width:44px;height:26px;border-radius:20px;background:#5b5b60;
+ position:relative;margin:0;cursor:pointer;flex-shrink:0;
+}
+.row input[type=checkbox]:after{
+ content:'';position:absolute;background:#fff;width:22px;height:22px;
+ left:2px;top:2px;border-radius:50%;transition:left .15s;
+}
+.row input[type=checkbox]:checked{background:var(--accent)}
+.row input[type=checkbox]:checked:after{left:20px}
+.text-input{width:100%;background:var(--raised);border:1px solid var(--line);border-radius:10px;padding:14px;color:var(--text)}

@@ -1,0 +1,77 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Adapter for the source-built DeSmuME 2015 core. See sources/nds-web/BUILD.md.
+import {MGBACore} from './mgba.js';
+import {VideoOutput} from './video.js';
+import {screenBounds} from './control-layout.js';
+import {coreFor} from './core-registry.js';
+const factories=new Map();
+function loadFactory(directory){
+ if(factories.has(directory))return factories.get(directory);
+ const pending=new Promise((resolve,reject)=>{
+  const script=document.createElement('script');script.src=new URL(`../cores/${directory}/core.js`,import.meta.url).href;
+  script.onload=()=>resolve(window.createNDS);script.onerror=()=>{factories.delete(directory);reject(Error('NDSコアを読み込めませんでした。'));};document.head.append(script);
+ });factories.set(directory,pending);return pending;
+}
+export class NDSCore extends MGBACore {
+ constructor(container){
+  super(document.createElement('canvas'));this.container=container;
+  this.display=document.createElement('div');this.display.className='nds-display';container.append(this.display);
+  this.screens=[0,1].map(i=>{const canvas=document.createElement('canvas');canvas.className=i?'nds-bottom':'nds-top';canvas.setAttribute('aria-label',i?'NDS タッチスクリーン':'NDS 上画面');this.display.append(canvas);return canvas;});
+  this.videos=this.screens.map(c=>new VideoOutput(c,256,192));this.images=[new ImageData(256,192),new ImageData(256,192)];
+  const touch=this.screens[1];
+  const position=e=>{
+   const rect=touch.getBoundingClientRect(),fit=getComputedStyle(touch).objectFit;
+   let width=rect.width,height=rect.height,left=rect.left,top=rect.top;
+   if(fit!=='fill'){const scale=(fit==='cover'?Math.max:Math.min)(width/256,height/192);width=256*scale;height=192*scale;left+=(rect.width-width)/2;top+=(rect.height-height)/2;}
+   const x=(e.clientX-left)/width,y=(e.clientY-top)/height;
+   if(x<0||y<0||x>=1||y>=1){this.releaseTouch();return;}
+   this.m?._web_touch(Math.min(32767,Math.round(x*65535-32768)),Math.min(32767,Math.round(y*32768)),1);
+  };
+  touch.onpointerdown=e=>{if(this.paused||e.button>0||this.pointer!=null)return;e.preventDefault();this.pointer=e.pointerId;touch.setPointerCapture(e.pointerId);this.unlockAudio();position(e);};
+  touch.onpointermove=e=>{if(e.pointerId===this.pointer&&!this.paused)position(e);};
+  const up=e=>{if(e.pointerId===this.pointer){this.pointer=null;this.releaseTouch();}};
+  touch.onpointerup=up;touch.onpointercancel=up;touch.onlostpointercapture=up;
+ }
+ async load(bytes,game={system:'nds'}){
+  this.core=coreFor(game);const create=await loadFactory(this.core.directory);this.m=await create({locateFile:()=>new URL(`../cores/${this.core.directory}/core.wasm`,import.meta.url).href});
+  this.copyIn(bytes,(p,n)=>{if(!this.m._web_load(p,n))throw Error('このNDS ROMを読み込めませんでした。');});
+  this.width=256;this.height=384;this.fps=this.m._web_fps();this.startLoop();
+ }
+ setKeys(mask){const map=[8,0,2,3,7,6,4,5,11,10,9,1];this.keys=map.reduce((out,id,i)=>out|((mask&(1<<i))?1<<id:0),0);}
+ setRenderLimit(enabled){if(this.core?.renderLimit===false)return;if(this.renderLimit===enabled)return;this.renderLimit=enabled;this.m?._web_render_limit(enabled?1:0);}
+ setLayout(wide,swap=false,rep){
+  this.pointer=null;this.releaseTouch();this.display.dataset.wide=String(wide);this.display.dataset.swap=String(swap);
+  const framed=rep?.screens.length===2;this.display.dataset.framed=String(framed);
+  const bounds=framed?screenBounds(rep):null;
+  this.screens.forEach((canvas,i)=>{
+   if(!framed){canvas.removeAttribute('style');return;}
+   const f=rep.screens[swap?1-i:i].outputFrame;
+   canvas.style.cssText=`left:${(f.x-bounds.x)/bounds.width*100}%;top:${(f.y-bounds.y)/bounds.height*100}%;width:${f.width/bounds.width*100}%;height:${f.height/bounds.height*100}%;`;
+   for(const [key,value]of Object.entries({x:canvas.style.left,y:canvas.style.top,w:canvas.style.width,h:canvas.style.height}))this.display.style.setProperty(`--screen-${i}-${key}`,value);
+  });
+ }
+ releaseTouch(){this.m?._web_touch(0,0,0);}
+ pause(value){super.pause(value);if(value){this.pointer=null;this.releaseTouch();}}
+ draw(){
+  const serial=this.m._web_frame_serial();if(serial===this.lastSerial)return;this.lastSerial=serial;
+  const ptr=this.m._web_pixels(),bytes=256*192*4;
+  for(let i=0;i<2;i++){this.images[i].data.set(this.m.HEAPU8.subarray(ptr+i*bytes,ptr+(i+1)*bytes));this.videos[i].draw(this.images[i]);}
+  this.presented++;
+ }
+ setFilter(mode){for(const video of this.videos)if(video.mode!==mode)video.setMode(mode);}
+ screenshot(){
+  const [top,bottom]=this.screens;if(this.canvas.width!==top.width)this.canvas.width=top.width;if(this.canvas.height!==top.height*2)this.canvas.height=top.height*2;
+  const ctx=this.canvas.getContext('2d');ctx.drawImage(top,0,0);ctx.drawImage(bottom,0,top.height);return this.canvas.toDataURL('image/png');
+ }
+ async restorePreview(url){
+  if(typeof url!=='string'||!url.startsWith('data:image/png;base64,')||url.length>8*1024*1024)return;
+  try{const image=new Image();image.src=url;await image.decode();if(!this.paused||this.closed)return;
+   for(let i=0;i<2;i++){const canvas=document.createElement('canvas');canvas.width=image.width;canvas.height=image.height/2;canvas.getContext('2d').drawImage(image,0,i*canvas.height,canvas.width,canvas.height,0,0,canvas.width,canvas.height);this.videos[i].restorePreview(canvas);}
+  }catch{}
+ }
+ setCheats(list){
+  const enabled=list.filter(c=>c.enabled);if(enabled.some(c=>c.code.length>=1024||!/^[\da-fA-F\s+]+$/.test(c.code)))throw Error('NDSはAction Replay形式（16進数、1023文字以内）で入力してください。');
+  this.m._web_cheat_reset();const enc=new TextEncoder();enabled.forEach((c,i)=>this.copyIn(enc.encode(c.code.replace(/\n/g,'+')+'\0'),p=>this.m._web_cheat_set(i,1,p)));
+ }
+ close(){this.releaseTouch();super.close();this.display.remove();}
+}

@@ -1,0 +1,32 @@
+{
+  "version": "6.4.299",
+  "commit": "d0991a0d53f3bb3a7307e3b83f279c1d117aafb3",
+  "distribution": {
+    "shasum": "4a46f5146ac6505564c1a5d472900be4df8bf628",
+    "tarball": "https://registry.npmjs.org/pdfjs-dist/-/pdfjs-dist-6.4.299.tgz",
+    "fileCount": 554,
+    "integrity": "sha512-AVl138zALtfaAPvADulE0PZThbYzCBS79nL4pOSL/6Sm/4AH5A21BD9VHt97OlCuzJuCpmeZtAtkinisF4Vb1g==",
+    "signatures": [
+      {
+        "sig": "MEUCIANFOtvvvNGmxlVa6Y9QCzq37pTxqJ158DtYT7YLMpwDAiEAoiTHdJrCono0hv72HNRa7TL6/cK0rLKKsStkjlNtWSQ=",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      },
+      {
+        "sig": "MEYCIQDh61X2sPdS5BlBMRK+soD+Xde+4PMDdwVWIB0xMy1W5QIhAMBAYDXPhYnoShHZTMrVgSn8t8R/YYIdNFnTyk6eYJ6Y",
+        "keyid": "SHA256:DhQ8wR5APBvFHLF/+Tc+AYvPOdTpcIDqOhxsBHRwC7U"
+      }
+    ],
+    "attestations": {
+      "url": "https://registry.npmjs.org/-/npm/v1/attestations/pdfjs-dist@6.4.299",
+      "provenance": {
+        "predicateType": "https://slsa.dev/provenance/v1"
+      }
+    },
+    "unpackedSize": 34913648
+  },
+  "shipped": [
+    "build/pdf.mjs",
+    "build/pdf.worker.mjs"
+  ],
+  "notes": "Unmodified upstream npm browser bundles. Library/build source is supplied; test PDFs/fonts, viewer assets, CMaps and WASM codecs are not shipped. useWasm=false. No native Node canvas package is included."
+}

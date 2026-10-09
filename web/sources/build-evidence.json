@@ -1,0 +1,54 @@
+{
+  "date": "2026-10-08",
+  "emscripten": "4.0.15",
+  "emscriptenReleasesCommit": "b412b6307e541b93dd93f01b61181e15c17302ec",
+  "cmake": "3.31.6",
+  "ninja": "1.11.1",
+  "sourceSelection": "Compiler dependency closure, CMake inputs, required auxiliary source, and license/readme notices. No ROM/test fixtures, native GUI art or fonts. All core source file contents remain unchanged.",
+  "cores": {
+    "nes": {
+      "js": {
+        "sha256": "cd3799a369fa1b87d6fd085cd8eaecac8289dc4305ec259b21715a60c5f66f67",
+        "rebuildMatches": true
+      },
+      "wasm": {
+        "sha256": "3fccda5b58befa4c6084a717bbdb8d316b50a107ec7b108bb5b8a9d45ea8e138",
+        "rebuildMatches": true
+      }
+    },
+    "snes": {
+      "js": {
+        "sha256": "1f127b5dd1995b8ed505607f98b0fbe3fc349628deff01bfee957be7b1efd814",
+        "rebuildMatches": true
+      },
+      "wasm": {
+        "sha256": "454c0a6de528b76f5200e73585e27101173015b45b959843d52f5e6780769447",
+        "rebuildMatches": true
+      }
+    },
+    "md": {
+      "js": {
+        "sha256": "bb2fab117a8029d064342e6cf8095768514bfe6a9b6f569a9c634faacbc0e300",
+        "rebuildMatches": true
+      },
+      "wasm": {
+        "sha256": "bb47682ae13e62c790485733af91f51d6dc958d7faf06b96e6cf0af3b0110693",
+        "rebuildMatches": true
+      }
+    },
+    "mgba": {
+      "js": {
+        "sha256": "5d64b5f2086bbc35f2eaca246399d4424b5cc2087f10c4e41eb8cfb5cca71de6",
+        "rebuildMatches": true
+      },
+      "wasm": {
+        "sha256": "81d064195d3733cc65aaa79fbf32251336968a1cdc5f7e8171b18c8a2b464691",
+        "rebuildMatches": true
+      }
+    }
+  },
+  "archives": {
+    "libretro-cores-source.tar.gz": "d987a765bf09b4e7d6b5e0c856e1cc12bbbf4690ba142bf5eaf9827d53e915ed",
+    "mgba-celio-rom64-source.tar.gz": "ffa96ad0ebb5b84e34f816af426631b71016a97cf930d6557b38090a8c4b8f85"
+  }
+}

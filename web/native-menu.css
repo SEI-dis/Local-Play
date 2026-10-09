@@ -1,0 +1,56 @@
+/* ManicEMU GameInfoNavigationView / GameInfoDetailView / ASListPage port.
+   Copyright © 2026 Manic EMU. Original views by Daiuno.
+   Modified for Web 2026-10-08; AGPL-3.0-or-later. See NOTICES.md. */
+dialog.native-menu{--menu-bg:#111112;--menu-group:#1c1c1e;--menu-muted:#89898e;--menu-red:var(--accent);--text:#f6f6f7;--panel:var(--menu-group);--raised:#303032;color:var(--text);background:var(--menu-bg);border:1px solid #ffffff0a;border-radius:24px 24px 0 0;width:min(100%,560px);max-width:100%;height:92dvh;max-height:92dvh;inset:auto 0 0;margin:0 auto;padding:0;overflow:hidden;box-shadow:0 -8px 60px #0004}
+dialog.native-menu[open]{display:flex;flex-direction:column}
+.native-menu::backdrop{background:#0009;backdrop-filter:blur(12px)}
+.native-menu .sheet-handle{width:60px;height:4px;min-height:4px;border-radius:4px;margin:4px auto 10px;background:#48484e}
+.native-menu .sheet-head{flex:none;position:relative;top:auto;min-height:44px;margin:0 0 14px;padding:0 20px;background:var(--menu-bg);grid-template-columns:minmax(0,1fr) auto auto;gap:10px}
+.native-menu .sheet-head h2{font-size:17px;letter-spacing:.01em}
+.native-menu #close-sheet{width:36px;height:36px;background:linear-gradient(#303032,#252527);border:1px solid #ffffff13;box-shadow:inset 0 1px 1px #ffffff25}
+.native-menu #close-sheet svg{width:26px;height:26px;stroke-width:2}
+.native-menu .sheet-tools{background:linear-gradient(#38383a,#2b2b2d);border:1px solid #ffffff12;box-shadow:inset 0 1px 1px #ffffff30;padding:2px 4px;gap:2px;max-width:100%}
+.native-menu .sheet-tool{width:32px;height:32px}.native-menu .sheet-tool svg{width:21px;height:21px}
+.native-menu #sheet-body{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 16px max(28px,env(safe-area-inset-bottom));scrollbar-width:thin}
+.native-menu .settings-group{background:var(--menu-group);border-radius:20px;margin:0 0 20px;container-type:normal;overflow:hidden}
+.native-menu .settings-group:last-child{margin-bottom:0}
+.native-menu .native-row{position:relative;display:flex;align-items:center;gap:12px;width:100%;min-height:60px;padding:17px 18px;border:0;line-height:1.45;font-size:16px;font-weight:400;text-align:left}
+.native-menu .native-row>svg:first-child{width:22px;height:22px;flex:0 0 22px;stroke-width:1.7}
+.native-menu .native-row>svg:not(:first-child){width:13px;height:17px;flex:0 0 13px;color:#48484c;stroke-width:1.8}
+.native-menu .native-label{flex:1;min-width:0;overflow-wrap:anywhere;color:inherit}
+.native-menu .native-label small{display:block;font-size:12px;color:var(--menu-muted);line-height:1.5;font-weight:400}
+.native-menu .native-value{flex:0 1 auto;max-width:44%;color:var(--menu-muted);font-size:13px;text-align:right;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.native-menu .native-select select{position:absolute;inset:0;width:100%;height:100%;max-width:none!important;opacity:0;cursor:pointer;grid-column:auto;font-size:16px}
+.native-menu .native-select:focus-within{outline:2px solid var(--menu-red);outline-offset:-3px}
+.native-menu .native-row input[type=checkbox]{width:62px;height:28px;margin:0;border-radius:20px;background:#5b5b60;flex:0 0 62px}
+.native-menu .native-row input[type=checkbox]:after{width:24px;height:24px;left:2px;top:2px;box-shadow:0 1px 3px #0002}
+.native-menu .native-row input[type=checkbox]:checked{background:var(--menu-red)}
+.native-menu .native-row input[type=checkbox]:checked:after{left:36px}
+.native-menu .danger{color:var(--menu-red)}
+.native-menu #video-filter-note{margin:0;padding:0 18px 16px 52px;font-size:12px;color:var(--menu-muted)}
+.native-menu.game-info .sheet-head{display:grid;grid-template-columns:1fr 36px 1fr;min-height:44px;margin-bottom:14px}
+.game-info #sheet-title{position:absolute;width:1px;height:1px;clip-path:inset(50%);overflow:hidden;white-space:nowrap}
+.game-info #sheet-tools{grid-column:1;grid-row:1;justify-self:start}
+.game-info #sheet-cover{display:block;grid-column:2;grid-row:1;width:36px;height:36px;border-radius:9px;object-fit:cover}
+.game-info #close-sheet{grid-column:3;grid-row:1;justify-self:end}
+.native-menu.game-info #sheet-body{display:flex;flex-direction:column;padding:0;overflow:hidden}
+.game-info-hero{flex:none;text-align:center;padding:0 16px 24px;background:var(--menu-bg)}
+.game-info-title{display:flex;align-items:center;justify-content:center;gap:6px;min-width:0}
+.game-info-title h2{font-size:18px;line-height:24px;font-weight:600;white-space:nowrap;text-overflow:ellipsis;overflow:hidden;min-width:0}
+.game-info-title button{padding:0;width:24px;height:24px;flex:none}.game-info-title svg{width:22px;height:22px}
+.game-info-subtitle{display:flex;align-items:center;justify-content:center;gap:5px;color:var(--menu-muted);font-size:13px;line-height:18px;margin-top:7px}
+.game-info-subtitle svg{width:16px;height:16px;flex:none}.game-info-subtitle span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.game-info-play{display:flex;align-items:center;justify-content:center;gap:8px;background:var(--menu-red);color:white;border-radius:30px;width:168px;max-width:90%;height:44px;margin:22px auto 0;font-size:16px;font-weight:600}
+.game-info-play svg{width:19px;height:19px;fill:currentColor;stroke:none}
+.game-info-safe{display:flex;align-items:center;justify-content:center;gap:5px;color:var(--menu-red);margin:8px auto 0;min-height:24px;padding:0 8px;font-size:13px;font-weight:600}
+.game-info-safe svg{width:17px;height:17px}
+.native-menu .native-options{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;padding:0 16px max(30px,env(safe-area-inset-bottom));scrollbar-width:thin}
+.native-menu .option-reorder{display:flex;align-items:center;gap:8px;padding:12px 16px;min-height:56px}.option-reorder>span{flex:1}.option-reorder button{padding:8px;color:var(--menu-muted)}
+.native-menu .sheet-note{color:var(--menu-muted)}
+#screen[data-scaling=stretch] canvas{object-fit:fill}
+#screen[data-scaling=fill] canvas{object-fit:cover}
+html[data-theme=light] dialog.native-menu{--menu-bg:#f2f2f7;--menu-group:#fff;--menu-muted:#77777d;--text:#171719;--raised:#e5e5ea;border-color:#0001}
+html[data-theme=light] .native-menu .sheet-tools,html[data-theme=light] .native-menu #close-sheet{background:linear-gradient(#fff,#e9e9ec);border-color:#0001}
+@media(min-width:700px){dialog.native-menu{inset:0;margin:auto;border-radius:24px;height:min(900px,92dvh)}}
+@media(max-height:540px){dialog.native-menu{height:98dvh;max-height:98dvh}.native-menu.game-info #sheet-body{display:grid;grid-template-columns:minmax(180px,.85fr) minmax(260px,1.4fr)}.game-info-hero{padding-top:12px}.native-menu .native-options{height:100%;padding-left:0}.game-info-title h2{font-size:16px}.game-info-subtitle{font-size:11px}.game-info-play{margin-top:14px}}
+@media(max-width:320px){.native-menu .sheet-head{padding:0 12px;gap:4px}.native-menu #sheet-body,.native-menu .native-options{padding-left:10px;padding-right:10px}.native-menu.game-info #sheet-body{padding:0}.native-menu .native-row{padding:15px 12px;gap:9px;font-size:14px}.native-menu .native-value{font-size:11px;max-width:35%}.native-menu .native-row input[type=checkbox]{width:50px;flex-basis:50px}.native-menu .native-row input[type=checkbox]:checked:after{left:24px}.game-info-title h2{font-size:16px}.game-info-subtitle{font-size:11px}.native-menu .sheet-tool{width:27px}.native-menu .sheet-tool svg{width:18px}}

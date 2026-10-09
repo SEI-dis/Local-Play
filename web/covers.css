@@ -1,0 +1,14 @@
+/* SPDX-License-Identifier: AGPL-3.0-or-later */
+.cover-preview{display:block;max-width:100%;width:auto;height:auto;max-height:280px;object-fit:contain;margin:12px auto 20px;border-radius:12px}
+.cover-search-form{display:flex;gap:8px;align-items:center}
+.cover-search-form .text-input{min-width:0;flex:1}
+.cover-search-form .primary{flex:none;padding:12px 18px}
+.cover-result span{min-width:0;overflow-wrap:anywhere}
+.cover-result>svg:last-child{width:14px;color:var(--secondary)}
+.cover-result{display:grid;grid-template-columns:64px minmax(0,1fr) 14px;align-items:center;text-align:left;min-height:104px}
+.cover-result-thumb{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;width:64px;height:80px;border-radius:8px;background:#ffffff06;overflow:hidden;color:var(--secondary)}
+.cover-result-thumb img{display:block;width:100%;height:100%;object-fit:contain;border-radius:5px}
+.cover-result-thumb svg{width:24px;height:24px;opacity:.6}
+.cover-result-thumb small{font-size:10px;font-weight:400;line-height:1.2}
+.cover-result-title{line-height:1.5}
+@media(max-width:360px){.cover-result{grid-template-columns:56px minmax(0,1fr) 14px}.cover-result-thumb{width:56px;height:72px}}
