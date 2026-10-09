@@ -66,8 +66,16 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   await menu();await p.locator('[data-action=saveData]').click();await p.locator('[data-action=backups]').click();await p.locator('[data-backup-restore]').first().click();
   await p.setViewportSize({width:240,height:844});await fits();await p.locator('#cancel-backup').click();
   assert.equal(await p.evaluate(async id=>JSON.stringify(await (await import('./src/storage.js')).get('saves',id)),before.id),battery,'Cancelling backup restore leaves battery unchanged');
+  // Observe the successful restore commit itself: a normal autosave may update
+  // the latest record's reason immediately after the confirmation resumes play.
+  await p.evaluate(async()=>{
+   const {SaveProtection}=await import('./src/save-safety.js'),save=SaveProtection.prototype.save;window.backupRestoreCommits=[];
+   SaveProtection.prototype.save=function(core,options){const result=save.call(this,core,options);return options?.reason==='backup-restore'?result.then(value=>{backupRestoreCommits.push(value?.save);return value;}):result;};
+  });
   await p.setViewportSize({width:390,height:844});await p.locator('[data-backup-restore]').first().click();await p.locator('#confirm-backup').click();await p.locator('#sheet').waitFor({state:'hidden'});
-  assert.equal(await p.evaluate(async id=>(await (await import('./src/storage.js')).get('saves',id)).reason,before.id),'backup-restore');
+  const restoredBattery=await p.evaluate(async id=>{const latest=await (await import('./src/storage.js')).get('saves',id);return {commits:backupRestoreCommits.map(save=>({reason:save?.reason,hash:save?.hash,bytes:save?.bytes?[...save.bytes]:null})),latest:{hash:latest.hash,bytes:[...latest.bytes]}};},before.id),expectedBattery=JSON.parse(battery),expectedBytes=Object.values(expectedBattery.bytes);
+  assert.deepEqual(restoredBattery.commits,[{reason:'backup-restore',hash:expectedBattery.hash,bytes:expectedBytes}],'Confirmation commits the selected backup exactly once');
+  assert.deepEqual(restoredBattery.latest,{hash:expectedBattery.hash,bytes:expectedBytes},'Later automatic saves retain the restored battery contents');
   await menu();await p.locator('[data-action=states]').click();await p.locator('[data-state-mode=auto]').click();await p.locator('[data-recover]').first().waitFor();assert.equal(await p.locator('#edit-states').count(),0,'Recovery checkpoints are protected');
   await screenshot('automatic-state-list');await p.close();
   p=await c.newPage();p.on('pageerror',e=>errors.push(e.message));await p.goto(base);await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.getByRole('heading',{name:'前回のプレイを復旧'}).waitFor();

@@ -7,18 +7,30 @@ const cartridge=[...require('./link.cjs').cartridge(31,992)];
 // timing race between a loaded CI runner and an external Playwright command.
 function slowStartup({bytes,failSettings=false}){
  const open=indexedDB.open.bind(indexedDB);let intercepted=false;
- window.startupProbe={held:false,released:false,actionsBeforeRelease:false};
+ window.startupProbe={held:false,released:false,actionsBeforeRelease:false,stage:'waiting-for-open'};
  if(failSettings){const set=Storage.prototype.setItem;Storage.prototype.setItem=function(key,value){if(key==='manic-settings')throw new DOMException('Synthetic settings failure','QuotaExceededError');return set.call(this,key,value);};}
  indexedDB.open=function(...args){
   const request=open(...args);if(intercepted||args[0]!=='manicemu-web')return request;intercepted=true;
   let success;Object.defineProperty(request,'onsuccess',{configurable:true,get:()=>success,set:fn=>{success=fn;}});
   request.addEventListener('success',event=>{
-   const probe=window.startupProbe;probe.held=true;probe.started=performance.now();
-   const input=document.querySelector('#rom-input'),tab=document.querySelector('[data-tab=settings]'),transfer=new DataTransfer();
-   transfer.items.add(new File([new Uint8Array(bytes)],'Early startup.gba',{type:'application/octet-stream'}));input.files=transfer.files;
-   input.dispatchEvent(new Event('change',{bubbles:true}));tab.click();
-   probe.actionsBeforeRelease=!probe.released;probe.emptyBeforeRelease=!document.querySelector('.game-card');
-   setTimeout(()=>{probe.released=true;probe.delay=performance.now()-probe.started;success?.call(request,event);},450);
+   const probe=window.startupProbe;probe.held=true;probe.opened=performance.now();probe.stage='waiting-for-gate';let observer,timer;
+   const release=()=>{if(probe.released)return;observer?.disconnect();clearTimeout(timer);probe.released=true;probe.delay=probe.started===undefined?0:performance.now()-probe.started;if(!probe.failure)probe.stage='released';success?.call(request,event);};
+   // Always release the actual DB callback, including when preparation or a
+   // synthetic gesture throws. Never turn an injection error into a 30s hang.
+   timer=setTimeout(()=>{probe.failure='The production startup gate did not become ready';probe.stage='gate-timeout';release();},5000);
+   const injectWhenReady=()=>{
+    if(probe.released||probe.started!==undefined)return;
+    const input=document.querySelector('#rom-input'),tab=document.querySelector('[data-tab=settings]');
+    if(document.documentElement.getAttribute('aria-busy')!=='true'||!input||!tab||typeof success!=='function')return;
+    probe.started=performance.now();probe.gateActive=true;probe.stage='injecting';observer?.disconnect();clearTimeout(timer);
+    timer=setTimeout(release,450);
+    try{
+     const transfer=new DataTransfer();transfer.items.add(new File([new Uint8Array(bytes)],'Early startup.gba',{type:'application/octet-stream'}));input.files=transfer.files;
+     input.dispatchEvent(new Event('change',{bubbles:true}));tab.click();
+     probe.actionsBeforeRelease=!probe.released;probe.emptyBeforeRelease=!document.querySelector('.game-card');probe.stage='gestures-injected';
+    }catch(error){probe.failure=`${error.name}: ${error.message}`;probe.stage='injection-failed';}
+   };
+   observer=new MutationObserver(injectWhenReady);observer.observe(document.documentElement,{attributes:true,childList:true,subtree:true});injectWhenReady();
   });return request;
  };
 }
@@ -27,6 +39,8 @@ function slowStartup({bytes,failSettings=false}){
  try{
   for(const scenario of ['fresh','pending','failed']){
    const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),page=await context.newPage(),errors=[],coreRequests=[];
+   let passed=false;console.log(`RUN startup-input ${engine}: ${scenario}`);
+   try{
    page.on('pageerror',error=>errors.push(error.message));page.on('request',request=>{if(/\/cores\/mgba\/[^/]+\.wasm/.test(request.url()))coreRequests.push(request.url());});
    if(scenario!=='fresh'){
     await page.goto(base);await page.locator('#add-first').waitFor();
@@ -36,8 +50,9 @@ function slowStartup({bytes,failSettings=false}){
     });
    }
    await context.addInitScript(slowStartup,{bytes:cartridge,failSettings:scenario==='failed'});await page.goto(base);
-   await page.waitForFunction(()=>window.startupProbe?.released===true);
-   assert.equal(await page.evaluate(()=>startupProbe.actionsBeforeRelease&&startupProbe.emptyBeforeRelease&&startupProbe.delay>=400),true,'Gestures occurred while actual IndexedDB completion was withheld');
+   await page.waitForFunction(()=>window.startupProbe?.released===true||!!window.startupProbe?.failure);
+   const probe=await page.evaluate(()=>startupProbe);assert.equal(probe.failure,undefined,JSON.stringify(probe));
+   assert.equal(probe.gateActive&&probe.actionsBeforeRelease&&probe.emptyBeforeRelease&&probe.delay>=400,true,'Gestures occurred after the production gate was installed, while actual IndexedDB completion was withheld');
    if(scenario==='failed'){
     await page.getByRole('button',{name:'再読み込みして復元を完了',exact:true}).waitFor();
     await page.locator('[data-tab=games]').click();await page.waitForTimeout(100);
@@ -57,7 +72,11 @@ function slowStartup({bytes,failSettings=false}){
     }
     assert.deepEqual(errors,[]);
    }
-   await context.close();
+   passed=true;
+   }finally{
+    if(!passed){const diagnostic=await page.evaluate(()=>({probe:window.startupProbe,readyState:document.readyState,busy:document.documentElement.getAttribute('aria-busy'),input:!!document.querySelector('#rom-input'),tab:!!document.querySelector('[data-tab=settings]'),content:document.querySelector('#content')?.textContent?.slice(0,800)})).catch(error=>({diagnosticError:String(error)}));console.error('STARTUP_DIAGNOSTICS '+JSON.stringify({scenario,engine,errors,coreRequests,...diagnostic}));}
+    await context.close();
+   }
   }
   console.log(`PASS ${engine}: delayed IndexedDB startup preserves first ROM selection and later tab, applies pending backup settings before UI/core startup, and blocks import/core launch on recovery failure.`);
  }finally{await browser.close();}

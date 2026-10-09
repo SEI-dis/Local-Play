@@ -4,7 +4,7 @@
   "scope": "This exact static Web distribution, pinned core sources and manually dispatched deployment. The 3DS host adapter is disabled in the static distribution; Azahar binaries are excluded and their distribution audit is separate. No user ROM/save or extracted commercial BIOS is included. Third-party artwork is limited to the seven explicitly reviewed CC BY 4.0 ManicEMUSkins standard skins pinned in BUNDLED_SKINS.json; newer System.core assets and unrelated skins are excluded. Open-source replacement implementations retain their notices.",
   "openItems": [],
   "note": "Engineering review of pinned dependencies, corresponding source, notices, distribution contents and runtime regression tests. Not a legal opinion or a grant of rights in user ROMs/artwork. iPhone hardware and commercial-game compatibility remain unverified; see RELEASE_VALIDATION.md. Any distribution/workflow change requires renewed review.",
-  "reviewedContentSha256": "0026149275dfc0275d8dbead6697cfff49a8177395e9b437ddd073d35d157719",
+  "reviewedContentSha256": "37e428d2c48b69e38540e26b8ae0dd40841e653441c82e0cbbadcbbc0f583af3",
   "resolutions": [
     {
       "id": "corresponding-source",
@@ -39,7 +39,7 @@
     {
       "id": "runtime-validation",
       "evidenceFile": "RELEASE_VALIDATION.md",
-      "sha256": "b539fc88e9e6a1a87c5c2c62dada8670c37ad52a6bd7d110a9b3a12587706e56"
+      "sha256": "93ee0efd88771a31afe403498bb10401395319421c69b6dde8a9424a1c024a20"
     },
     {
       "id": "alternate-corresponding-source",
