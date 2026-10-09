@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Floating communication controls and save ownership; transports do not access storage.
 import {RoomLink} from './room-link.js';
+import {diagnostics} from './diagnostics.js';
 import {DirectLink} from './direct-link.js';
 import {LinkSafety} from './link-safety.js';
 import {SaveProtection} from './save-safety.js';
@@ -64,7 +65,7 @@ export function createLinkControls({state,setPause,release,applySettings,updateL
         if(state.current?.system==='gba')render();toast(state.message);
       }};
       n=selected==='room'?new RoomLink(core.linkIO(),callbacks):new DirectLink(paired?[core.linkIO(),secondary.linkIO()]:[core.linkIO()],{...callbacks,port});
-      n.kind=selected;n.paired=paired;if(paired)paired.onError=e=>n.close(e.message);state.link=n;core.setCheats([]);applySettings();
+      n.kind=selected;n.paired=paired;if(paired)paired.onError=e=>{diagnostics.record(e,'core');n.close(e.message);};state.link=n;core.setCheats([]);applySettings();
       await n.start(room);
       if(!n.closed){state.starting=false;if(!document.hidden)setPause(false);else await n.close('画面を離れたため接続を終了しました。');render();}
     }catch(e){

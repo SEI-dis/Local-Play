@@ -3,6 +3,8 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // UI port based on ManicEMU's GamesNavigationView, GameListView and HomeTabBar.
 import {dualScreen} from './development.js';
+import {diagnostics} from './diagnostics.js';
+import {createDiagnosticsView} from './diagnostics-view.js';
 import {importROM} from './rom-import.js';
 import {createImportProgress} from './import-progress.js';
 import {systems,detectSystem,escapeHTML as esc,icon,bytesLabel} from './shared.js';
@@ -38,8 +40,15 @@ let library=[],tab=tabFromHash(),filter='all',query='',favorites=false,engine=nu
 let savedSettings={};try{savedSettings=JSON.parse(localStorage.getItem('manic-settings')||'{}');}catch{}
 let settings={theme:'dark',volume:.7,speed:1,preservePitch:true,autosave:true,recovery:true,haptics:true,filter:'pixel',showFps:false,touchControls:true,...savedSettings};
 delete settings.autoCovers;
+diagnostics.setContext(()=>{
+ const core=current?coreFor(current):null;
+ return {phase:exiting?'exiting':importing?'importing':launching?'launching':engine?(paused?'paused':'playing'):'idle',
+  system:current?.system,core:core?.key,coreId:core?.id,link:link?(link.kind==='room'?'online':link.kind||'online'):'none',
+  speed:settings.speed,filter:settings.filter,romMiB:current?current.size/1048576:undefined,memoryMiB:engine?.m?.HEAPU8?.byteLength/1048576};
+});
+const showDiagnostics=createDiagnosticsView({sheet,download,toast});
 const {renderSettings,showVideoSettings,showAudioSettings,showSaveHelp,showControllers,showStorage}=createSettingsView({
- settings,applySettings,bindSettings,bindActions,sheet,toast,showSkins,showOffline,onClose:cleanup=>{sheetCleanup=cleanup;}
+ settings,applySettings,bindSettings,bindActions,sheet,toast,showSkins,showOffline,showDiagnostics,onClose:cleanup=>{sheetCleanup=cleanup;}
 });
 const runtime={get engine(){return engine;},get current(){return current;},get link(){return link;},get protection(){return protection;},set cleanup(value){sheetCleanup=value;}};
 const skinSettings=createSkinSettings({runtime,settings,setPause,sheet,applySettings,layoutSkin,reloadSkins,refresh,toast,error,controlLayout,playerSize,frameStyle});
@@ -64,7 +73,7 @@ const linkControls=createLinkControls({
 $('#player-link').innerHTML=icon('wifi');$('#link-panel-icon').innerHTML=icon('wifi');$('#link-panel-close').innerHTML=icon('close');
 $('#player-link').onclick=()=>linkPanel.visible?linkPanel.hide():showLink();
 function toast(text){const el=$('#toast');($('#sheet').open?$('#sheet'):document.body).append(el);el.textContent=text;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
-function error(e){console.error(e);toast(e?.name==='QuotaExceededError'?'保存容量が不足しています。セーブをファイルに書き出してください。':e.message||String(e));}
+function error(e){diagnostics.record(e,'handled');console.error(e);toast(e?.name==='QuotaExceededError'?'保存容量が不足しています。セーブをファイルに書き出してください。':e.message||String(e));}
 function applySettings(){$$('#quick-actions button').forEach(b=>b.disabled=!!link);document.documentElement.dataset.theme=settings.theme==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):settings.theme;$('#screen').className=settings.filter==='smooth'?'smooth':settings.filter==='scanlines'?'scanlines':'';engine?.setVolume(settings.muted?0:settings.volume);$('#screen').dataset.scaling=settings.screenScaling||'fit';engine?.setSpeed(link?1:settings.speed);engine?.setPreservePitch?.(settings.preservePitch);updateSpeedButton();updateLinkButton();engine?.setFilter?.(settings.filter);engine?.setRenderLimit?.(settings.ndsPowerSave!==false);$('#fps-meter').hidden=!settings.showFps;localStorage.setItem('manic-settings',JSON.stringify(settings));}
 function bindActions(root,handlers){root.querySelectorAll('[data-action]').forEach(el=>el.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>handlers[el.dataset.action]?.()).catch(error)));}
 function sheet(title,html,resume=false){
@@ -143,7 +152,7 @@ async function importFiles(files){
    const result=await importROM(file,system,progress.update);
    if(result.added)count++;else duplicates++;
   }
- }catch(e){failure=e;}
+ }catch(e){diagnostics.record(e,'import');failure=e;}
  finally{progress?.close();importing=false;$('#rom-input').value='';}
  try{if(count){setTab('games');filter='all';query='';favorites=false;await refresh();}}catch(e){failure??=e;}
  if(failure)error(failure);
@@ -191,15 +200,16 @@ async function launch(game,{safeMode=false,skipRecovery=false}={}){
  try{
   const stored=await db.get('library',game.id);if(!stored)throw new Error('ゲームが見つかりません。');current=game=stored;
   const previous=await protection.open(game,coreFor(game).id);
+  if(previous.interrupted)diagnostics.record(null,'previous-session');
   const bytes=await db.get('roms',game.id);if(!bytes)throw new Error('ROMが見つかりません。もう一度追加してください。');
   await reloadSkins(false);$('#screen').replaceChildren();
   engine=createCore($('#screen'),game);
-  engine.onKeyboard=showCoreKeyboard;engine.onError=e=>{setPause(true);error(e);};engine.unlockAudio()?.catch?.(()=>{});await engine.load(bytes,game,systems[game.system]);
+  engine.onKeyboard=showCoreKeyboard;engine.onError=e=>{diagnostics.record(e,'core');setPause(true);error(e);};engine.unlockAudio()?.catch?.(()=>{});await engine.load(bytes,game,systems[game.system]);
   if(previous.save?.bytes)await engine.restore(await protection.verify(previous.save));
   engine.pause(false);
   engine.setCheats?.(safeMode||!coreFor(game).cheats?[]:cheatsFor(game));game.lastPlayed=Date.now();await db.put('library',game.id,game);paused=false;playRunAt=Date.now();$('#resume-game').hidden=true;applySettings();layoutSkin();$('#loading').hidden=true;$('#save-status').hidden=false;engine.unlockAudio()?.catch?.(()=>{});startPadPoll();
   if(!safeMode&&!skipRecovery&&previous.interrupted&&previous.recoveries.some(r=>protection.compatible(r))){setPause(true);await showRecovery(true);}
- }catch(e){clearImportedSkin();releaseSkin();skinPair=null;await engine?.close();engine=null;current=null;await protection.close();$('#player').hidden=true;$('#loading').hidden=true;throw e;}finally{launching=false;}
+ }catch(e){diagnostics.record(e,'startup');clearImportedSkin();releaseSkin();skinPair=null;await engine?.close();engine=null;current=null;await protection.close();$('#player').hidden=true;$('#loading').hidden=true;throw e;}finally{launching=false;}
 }
 function frameStyle(frame,map){return `left:${frame.x/map.width*100}%;top:${frame.y/map.height*100}%;width:${frame.width/map.width*100}%;height:${frame.height/map.height*100}%;`;}
 let layoutFrame=null,lastLayoutSize='',skinScreenCleanup=()=>{},skinInputs=null;
@@ -259,7 +269,7 @@ function startPadPoll(){
  const buttons=Object.entries({0:'a',1:'b',2:'y',3:'x',4:current?.system==='md'?'c':'l',5:current?.system==='md'?'z':'r',8:'select',9:'start',12:'up',13:'down',14:'left',15:'right'}).map(([i,k])=>[Number(i),1<<keybits[k]]);
  engine.beforeFrame=()=>{let bits=0;for(const pad of navigator.getGamepads?.()||[]){if(!pad)continue;for(const [i,mask] of buttons)if(pad.buttons[i]?.pressed)bits|=mask;if(pad.axes[0]<-(settings.deadZone??.4))bits|=1<<5;if(pad.axes[0]>(settings.deadZone??.4))bits|=1<<4;if(pad.axes[1]<-(settings.deadZone??.4))bits|=1<<6;if(pad.axes[1]>(settings.deadZone??.4))bits|=1<<7;}if(bits!==(pressed.get('pad')||0)){pressed.set('pad',bits);updateKeys();}};
 }
-function persist(options={}){if(!engine||!current||link||linkStarting||linkSaveBlocked)return Promise.resolve();return protection.save(engine,options);}
+function persist(options={}){if(!engine||!current||link||linkStarting||linkSaveBlocked)return Promise.resolve();return protection.save(engine,options).catch(e=>{diagnostics.record(e,'save');throw e;});}
 setInterval(()=>{if(engine&&!paused&&(settings.autosave||settings.recovery)){const checkpoint=settings.recovery&&!link&&Date.now()-protection.stateAt>=20000;persist({checkpoint}).catch(error);}},10000);
 // Crash recovery uses the native automatic-save tab, not a separate menu.
 async function showRecovery(interrupted=false){if(!engine)return;setPause(true);await showStates('auto',false,{interrupted});}

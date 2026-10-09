@@ -1,0 +1,102 @@
+// SPDX-License-Identifier: AGPL-3.0-or-later
+// Synthetic errors and data in isolated browser storage; no telemetry endpoint.
+const assert=require('node:assert/strict'),runtime=require('./browser-runtime.cjs');
+const engine=process.env.BROWSER_ENGINE||'chromium',key='palmo-diagnostics-v1',marker='PRIVATE_DIAGNOSTIC_CANARY_83da9';
+const base=process.env.TEST_URL||'http://127.0.0.1:4173/';
+function privateFree(value){
+ const json=JSON.stringify(value);
+ for(const text of [marker,'PRIVATE_FUNCTION','secret-save-bytes','Mozilla/','https://private.invalid','private-user-name','private-file.nds'])assert.ok(!json.includes(text),'Diagnostic leaked '+text);
+ assert.ok(!/https?:\/\/|file:\/\/|C:\\\\Users/.test(json),'No user URLs or local file paths in diagnostics');
+}
+(async()=>{
+ const browser=await runtime[engine].launch({headless:true,...(engine==='chromium'?{channel:process.env.BROWSER_CHANNEL||'msedge'}:{})});
+ try{
+  const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),page=await context.newPage(),requests=[],errors=[];
+  context.on('request',r=>requests.push({url:r.url(),method:r.method(),body:r.postDataBuffer()?.length||0}));
+  await context.addInitScript(()=>{
+   window.diagnosticConnections=0;
+   for(const name of ['WebSocket','RTCPeerConnection'])if(window[name])window[name]=new Proxy(window[name],{construct(target,args){diagnosticConnections++;return Reflect.construct(target,args);}});
+  });
+  page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
+  await page.evaluate(async()=>{window.diagnostics=(await import('./src/diagnostics.js')).diagnostics;});
+  assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),null,'Loading the app must not create diagnostic records');
+  assert.deepEqual(await page.evaluate(()=>diagnostics.list()),[]);
+  const canaries=await page.evaluate(async marker=>{
+   const db=await import('./src/storage.js'),id='diagnostic-data-canary';
+   await db.addGame({id,name:marker,filename:marker+'.nds',system:'nds',size:4},new Uint8Array([41,42,43,44]));
+   await db.put('saves',id,{bytes:new Uint8Array([7,9,13]),note:'secret-save-bytes'});
+   localStorage.setItem('diagnostic-unrelated',marker);
+   diagnostics.setContext(()=>({phase:'play',system:'nds',core:'desmume2015',coreId:'desmume2015-web-v1',link:'local',speed:2,filter:'pixel',romMiB:128,memoryMiB:256,filename:marker+'.nds',hash:marker,save:'secret-save-bytes',url:'https://private.invalid/?'+marker}));
+   const e=new TypeError(marker+' / private-user-name / private-file.nds');
+   e.stack='TypeError: '+marker+'\n at PRIVATE_FUNCTION ('+location.origin+'/src/app.js?'+marker+':123:7)\n at private-user-name (https://private.invalid/private-file.nds:44:5)\n at private-file.nds (file:///C:/Users/private-user-name/private-file.nds:3:2)';
+   diagnostics.record(e,'handled');const before=diagnostics.list();diagnostics.record(e,'handled');
+   return {before,after:diagnostics.list(),id};
+  },marker);
+  assert.equal(canaries.before.length,1);assert.equal(canaries.after.length,1,'Consecutive identical errors are deduplicated');privateFree(canaries.after);
+  assert.equal(canaries.after[0].source,'handled');assert.equal(canaries.after[0].context.system,'nds');
+  // Real asynchronous exceptions reach the automatic window handlers. Their
+  // raw messages intentionally contain a canary which must never be persisted.
+  await page.evaluate(marker=>{const e=new RangeError(marker+' uncaught');setTimeout(()=>{throw e;},0);},marker);
+  await page.waitForFunction(()=>diagnostics.list().some(r=>r.source==='global-error'));
+  await page.evaluate(marker=>{Promise.reject(new ReferenceError(marker+' rejected'));},marker);
+  await page.waitForFunction(()=>diagnostics.list().some(r=>r.source==='unhandled-rejection'));
+  const recorded=await page.evaluate(()=>diagnostics.list());privateFree(recorded);
+  await page.reload();await page.evaluate(async()=>{window.diagnostics=(await import('./src/diagnostics.js')).diagnostics;});
+  for(const source of ['handled','global-error','unhandled-rejection'])assert.ok((await page.evaluate(()=>diagnostics.list())).some(r=>r.source===source),'Report survives reload: '+source);
+  const bounded=await page.evaluate(()=>{
+   diagnostics.clear();
+   for(let i=0;i<7;i++){const e=new TypeError('unretained diagnostic text '+i);e.stack='TypeError\n at test ('+location.origin+'/src/app.js:'+(200+i)+':8)';diagnostics.record(e,'handled');}
+   return {reports:diagnostics.list(),snapshot:diagnostics.snapshot(),stored:JSON.parse(localStorage.getItem('palmo-diagnostics-v1'))};
+  });
+  assert.equal(bounded.reports.length,5,'Keep only the latest five distinct reports');assert.equal(bounded.stored.reports.length,5);privateFree(bounded.snapshot);
+  for(const report of bounded.reports){assert.ok(report.frames.length<=8);assert.ok(report.frames.every(f=>Object.keys(f).every(k=>['file','line','column','wasmFunction','offset'].includes(k))));}
+  const latest=bounded.reports.find(r=>r.frames.some(f=>f.line===206));assert.ok(latest,'The newest error is retained');
+  // Corrupt or older browser storage is untrusted too. Re-sanitize it before
+  // display/export; never spread unknown fields from a stored report.
+  await page.evaluate(({key,marker})=>{
+   const saved=JSON.parse(localStorage.getItem(key)),report=saved.reports[0];
+   report.message=marker;report.stack='https://private.invalid/'+marker;report.userAgent='Mozilla/'+marker;
+   report.context={...report.context,filename:marker+'.nds',hash:marker,bytes:'secret-save-bytes',url:'https://private.invalid/'+marker};
+   report.environment={...report.environment,userAgent:'Mozilla/'+marker};report.app={...report.app,custom:marker};
+   report.frames.push({file:'../../private-user-name/'+marker,line:3,column:4,url:'https://private.invalid/'+marker});
+   saved.private=marker;saved.reports.push({message:marker,stack:marker});localStorage.setItem(key,JSON.stringify(saved));
+  },{key,marker});
+  await page.reload();await page.evaluate(async()=>{window.diagnostics=(await import('./src/diagnostics.js')).diagnostics;});
+  privateFree(await page.evaluate(()=>diagnostics.snapshot()));assert.ok((await page.evaluate(()=>diagnostics.list())).length<=5);
+  await page.locator('[data-tab=settings]').click();await page.locator('[data-action=diagnostics]').click();
+  assert.equal(await page.locator('#sheet-title').textContent(),'診断レポート');
+  privateFree(JSON.parse(await page.locator('#diagnostics-preview').textContent()));
+  const waiting=page.waitForEvent('download');await page.locator('#diagnostics-export').click();const download=await waiting,chunks=[];
+  for await(const chunk of await download.createReadStream())chunks.push(chunk);
+  const exported=JSON.parse(Buffer.concat(chunks).toString('utf8'));privateFree(exported);assert.equal(exported.schemaVersion,1);assert.ok(exported.reports.length>0);
+  await page.locator('#diagnostics-enabled').uncheck();assert.equal(await page.evaluate(()=>diagnostics.isEnabled()),false);
+  const disabledCount=await page.evaluate(()=>diagnostics.list().length);
+  await page.evaluate(marker=>diagnostics.record(new Error(marker),'handled'),marker);
+  assert.equal(await page.evaluate(()=>diagnostics.list().length),disabledCount,'Opt-out suppresses additional records');
+  await page.reload();await page.evaluate(async()=>{window.diagnostics=(await import('./src/diagnostics.js')).diagnostics;});assert.equal(await page.evaluate(()=>diagnostics.isEnabled()),false,'Opt-out survives reload');
+  await page.locator('[data-tab=settings]').click();await page.locator('[data-action=diagnostics]').click();
+  await page.locator('#diagnostics-clear').click();await page.waitForFunction(()=>diagnostics.list().length===0);
+  const preserved=await page.evaluate(async({id,marker})=>{const db=await import('./src/storage.js');return {rom:[...await db.get('roms',id)],save:[...(await db.get('saves',id)).bytes],name:(await db.get('library',id)).name,unrelated:localStorage.getItem('diagnostic-unrelated'),enabled:diagnostics.isEnabled()};},{id:canaries.id,marker});
+  assert.deepEqual(preserved,{rom:[41,42,43,44],save:[7,9,13],name:marker,unrelated:marker,enabled:false});
+  assert.equal(await page.evaluate(()=>diagnosticConnections),0,'Diagnostics must not open WebSocket or WebRTC connections');
+  assert.ok(errors.every(text=>text.includes(marker)),'Unexpected application error: '+errors.join('; '));
+  await context.close();
+  // Private-mode/blocked/full localStorage must never break the game or turn a
+  // failed diagnostic write into another unhandled error and recursive logging.
+  for(const mode of ['blocked','quota']){
+  const blocked=await browser.newContext({serviceWorkers:'block'}),probe=await blocked.newPage(),storageErrors=[];
+  blocked.on('request',r=>requests.push({url:r.url(),method:r.method(),body:r.postDataBuffer()?.length||0}));
+  probe.on('pageerror',e=>storageErrors.push(e.message));
+  await blocked.route(base,route=>route.fulfill({status:200,contentType:'text/html',body:'<!doctype html><title>Isolated diagnostics storage probe</title>'}));
+  await blocked.addInitScript(mode=>{for(const method of ['getItem','setItem','removeItem']){const original=Storage.prototype[method];Storage.prototype[method]=function(key,...args){if(key==='palmo-diagnostics-v1'&&(mode==='blocked'||method==='setItem'))throw new DOMException('Synthetic unavailable storage',mode==='blocked'?'SecurityError':'QuotaExceededError');return original.call(this,key,...args);};}},mode);
+  await probe.goto(base);
+  const survives=await probe.evaluate(async marker=>{const {diagnostics:d}=await import('./src/diagnostics.js');d.record(new Error(marker));d.list();d.snapshot();d.clear();d.setEnabled(false);d.record(new Error(marker));return {enabled:d.isEnabled(),persistent:d.persistenceAvailable(),snapshot:d.snapshot()};},marker);
+  assert.equal(survives.enabled,false);assert.equal(survives.persistent,false);privateFree(survives.snapshot);assert.deepEqual(storageErrors,[]);await blocked.close();
+  }
+  for(const request of requests){const url=new URL(request.url);if(['data:','blob:'].includes(url.protocol))continue;
+   // Edge opens its internal download UI after the explicit local JSON export.
+   if(url.protocol==='edge:')continue;
+   assert.equal(url.origin,new URL(base).origin,'Unexpected network URL: '+request.url);assert.equal(url.search,'');assert.ok(['GET','HEAD'].includes(request.method));assert.equal(request.body,0);assert.ok(!request.url.includes(marker));}
+  console.log('PASS: local bounded diagnostics, caught/uncaught/rejection capture, reload persistence, deduplication, poisoned-storage redaction, opt-out, safe storage failure, private-free JSON export, data-preserving clear, and no upload/network connection.');
+ }finally{await browser.close();}
+})().then(()=>process.exit(0)).catch(error=>{console.error(error);process.exit(1);});

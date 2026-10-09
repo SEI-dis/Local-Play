@@ -28,7 +28,8 @@ function renderSettings(){
  ]);
  const support=settingsGroup('サポート',[
   action('オフラインで使う','offline','import'),
-  action('保存・復旧の使い方','saveHelp','save')
+  action('保存・復旧の使い方','saveHelp','save'),
+  action('クラッシュ診断','diagnostics','info')
  ]);
  const links=settingsGroup('その他',[
   ['update.html','アプリの更新','import'],
@@ -38,7 +39,7 @@ function renderSettings(){
  // Describe the loaded distribution, including while offline or an update waits.
  const version=$('meta[name=app-version]').content,build=$('meta[name=app-build]').content;
  $('#content').innerHTML=`<div class="page settings-page"><h1>設定</h1>${general}${advanced}${support}${links}<p class="settings-footer" title="ビルド ${esc(build)}">PalmoEMU · ${esc(version)} (${esc(build.slice(0,8))})</p></div>`;
- bindSettings($('#content'));bindActions($('#content'),{controllers:showControllers,skins:()=>showSkins(),storage:showStorage,offline:showOffline,video:showVideoSettings,audio:showAudioSettings,saveHelp:showSaveHelp});
+ bindSettings($('#content'));bindActions($('#content'),{controllers:showControllers,skins:()=>showSkins(),storage:showStorage,offline:showOffline,video:showVideoSettings,audio:showAudioSettings,saveHelp:showSaveHelp,diagnostics:api.showDiagnostics});
  $$('[data-theme-choice]').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.themeChoice;applySettings();renderSettings();});
 }
 function showVideoSettings(){sheet('映像とフレームレート',`<div class="settings-group">${row('映像フィルター',`<select aria-label="映像フィルター" aria-describedby="video-filter-note" data-setting="filter">${videoFilters.map(([v,t])=>`<option value="${v}" ${settings.filter===v?'selected':''}>${t}</option>`).join('')}</select>`,'image')}${row('画面ボタン',`<input data-setting="touchControls" type="checkbox" ${settings.touchControls?'checked':''}>`,'game')}${row('FPS表示',`<input data-setting="showFps" type="checkbox" ${settings.showFps?'checked':''}>`,'bolt')}</div><p class="sheet-note">通常は約60fpsで動作します。速度は端末の性能によって変わります。フィルターは見た目を調整する機能で、ゲーム内部の解像度は変わりません。</p>${videoFilterNote(settings.filter)}`);bindSettings($('#sheet-body'));}
