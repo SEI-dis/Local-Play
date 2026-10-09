@@ -85,7 +85,7 @@ iPhone実機の速度・発熱は未検証です。
 - 同じ画面でスキンの追加・変更や、ゲームを選んでセーブデータの読み込みもできます。
 - タッチ、キーボード、標準的なゲームパッドで操作できます。
 - 音量や速度は共通設定またはゲームごとの設定で変更できます。速度ボタンかTabキーで、1→2→3→4→5→1倍と切り替わります。ボタンには現在の倍率を表示します。
-- 「倍速中も音程を維持」は初期状態でオンです。「設定 → 音量と速度」、ゲーム詳細、プレイ中のメニューで切り替えられます。全対応コアに共通で適用し、テンポはゲームの倍速に合わせたまま音の高さを保ちます。オフでは音程も上がります。
+- 倍速中の音程維持は全対応コアで常時有効です。テンポはゲームの倍速に合わせたまま音の高さを保ちます。オン／オフの設定はなく、以前オフにした共通設定やゲーム別設定も適用しません。
 - 音程維持は独自のWSOLA方式で処理し、1倍速では音声を加工しません。倍速時は短い音声バッファを使うため遅延が加わり、高倍率では音質の変化や処理負荷が増えます。音楽だけを等倍のテンポにする機能はありません。iPhone実機での音質・負荷は未検証です。
 - 通常は約60fpsで動作します。速度は端末の性能によって変わります。
 - 映像フィルターで見た目を調整できます。ゲーム内部の解像度を上げる機能ではありません。
@@ -102,13 +102,14 @@ iPhone実機の速度・発熱は未検証です。
 ゲーム詳細・設定を開きます。プレイ履歴・「…」・起動リンクも同じ詳細画面へ進みます。
 選択だけではコアを起動せず、セーブやプレイ履歴も変更しません。「プレイ」を押すと起動します。
 カバー、名前、プレイ履歴、赤いプレイボタンを上部に固定し、設定グループだけをスクロールします。
+起動前のゲーム詳細から開いた子画面は、×／Esc／背景の操作で元のゲームメニューへ戻り、スクロール位置を保ちます。ゲーム詳細の×でライブラリへ戻ります。保存処理などで閉じられない間は、Esc／背景の操作も無効です。プレイ中は従来どおり子画面を閉じるとゲームへ戻ります。
 セーブステートの一覧・再開、ゲーム内セーブのインポートとエクスポートは起動前にも使えます。
 セーフモードはチートを無効にし、自動ステートを復旧せずゲーム内セーブから起動します。
 機能順序設定とゲームショートカットはプレイ中のメニューにも反映されます。
 起動リンクは、このブラウザにあるゲームの詳細を開きます。他の端末へROMを転送する機能ではありません。
 ROMファイルの共有・書き出し機能はありません。セーブデータのインポート／エクスポートは利用できます。
 
-ゲーム詳細やプレイ中に変えた速度・音量・ミュート・倍速時の音程維持・映像フィルター・画面スケーリング、
+ゲーム詳細やプレイ中に変えた速度・音量・ミュート・映像フィルター・画面スケーリング、
 振動・デッドゾーン・コントロール表示・FPS表示・NDSの画面入れ替え／省電力・巻き戻し記録は、そのゲームの設定として保存します。
 変更していない項目は「設定」画面の共通設定を使います。「共通設定を使用／このゲームの設定」で適用範囲を確認でき、
 ゲームの個別設定をリセットすると共通設定へ戻ります。リセットでROM・セーブ・コア選択・チート・スキンは消しません。
@@ -446,7 +447,8 @@ npm run test:nds
 | スキン・機種別／ゲーム別設定 | `npm run test:skins`、`npm run test:game-skins` |
 | 画面サイズ・回転・配置・ボタン操作 | `npm run test:responsive`、`npm run test:control-editor`、`npm run test:layout-sizing`、`npm run test:layout-alignment`、`npm run test:dpad` |
 | 描画・音声・倍速・フィルター | `npm run test:runtime`、`npm run test:speed`、`npm run test:video` |
-| 音程維持・音声の停止・設定の連携 | `npm run test:time-stretch`（生成PCM）、`npm run test:audio-pitch`（Web AudioとUI） |
+| 起動前のROMメニューと子画面の戻り方・スクロール保持 | `node tests/game-navigation.cjs` |
+| 音程維持の常時適用・音声の停止・旧設定の移行 | `npm run test:time-stretch`（生成PCM）、`npm run test:audio-pitch`（Web AudioとUI） |
 | バックグラウンド移行 | `npm run test:visibility` |
 | 通信パネル・コピー・ドラッグ | `npm run test:link-panel`（ローカルの模擬通信） |
 | 旧Peer接続の回帰検査 | `npm run test:link` |
@@ -464,7 +466,7 @@ npm run test:nds
 - `TEST_URL`: 対応テストのアクセス先。固定の4173番ポートを使うテストもあるため、通常は既定URLで起動してください。
 
 WebKit対応は browser / visibility / state-ui / responsive-skins / layout-sizing / layout-alignment / runtime-performance /
-speed-control / pitch-audio / privacy / native-menu / nds-browser / nds-skin / system-skins / link-panel / direct-link / haptics / room-link / covers / multicore / skin-compatibility / skins / bundled-skins / skin-orientation / update / extended-save / rom-import / diagnostics / game-preferences / input-controls / backup / rewind の各 `.cjs` です。
+speed-control / pitch-audio / privacy / native-menu / game-navigation / nds-browser / nds-skin / system-skins / link-panel / direct-link / haptics / room-link / covers / multicore / skin-compatibility / skins / bundled-skins / skin-orientation / update / extended-save / rom-import / diagnostics / game-preferences / input-controls / backup / rewind の各 `.cjs` です。
 音声APIのないWebKitビルドでは、音声検査をスキップしたことを表示します。
 PC版WebKitの検査は、iPhone実機の速度・発熱・消費電力やOS標準メニューの検証を代替しません。
 

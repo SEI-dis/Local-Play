@@ -25,11 +25,11 @@ export function createGameInfo(api){
  }
  function remove(game){
   nativeSheet('ゲームを削除',`<p class="sheet-note">「${esc(game.name)}」と、このブラウザ内のセーブ・ステートを削除します。端末の元ファイルは残ります。</p><div class="sheet-actions"><button class="secondary" data-action="back">キャンセル</button><button class="secondary danger" id="confirm-delete">削除する</button></div>`);
-  bind({back:()=>show(game)});$('#confirm-delete').onclick=async()=>{try{await db.removeGame(game.id);api.closeSheet();await api.refresh();}catch(e){api.error(e);}};
+  bind({back:()=>show(game)});$('#confirm-delete').onclick=async()=>{try{await db.removeGame(game.id);api.closeSheet({dismiss:true});await api.refresh();}catch(e){api.error(e);}};
  }
  function safeMode(game){
   nativeSheet('セーフモード',`<p class="sheet-note">チートを無効にし、自動ステートを復旧せず、ゲーム内セーブから起動します。設定や保存データは保持されます。</p><div class="sheet-actions"><button class="secondary" data-action="back">キャンセル</button><button class="primary" data-action="start">プレイ</button></div>`);
-  bind({back:()=>show(game),start:()=>{api.closeSheet();return api.launch(game,{safeMode:true});}});
+  bind({back:()=>show(game),start:()=>{api.closeSheet({dismiss:true});return api.launch(game,{safeMode:true});}});
  }
  async function exportSave(game){const record=await db.get('saves',saveKey(game));if(!record?.bytes?.length)throw Error('保存されたゲーム内セーブがありません。');api.download(record.bytes,game.name+'.'+coreFor(game).saveExtension);}
  function chooseCore(game){
@@ -52,7 +52,7 @@ export function createGameInfo(api){
   $('#sheet-body').querySelectorAll('[data-shortcut-choice]').forEach(b=>b.onchange=()=>{api.settings().gameShortcuts=[...$('#sheet-body').querySelectorAll('[data-shortcut-choice]:checked')].map(el=>el.dataset.shortcutChoice);api.saveSettings();});bind({back:()=>show(game)});
  }
  function show(game){
-  api.beginGame?.(game);
+  const scrollTop=api.beginGame?.(game)||0;
   const cells={
    cover:nativeAction('カバー変更','cover','image'),skins:nativeAction('スキン設定','gameSkin','shirt'),
    stateList:nativeAction('セーブステートを確認','states','state'),importSave:nativeAction('セーブデータをインポート','importSave','saveImport'),shareSave:nativeAction('セーブデータをエクスポート','exportSaved','saveExport'),
@@ -66,7 +66,8 @@ export function createGameInfo(api){
   $('#sheet-tools').innerHTML=`<button class="sheet-tool" id="game-info-button" aria-label="ゲーム情報">${icon('info')}</button><button class="sheet-tool" id="game-more-button" aria-label="その他の操作">${icon('more')}</button>`;
   $('#game-info-button').onclick=()=>info(game);$('#game-more-button').onclick=()=>more(game);
   api.bindSettings($('#sheet-body'));
-  bind({resetPreferences:()=>api.resetPreferences?.(game),switchCore:()=>chooseCore(game),play:()=>{api.closeSheet();return api.launch(game);},safeMode:()=>safeMode(game),rename:()=>rename(game),cover:()=>coverDialog.open(game),gameSkin:()=>api.showSkins(game.system,game),states:()=>api.showStates(game),importSave:()=>api.importSave(game),exportSaved:()=>exportSave(game),cheats:()=>api.showCheats(game),controllers:api.showControllers,optionOrder:()=>sortOptions(game,cells),shortcuts:()=>shortcuts(game),copyLink:()=>copyLink(game),delete:()=>remove(game)});
+  bind({resetPreferences:()=>api.resetPreferences?.(game),switchCore:()=>chooseCore(game),play:()=>{api.closeSheet({dismiss:true});return api.launch(game);},safeMode:()=>safeMode(game),rename:()=>rename(game),cover:()=>coverDialog.open(game),gameSkin:()=>api.showSkins(game.system,game),states:()=>api.showStates(game),importSave:()=>api.importSave(game),exportSaved:()=>exportSave(game),cheats:()=>api.showCheats(game),controllers:api.showControllers,optionOrder:()=>sortOptions(game,cells),shortcuts:()=>shortcuts(game),copyLink:()=>copyLink(game),delete:()=>remove(game)});
+  $('.native-options').scrollTop=scrollTop;
  }
  return {show};
 }

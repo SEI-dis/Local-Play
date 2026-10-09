@@ -7,6 +7,7 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},hasTouch:true,serviceWorkers:'block'}),p=await context.newPage(),errors=[];
   p.on('pageerror',e=>errors.push(e.message));await p.goto(process.env.TEST_URL||'http://127.0.0.1:4173/');
+  await p.locator('#add-first').waitFor();await p.waitForFunction(()=>!document.documentElement.hasAttribute('aria-busy'));
   // Disable periodic disk snapshots so rewind's own volatile behavior can be observed.
   await p.evaluate(()=>localStorage.setItem('manic-settings',JSON.stringify({autosave:false,recovery:false})));await p.reload();
   const instrument=()=>p.evaluate(async()=>{
@@ -34,16 +35,16 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   assert.equal((await global()).speed,1);assert.equal((await global()).volume,.7);assert.equal((await global()).filter,'pixel');
   await p.reload();await instrument();await play('A');await expectEngine(2,.25,'edge2x');await exit();await play('B');await expectEngine(3,.45,'scanlines');await exit();
   // Only explicit game fields are overridden; an untouched field still inherits globally.
-  await p.locator('[data-tab=settings]').click();await p.locator('[data-action=audio]').click();await p.locator('[data-setting=speed]').selectOption('4');await range(.6);await p.locator('[data-setting=preservePitch]').uncheck();await p.locator('#close-sheet').click();
-  await p.locator('[data-action=video]').click();await p.locator('[data-setting=filter]').selectOption('smooth');await p.locator('#close-sheet').click();await p.locator('[data-tab=games]').click();
-  await details('A');await expectSettings(2,.25,'edge2x');assert.equal(await p.locator('[data-setting=preservePitch]').isChecked(),false);await p.locator('#close-sheet').click();
+  await p.locator('[data-tab=settings]').click();await p.locator('[data-action=audio]').click();await p.locator('[data-setting=speed]').selectOption('4');await range(.6);assert.equal(await p.locator('[data-setting=preservePitch]').count(),0);await p.locator('#close-sheet').click();
+  await p.locator('[data-action=video]').click();await p.locator('[data-setting=filter]').selectOption('smooth');await p.locator('[data-setting=showFps]').check();await p.locator('#close-sheet').click();await p.locator('[data-tab=games]').click();
+  await details('A');await expectSettings(2,.25,'edge2x');assert.equal(await p.locator('[data-setting=preservePitch]').count(),0);await p.locator('#close-sheet').click();
   await details('B');await p.locator('[data-action=resetPreferences]').click();await p.locator('#preferences-cancel').click();await expectSettings(3,.45,'scanlines');
   const before=await p.evaluate(async id=>{const db=await import('./src/storage.js');return {rom:[...await db.get('roms',id)],save:await db.get('saves',id),game:await db.get('library',id)};},ids.B);
   await p.locator('[data-action=resetPreferences]').click();await p.locator('#preferences-reset').click();await expectSettings(4,.6,'smooth');assert.equal(await p.locator('#game-preferences-mode').textContent(),'共通設定を使用');await p.locator('#close-sheet').click();
   const after=await p.evaluate(async id=>{const db=await import('./src/storage.js');return {rom:[...await db.get('roms',id)],save:await db.get('saves',id),game:await db.get('library',id)};},ids.B);
   assert.deepEqual(after.rom,before.rom);assert.deepEqual(after.save,before.save);delete before.game.preferences;delete after.game.preferences;assert.deepEqual(after.game,before.game,'Reset preserves all other game metadata');assert.deepEqual(await read('B'),{});
-  await p.reload();await instrument();await play('B');await expectEngine(4,.6,'smooth');assert.equal(await p.evaluate(()=>testEngine.preservePitch),false);await exit();
-  await play('A');await expectEngine(2,.25,'edge2x');
+  await p.reload();await instrument();await play('B');await expectEngine(4,.6,'smooth');assert.equal(await p.evaluate(()=>testEngine.preservePitch),true);await exit();
+  await play('A');await expectEngine(2,.25,'edge2x');assert.equal(await p.locator('#fps-meter').isVisible(),true,'An untouched game field continues to inherit the common setting');
   // Actual input settings must drive the running core and survive pause/reload.
   await p.locator('#player-menu').click();await p.locator('[data-action=controllers]').click();await p.locator('[data-action=map-a]').click();await p.keyboard.press('KeyJ');
   assert.match(await p.locator('[data-action=map-a]').textContent(),/J/);await p.locator('[data-input-tab=assist]').click();await p.locator('[data-input-assist=a]').selectOption('hold');await p.locator('#close-sheet').click();

@@ -18,6 +18,7 @@ function privateFree(value){
    for(const name of ['WebSocket','RTCPeerConnection'])if(window[name])window[name]=new Proxy(window[name],{construct(target,args){diagnosticConnections++;return Reflect.construct(target,args);}});
   });
   page.on('pageerror',e=>errors.push(e.message));await page.goto(base);
+  await page.locator('#add-first').waitFor();await page.waitForFunction(()=>!document.documentElement.hasAttribute('aria-busy'));
   await page.evaluate(async()=>{window.diagnostics=(await import('./src/diagnostics.js')).diagnostics;});
   assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),null,'Loading the app must not create diagnostic records');
   assert.deepEqual(await page.evaluate(()=>diagnostics.list()),[]);

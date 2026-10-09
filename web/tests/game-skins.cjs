@@ -14,7 +14,7 @@ const {cartridge}=require('./link.cjs');
   const choose=async id=>{if(!id)await p.locator('#skin-inherit').check();else if(id.startsWith('builtin:')){if(!await p.locator('#skin-palette').isVisible())await p.locator('[data-skin-choice^="builtin:"]').click({position:{x:15,y:15}});await p.locator(`[data-skin-color=${id.slice(8)}]`).click();}else await p.locator(`[data-skin-choice="${id}"]`).click({position:{x:15,y:15}});await p.waitForFunction(id=>document.querySelector('#skin-grid')?.dataset.selection===id&&!document.querySelector('[data-skin-color]').disabled,id);};
   const openGameSkin=async name=>{await p.getByRole('button',{name:name+'のメニュー',exact:true}).click();await p.locator('[data-action=gameSkin]').click();await p.locator('.skin-mini').first().waitFor();};
   const openDefaults=async()=>{await p.locator('[data-tab=settings]').click();await p.locator('#content [data-action=skins]').click();await p.locator('.skin-mini').first().waitFor();};
-  const close=()=>p.locator('#close-sheet').click();
+  const close=async()=>{await p.locator('#close-sheet').click();if(await p.locator('#sheet.game-info').isVisible())await p.locator('#close-sheet').click();};
   const shared=()=>p.evaluate(()=>JSON.parse(localStorage.getItem('manic-settings')).skins.gba.portrait);
   const expectColor=async color=>p.waitForFunction(color=>decodeURIComponent(document.querySelector('#skin').style.backgroundImage).includes(color),color);
   await openDefaults();await choose('builtin:mint');assert.equal(await shared(),'builtin:mint');await close();await p.locator('[data-tab=games]').click();

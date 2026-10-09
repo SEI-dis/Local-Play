@@ -7,6 +7,7 @@ const engine=process.env.BROWSER_ENGINE||'chromium',base=process.env.TEST_URL||'
  try{
   const context=await browser.newContext({serviceWorkers:'block',viewport:{width:390,height:844}}),page=await context.newPage(),requests=[];
   context.on('request',r=>requests.push(r.url()));await page.goto(base);
+  await page.locator('#add-first').waitFor();await page.waitForFunction(()=>!document.documentElement.hasAttribute('aria-busy'));
   await page.evaluate(async()=>{window.backup=await import('./src/backup.js');window.db=await import('./src/storage.js');window.digest=(await import('./src/shared.js')).hash;});
   const fixture=await page.evaluate(async()=>{
    const a='a'.repeat(64),b='b'.repeat(64),canary='c'.repeat(64),missing='d'.repeat(64),at=1720000000000;

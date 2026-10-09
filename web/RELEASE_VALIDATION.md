@@ -332,6 +332,8 @@ save-safetyをEdgeで再実行しました。全件は公開前CIで43＋28ス�
 - 機種／入力機器別のキー・ゲームパッド割り当てと、連射・押しっぱなしを追加。特殊操作はメニュー・保存・読込・速度・巻き戻し。
 - ROMを含まない設定・セーブ・全手動ステート・履歴のバックアップを追加。照合と確認後に復元し、変更前の置き換え対象と設定を1世代保持する。
 - GB/GBC/GBAの対応6構成へ、デフォルトOFF・最大10秒のRAM内巻き戻しを追加。記録と復元コピーは合計8MiBまで、コアの一時シリアライズメモリは別に扱う。
+- 起動前のROMメニューの子画面を×／Esc／背景の操作で閉じると元のメニューへ戻り、スクロール位置を保持する。ゲーム詳細の×はライブラリへ戻る。プレイ中の復帰は従来どおりで、処理中に×が無効の間はEsc／背景閉じも禁止する。
+- 倍速中の音程維持を常時有効とし、共通設定・ゲーム詳細・プレイ中の切り替えを撤去。旧設定のfalse値を適用しない。
 
 今回追加した専用テストの実行済み結果：
 
@@ -348,6 +350,8 @@ save-safetyをEdgeで再実行しました。全件は公開前CIで43＋28ス�
 runtime-performance、nds-skin（70配置）、video-filtersと、WebKitのdiagnostics・rom-importを再確認した。
 既存メニュー・音声・振動の検査を含む最終全件は、同じコミットのEdge・対応WebKit・Linux配布検査で成功を要求する。
 本節の局所・結合結果だけでは公開対象コミットの全件成功を示さない。
+音程維持の常時適用はpitch-audio・runtime-performanceでEdge・PC版WebKit成功。旧共通設定／ゲーム設定／一括バックアップのfalse値、再読み込み、実mGBA起動と1〜5倍速変更でも有効であることを確認。Edgeでは生成PCM30条件も成功。PC版WebKitはOfflineAudioContextがないためPCM波形検査を従来どおり除外する。
+ROMメニューの戻り動作はgame-navigation・native-menuでEdge・PC版WebKit成功、game-skinsはEdge成功。起動前の子画面10種と親スクロールの保持、終了時の後処理、個別設定の維持、処理中のEsc／背景閉じ禁止を確認。セーフモード・ステート再開・ゲーム削除では親を再表示せず、プレイ中はゲームへ戻ることも確認した。multicoreは閉じる操作を新仕様へ合わせたが、この追加変更後の全コア検査は未実施。
 
 ManicEMUの同じ固定版のGame / GameOptionPerform、ControllerMapping / Trigger、FilesSync*、
 Game.supportRewind / PlayViewController.updateRewindを確認。巻き戻し呼び出しは実際のRetroArchサブモジュール

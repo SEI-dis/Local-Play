@@ -55,7 +55,8 @@
     "test:input-controls": "node tests/input-controls.cjs",
     "test:rewind": "node tests/rewind.cjs",
     "test:backup": "node tests/backup.cjs",
-    "test:startup-input": "node tests/startup-input.cjs"
+    "test:startup-input": "node tests/startup-input.cjs",
+    "test:game-navigation": "node tests/game-navigation.cjs"
   },
   "license": "AGPL-3.0-or-later"
 }

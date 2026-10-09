@@ -60,7 +60,8 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
    for(const rate of [32768,44100,48000])for(const speed of [1,2,5]){
     const n=Math.floor(rate*.1),pcm=new Int16Array(n*2);for(let i=0;i<n;i++){pcm[i*2]=Math.sin(2*Math.PI*400*i/rate)*16384;pcm[i*2+1]=Math.sin(2*Math.PI*800*i/rate)*8192;}
     const ac=new OfflineAudioContext(2,24000,48000),c=new MGBACore(document.createElement('canvas'));let reads=0;
-    c.speed=speed;c.m={HEAP16:pcm,_web_audio_read:()=>{reads++;return n;},_web_audio_rate:()=>rate,_web_audio:()=>0};
+    // Compare the raw resampling path explicitly; app playback always preserves pitch.
+    c.setPreservePitch(false);c.speed=speed;c.m={HEAP16:pcm,_web_audio_read:()=>{reads++;return n;},_web_audio_rate:()=>rate,_web_audio:()=>0};
     c.ac={state:'running',get currentTime(){return ac.currentTime;},createBuffer:ac.createBuffer.bind(ac),createBufferSource:ac.createBufferSource.bind(ac)};
     c.gain=ac.createGain();c.gain.connect(ac.destination);
     c.audio();c.audio();const scheduled=c.nextAudio;

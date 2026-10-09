@@ -3,7 +3,7 @@
 import {VideoOutput} from './video.js';
 import {TimeStretch} from './time-stretch.js';
 export class MGBACore {
-  constructor(canvas){this.canvas=canvas;this.keys=0;this.speed=1;this.volume=.7;this.paused=true;this.sources=new Set();this.frames=0;this.presented=0;this.cheatCount=0;this.preservePitch=false;}
+  constructor(canvas){this.canvas=canvas;this.keys=0;this.speed=1;this.volume=.7;this.paused=true;this.sources=new Set();this.frames=0;this.presented=0;this.cheatCount=0;this.preservePitch=true;}
   async load(bytes){
     this.stateIncludesSave=true; // The bridge restores SAVESTATE_SAVEDATA, including the active flash bank.
     this.m=await window.createMGBA({locateFile:p=>new URL('../cores/mgba/'+p,import.meta.url).href});

@@ -6,6 +6,9 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
  try{
   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),page=await context.newPage(),errors=[];
   page.on('pageerror',e=>errors.push(e.message));await page.goto(process.env.TEST_URL||'http://127.0.0.1:4173/');
+  // Install fixtures only after the real app has finished assigning handlers;
+  // otherwise its asynchronous startup can overwrite the fixture's close hook.
+  await page.locator('#add-first').waitFor();await page.waitForFunction(()=>!document.documentElement.hasAttribute('aria-busy'));
   await page.evaluate(async()=>{
    const {createInputControls}=await import('./src/input-controls.js');
    window.testInputState={system:'gba',active:true,paused:false,linked:false,deadZone:.4};window.testInputSettings={};window.testInputActions=[];window.testInputMasks=[];window.testPads=[];window.testPressed=new Map();window.testInputSaved=0;

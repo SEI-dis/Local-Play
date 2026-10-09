@@ -48,8 +48,10 @@ let library=[],tab=tabFromHash(),filter='all',query='',favorites=false,engine=nu
 const finishStartupInputs=holdStartupInputs();
 try{await applyPendingBackupSettings();}catch(e){diagnostics.record(e,'startup');const message=document.createElement('p');message.textContent=e.message||'保存データを開けませんでした。';$('#content').replaceChildren(message);const retry=document.createElement('button');retry.className='primary';retry.textContent='再読み込みして復元を完了';retry.onclick=()=>location.reload();$('#content').append(retry);throw e;}
 let savedSettings={};try{savedSettings=JSON.parse(localStorage.getItem('manic-settings')||'{}');}catch{}
-let settingsGame=null;
-const preferences=createGamePreferences({theme:'dark',volume:.7,speed:1,preservePitch:true,autosave:true,recovery:true,haptics:true,filter:'pixel',showFps:false,touchControls:true,rewindEnabled:false,...savedSettings},{getGame:()=>current||settingsGame,saveGame:(id,value)=>db.setGamePreferences(id,value),onError:error});
+// Pitch preservation is standard playback behavior; legacy preferences are ignored.
+delete savedSettings?.preservePitch;
+let settingsGame=null,gameMenuReturn=null;
+const preferences=createGamePreferences({theme:'dark',volume:.7,speed:1,autosave:true,recovery:true,haptics:true,filter:'pixel',showFps:false,touchControls:true,rewindEnabled:false,...savedSettings},{getGame:()=>current||settingsGame,saveGame:(id,value)=>db.setGamePreferences(id,value),onError:error});
 const settings=preferences.settings;delete settings.autoCovers;
 diagnostics.setContext(()=>{
  const core=current?coreFor(current):null;
@@ -94,15 +96,22 @@ $('#player-link').innerHTML=icon('wifi');$('#link-panel-icon').innerHTML=icon('w
 $('#player-link').onclick=()=>linkPanel.visible?linkPanel.hide():showLink();
 function toast(text){const el=$('#toast');($('#sheet').open?$('#sheet'):document.body).append(el);el.textContent=text;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
 function error(e){diagnostics.record(e,'handled');console.error(e);toast(e?.name==='QuotaExceededError'?'保存容量が不足しています。セーブをファイルに書き出してください。':e.message||String(e));}
-function applySettings(){$$('#quick-actions button').forEach(b=>b.disabled=!!link);document.documentElement.dataset.theme=settings.theme==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):settings.theme;$('#screen').className=settings.filter==='smooth'?'smooth':settings.filter==='scanlines'?'scanlines':'';engine?.setVolume(settings.muted?0:settings.volume);$('#screen').dataset.scaling=settings.screenScaling||'fit';engine?.setSpeed(link?1:settings.speed);engine?.setPreservePitch?.(settings.preservePitch);updateSpeedButton();updateLinkButton();engine?.setFilter?.(settings.filter);engine?.setRenderLimit?.(settings.ndsPowerSave!==false);$('#fps-meter').hidden=!settings.showFps;rewindSession.configure(settings.rewindEnabled);preferences.save().catch(()=>{});}
+function applySettings(){$$('#quick-actions button').forEach(b=>b.disabled=!!link);document.documentElement.dataset.theme=settings.theme==='auto'?(matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light'):settings.theme;$('#screen').className=settings.filter==='smooth'?'smooth':settings.filter==='scanlines'?'scanlines':'';engine?.setVolume(settings.muted?0:settings.volume);$('#screen').dataset.scaling=settings.screenScaling||'fit';engine?.setSpeed(link?1:settings.speed);engine?.setPreservePitch?.(true);updateSpeedButton();updateLinkButton();engine?.setFilter?.(settings.filter);engine?.setRenderLimit?.(settings.ndsPowerSave!==false);$('#fps-meter').hidden=!settings.showFps;rewindSession.configure(settings.rewindEnabled);preferences.save().catch(()=>{});}
 function bindActions(root,handlers){root.querySelectorAll('[data-action]').forEach(el=>el.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>{if(!rewindSession.busy)return handlers[el.dataset.action]?.();}).catch(error)));}
 function sheet(title,html,resume=false){
- sheetCleanup();sheetCleanup=()=>{};const dialog=$('#sheet');if(dialog.open)dialog.close();
+ const dialog=$('#sheet');if(gameMenuReturn&&dialog.open&&dialog.classList.contains('game-info'))gameMenuReturn.scrollTop=$('.native-options')?.scrollTop||0;
+ sheetCleanup();sheetCleanup=()=>{};if(dialog.open)dialog.close();
  dialog.classList.remove('port-menu','states-view','save-data','native-menu','game-info');$('#sheet-cover').hidden=true;$('#sheet-cover').removeAttribute('src');$('#sheet-tools').replaceChildren();$('#close-sheet').removeAttribute('data-action');$('#close-sheet').setAttribute('aria-label','閉じる');
  linkPanel.hide();dialogResume=resume;$('#sheet-title').textContent=title;$('#sheet-body').innerHTML=html;dialog.showModal();dialog.scrollTop=0;
 }
 function menuTools(tools,handlers){$('#sheet-tools').innerHTML=tools.map(([id,label,ic])=>`<button class="sheet-tool ${id==='exit'?'danger':''}" data-shortcut="${id}" aria-label="${label}" title="${label}">${icon(ic)}</button>`).join('');$$('[data-shortcut]').forEach(b=>b.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>{if(!rewindSession.busy)return handlers[b.dataset.shortcut]();}).catch(error)));}
-function closeSheet(){if(rewindSession.busy)return;if(!engine)settingsGame=null;sheetCleanup();sheetCleanup=()=>{};const resume=dialogResume;dialogResume=false;$('#sheet').close();if(resume&&engine)setPause(false);}
+function closeSheet({dismiss=false}={}){
+ if(rewindSession.busy||$('#close-sheet').disabled)return;
+ // A child sheet replaces the DOM, but its owning GameInfoView stays active.
+ // Only explicit Play/Delete or closing the ROM menu dismisses that context.
+ if(!dismiss&&!engine&&!launching&&gameMenuReturn&&$('#sheet').open&&!$('#sheet').classList.contains('game-info')){gameInfo.show(gameMenuReturn.game);return;}
+ gameMenuReturn=null;if(!engine)settingsGame=null;sheetCleanup();sheetCleanup=()=>{};const resume=dialogResume;dialogResume=false;$('#sheet').close();if(resume&&engine)setPause(false);
+}
 function showCoreKeyboard({hint,maxLength,password}){
  return new Promise(resolve=>{
   const resume=!paused;setPause(true);let settled=false;
@@ -129,7 +138,7 @@ function setTab(id){
 }
 for(const [id,ic,label] of [['games','game','ゲーム'],['imports','import','インポート'],['settings','settings','設定']]){const b=$(`[data-tab="${id}"]`);b.innerHTML=icon(ic)+`<span>${label}</span>`;b.onclick=()=>{setTab(id);render();};}
 async function refresh(){library=await db.all('library');render();}
-function render(){if(engine)return;settingsGame=null;$$('[data-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false');});if(tab==='games')renderGames();else if(tab==='imports')renderImports();else renderSettings();}
+function render(){if(engine)return;settingsGame=gameMenuReturn?.game||null;$$('[data-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false');});if(tab==='games')renderGames();else if(tab==='imports')renderImports();else renderSettings();}
 function renderGames(){
  $('#content').innerHTML=`${library.length?`<div class="toolbar"><label class="search">${icon('search')}<input id="search" placeholder="ゲームを検索" aria-label="ゲームを検索" value="${esc(query)}"></label><button class="favorite-filter ${favorites?'selected':''}" id="favorites" aria-label="お気に入りだけを表示" aria-pressed="${favorites}">${icon('heart')}</button><select id="system-filter" aria-label="機種で絞り込み"><option value="all">すべて</option>${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${filter===k?'selected':''}>${s.short}</option>`).join('')}</select></div>`:''}<div id="library" class="library"></div>`;
  if($('#search')){$('#search').oninput=e=>{query=e.target.value;renderLibrary();};$('#system-filter').onchange=e=>{filter=e.target.value;renderLibrary();};$('#favorites').onclick=()=>{favorites=!favorites;renderGames();};}renderLibrary();
@@ -186,7 +195,6 @@ function menuControlCells(game=current){return {
  volume:nativeToggle('音量','muted','volume',!settings.muted,{invert:true}),
  volumeLevel:row('音量レベル',`<input aria-label="音量レベル" data-setting="volume" type="range" min="0" max="1" step=".05" value="${settings.volume}">`,'volume'),
  fastForward:nativeSelect('早送り','speed','fast',[[1,'通常速度'],...[2,3,4,5].map(n=>[n,n+'倍速'])],settings.speed),
- preservePitch:nativeToggle('倍速中も音程を維持','preservePitch','volume',settings.preservePitch,{detail:'テンポは倍速のまま、音の高さを保ちます'}),
  shaders:nativeSelect('シェーダー','filter','image',videoFilters,settings.filter)+videoFilterNote(settings.filter),
  haptic:supportsHaptics()?nativeSelect('触覚','hapticStrength','haptic',[[0,'オフ'],[8,'弱振動'],[20,'強振動']],settings.haptics?(settings.hapticStrength||8):0):nativeAction('触覚',null,'haptic','このブラウザでは非対応'),
  controllerSetting:nativeAction('コントローラー設定','controllers','game'),
@@ -198,7 +206,7 @@ function menuControlCells(game=current){return {
 };}
 const gameInfo=createGameInfo({sheet,closeSheet,launch,refresh,error,toast,download,showSkins,showControllers,showCheats,
  showStates:game=>showStates(null,false,{game}),importSave:game=>chooseSaveImport(game),
- onClose:cleanup=>{sheetCleanup=cleanup;},beginGame:game=>{settingsGame=game;},preferenceSummary:gamePreferenceSummary,resetPreferences:game=>resetGamePreferences(game,()=>gameInfo.show(game)),settings:()=>settings,saveSettings:applySettings,controlCells:menuControlCells,bindSettings});
+ onClose:cleanup=>{sheetCleanup=cleanup;},beginGame:game=>{settingsGame=game;if(gameMenuReturn?.game.id!==game.id)gameMenuReturn={game,scrollTop:0};else gameMenuReturn.game=game;return gameMenuReturn.scrollTop;},preferenceSummary:gamePreferenceSummary,resetPreferences:game=>resetGamePreferences(game,()=>gameInfo.show(game)),settings:()=>settings,saveSettings:applySettings,controlCells:menuControlCells,bindSettings});
 // ManicEMU Game.handleTapAction's normal selection route. Core startup belongs
 // to GameInfoDetailView's explicit Play action (or an explicit state resume).
 function showDetails(game){gameInfo.show(game);}
@@ -220,7 +228,7 @@ const protection=new SaveProtection(status=>{
 });
 const stateDialogs=createStateDialogs({runtime,sheet,closeSheet,setPause,persist,launch,showGameMenu,toast,error});
 async function launch(game,{safeMode=false,skipRecovery=false}={}){
- if(engine||launching)return;launching=true;current=game;$('#player').hidden=false;$('#loading').hidden=false;$('#loading').textContent='コアを読み込んでいます…';
+ if(engine||launching)return;launching=true;gameMenuReturn=null;current=game;$('#player').hidden=false;$('#loading').hidden=false;$('#loading').textContent='コアを読み込んでいます…';
  try{
   await preferences.flush();const stored=await db.get('library',game.id);if(!stored)throw new Error('ゲームが見つかりません。');current=game=stored;settingsGame=null;
   const previous=await protection.open(game,coreFor(game).id);
