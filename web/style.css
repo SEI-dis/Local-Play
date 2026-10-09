@@ -67,6 +67,7 @@ dialog.states-view[open]{display:flex;flex-direction:column}
 #quick-actions{display:contents}
 #quick-actions button{position:absolute;z-index:14;border-radius:11px;background:#19192e70;color:#fff;font-size:11px;border:1px solid #ffffff55;text-shadow:0 1px 2px #0006}
 #quick-actions button:disabled{opacity:.4}
+#apply-update:disabled{cursor:default}
 #player[data-builtin=true] .fps-meter{left:calc(env(safe-area-inset-left) + 10px);top:calc(env(safe-area-inset-top) + 10px);padding:2px 4px;background:#161923b8;font-size:10px;white-space:nowrap}
 #player[data-builtin=true][data-display-only=false] .save-status{right:calc(env(safe-area-inset-right) + 10px)}
 #skin-preview{height:240px;display:flex;align-items:center;justify-content:center;border-radius:16px;background:var(--raised);overflow:hidden}

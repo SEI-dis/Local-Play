@@ -42,7 +42,10 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   await page.evaluate(async()=>{await navigator.serviceWorker.ready;const db=await import('./src/storage.js');await db.put('saves','keep',{bytes:new Uint8Array([7,9]),at:1});});
   await page.waitForFunction(()=>globalThis.updateTestRevision===1);
   assert.match(await page.evaluate(name=>fetch(name).then(r=>r.text()),lazyAsset),/lazy asset revision 1/);
-  revision=2;const update=await context.newPage();await update.goto(base+'update.html');
+  const update=await context.newPage();await update.goto(base+'update.html');
+  await update.getByText('最新の状態です。',{exact:true}).waitFor();assert.equal(await update.locator('#apply-update').isDisabled(),true,'No pending update must leave the update button disabled');
+  await update.locator('#apply-update').dispatchEvent('click');assert.equal(update.url(),base+'update.html','A stale click must not navigate when there is no pending update');
+  revision=2;await update.reload();
   await update.getByText('更新できます。',{exact:true}).waitFor();await update.locator('#apply-update:enabled').click();
   await update.getByText('この画面以外のアプリのタブを閉じてください。',{exact:true}).waitFor();
   await page.close();await update.locator('#apply-update').click();await update.waitForURL(base+'index.html');
@@ -50,6 +53,7 @@ const browserName=process.env.BROWSER_ENGINE||'chromium',browserType=require('./
   assert.deepEqual(data,[7,9]);assert.equal(await update.evaluate(()=>globalThis.updateTestRevision),2,'New worker must not install shell files from an old HTTP cache');
   assert.match(await update.evaluate(name=>fetch(name).then(r=>r.text()),lazyAsset),/lazy asset revision 2/,'First core request after update must bypass old HTTP cache');
   assert.deepEqual(await update.evaluate(()=>caches.keys()),['manic-web:/:update-test-2']);
+  await update.goto(base+'update.html');await update.getByText('最新の状態です。',{exact:true}).waitFor();assert.equal(await update.locator('#apply-update').isDisabled(),true,'The button becomes disabled after applying the update');await update.goto(base+'index.html');
   console.log('PASS: update blocks other tabs, preserves saves, and refreshes shell and lazy core assets despite a still-fresh HTTP cache.');
   const second=await context.newPage();await second.goto(base+'index.html');
   await second.locator('#rom-input').setInputFiles({name:'Original-update-test.gb',mimeType:'application/octet-stream',buffer:Buffer.from(require('./cartridges.cjs').gb())});
