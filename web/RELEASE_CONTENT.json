@@ -40109,8 +40109,8 @@
     },
     {
       "path": "tests/startup-input.cjs",
-      "bytes": 8508,
-      "sha256": "478c08d2e56acf3165a552247d56d51fead172b79fb31306f3e0d83a3bcc0094",
+      "bytes": 8797,
+      "sha256": "f56a952f334bdd3bbf746056e4b0045b0fc6b6e33dee74b89aaf5cf63386413e",
       "component": "web-port-code-and-documentation"
     },
     {

@@ -38,18 +38,24 @@ function slowStartup({bytes,failSettings=false}){
  const browser=await runtime[engine].launch({headless:true,...(engine==='chromium'?{channel:process.env.BROWSER_CHANNEL||'msedge'}:{})});
  try{
   for(const scenario of ['fresh','pending','failed']){
-   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),page=await context.newPage(),errors=[],coreRequests=[];
-   let passed=false;console.log(`RUN startup-input ${engine}: ${scenario}`);
+   const context=await browser.newContext({viewport:{width:390,height:844},serviceWorkers:'block'}),errors=[],coreRequests=[];
+   let page,passed=false;console.log(`RUN startup-input ${engine}: ${scenario}`);
    try{
-   page.on('pageerror',error=>errors.push(error.message));page.on('request',request=>{if(/\/cores\/mgba\/[^/]+\.wasm/.test(request.url()))coreRequests.push(request.url());});
    if(scenario!=='fresh'){
-    await page.goto(base);await page.locator('#add-first').waitFor();
-    await page.evaluate(async()=>{
-     const db=await import('./src/storage.js');localStorage.setItem('manic-settings',JSON.stringify({theme:'dark',speed:1,volume:.7,filter:'pixel'}));
-     await db.put('coverCatalogs',db.backupMetadataPrefix+'pending',{settings:{theme:'light',speed:4,volume:.3,filter:'smooth',autosave:false,recovery:false}});
-    });
+    const seed=await context.newPage();
+    try{
+     await seed.goto(base);await seed.locator('#add-first').waitFor();
+     await seed.evaluate(async()=>{
+      const db=await import('./src/storage.js');localStorage.setItem('manic-settings',JSON.stringify({theme:'dark',speed:1,volume:.7,filter:'pixel'}));
+      await db.put('coverCatalogs',db.backupMetadataPrefix+'pending',{settings:{theme:'light',speed:4,volume:.3,filter:'smooth',autosave:false,recovery:false}});
+     });
+    }finally{await seed.close();}
    }
-   await context.addInitScript(slowStartup,{bytes:cartridge,failSettings:scenario==='failed'});await page.goto(base);
+   // Seed in a separate, closed document. The measured page must be created
+   // after instrumentation is registered, including its first IndexedDB open.
+   await context.addInitScript(slowStartup,{bytes:cartridge,failSettings:scenario==='failed'});page=await context.newPage();
+   page.on('pageerror',error=>errors.push(error.message));page.on('request',request=>{if(/\/cores\/mgba\/[^/]+\.wasm/.test(request.url()))coreRequests.push(request.url());});
+   await page.goto(base);
    await page.waitForFunction(()=>window.startupProbe?.released===true||!!window.startupProbe?.failure);
    const probe=await page.evaluate(()=>startupProbe);assert.equal(probe.failure,undefined,JSON.stringify(probe));
    assert.equal(probe.gateActive&&probe.actionsBeforeRelease&&probe.emptyBeforeRelease&&probe.delay>=400,true,'Gestures occurred after the production gate was installed, while actual IndexedDB completion was withheld');
@@ -74,7 +80,7 @@ function slowStartup({bytes,failSettings=false}){
    }
    passed=true;
    }finally{
-    if(!passed){const diagnostic=await page.evaluate(()=>({probe:window.startupProbe,readyState:document.readyState,busy:document.documentElement.getAttribute('aria-busy'),input:!!document.querySelector('#rom-input'),tab:!!document.querySelector('[data-tab=settings]'),content:document.querySelector('#content')?.textContent?.slice(0,800)})).catch(error=>({diagnosticError:String(error)}));console.error('STARTUP_DIAGNOSTICS '+JSON.stringify({scenario,engine,errors,coreRequests,...diagnostic}));}
+    if(!passed){const diagnostic=page?await page.evaluate(()=>({probe:window.startupProbe,readyState:document.readyState,busy:document.documentElement.getAttribute('aria-busy'),input:!!document.querySelector('#rom-input'),tab:!!document.querySelector('[data-tab=settings]'),content:document.querySelector('#content')?.textContent?.slice(0,800)})).catch(error=>({diagnosticError:String(error)})):{measurementPageCreated:false};console.error('STARTUP_DIAGNOSTICS '+JSON.stringify({scenario,engine,errors,coreRequests,...diagnostic}));}
     await context.close();
    }
   }
