@@ -271,3 +271,18 @@ Removed the ineffective single-core switching menu and redundant product prose.
 Preserved the native game/settings/state group structure, author notices and
 all corresponding sources. Added original library/navigation reference files
 from the same pinned ManicEMU revision; their individual notices are retained.
+
+
+## Post-publication review — 2026-10-09
+
+The local import card is ported from ImportServiceListView (Max) and
+ImportFileCollectionViewCell (Daiuno), Copyright © 2025 Manic EMU,
+AGPL-3.0-or-later, at the same pinned revision. Unmodified references are
+included. Native row builders are consolidated in src/ui.js; About follows
+the upstream Other section. Browser file validation remains local.
+
+MPL_SECONDARY_LICENSE.md and src/room-link.js clarify the MPL section 3.3
+secondary-license offer for this combined distribution, including this port's
+MPL modifications. Original MPL source and notices remain intact. The privacy
+notice distinguishes dumped proprietary BIOS from licensed replacement code.
+No compiled core, user data, storage key or save format changed in this review.

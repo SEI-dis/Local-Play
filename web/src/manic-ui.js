@@ -26,17 +26,7 @@ export function orderedOptionGroups(order=[]){
 }
 export const groupedOptions=(cells,order)=>orderedOptionGroups(order).map(group=>group.filter(id=>cells[id]).map(id=>`<div class="native-option" data-menu-option="${id}">${cells[id]}</div>`).join('')).filter(Boolean).map(rows=>`<div class="settings-group">${rows}</div>`).join('');
 
-export function nativeAction(label,id,ic,value='',extra=''){
- const tag=id?'button':'div';
- return `<${tag} class="row native-row ${extra}" ${id?`data-action="${id}"`:''}>${icon(ic)}<span class="native-label">${esc(label)}</span>${value?`<span class="native-value">${esc(value)}</span>`:''}${id?icon('chevron'):''}</${tag}>`;
-}
-export function nativeSelect(label,key,ic,options,value){
- const selected=options.find(([id])=>String(id)===String(value))||options[0];
- return `<label class="row native-row native-select">${icon(ic)}<span class="native-label">${esc(label)}</span><span class="native-value" aria-hidden="true">${esc(selected[1])}</span>${icon('chevron')}<select aria-label="${esc(label)}" data-setting="${key}">${options.map(([id,title])=>`<option value="${esc(id)}" ${String(id)===String(value)?'selected':''}>${esc(title)}</option>`).join('')}</select></label>`;
-}
-export function nativeToggle(label,key,ic,checked,{invert=false,detail=''}={}){
- return `<label class="row native-row">${icon(ic)}<span class="native-label">${esc(label)}${detail?`<small>${esc(detail)}</small>`:''}</span><input aria-label="${esc(label)}" data-setting="${key}" ${invert?'data-invert="true"':''} type="checkbox" ${checked?'checked':''}></label>`;
-}
+export {nativeAction,nativeSelect,nativeToggle} from './ui.js';
 export function gamePlaySummary(game){
  if(!game.lastPlayed)return '未プレイ。冒険を始めましょう';
  const elapsed=Math.max(0,Date.now()-game.lastPlayed),minutes=Math.floor((game.playDuration||0)/60000);

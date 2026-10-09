@@ -1,6 +1,6 @@
 # Web版の公開に向けた確認記録 — 2026-10-09
 
-対象はこの `web/`、検査CIとGitHub Pages用テンプレート、Web-emuの公開対象Git履歴です。
+対象はこの `web/`、検査CIとGitHub Pages用テンプレート、Local-Playの公開対象Git履歴です。
 ManicEMUの元のiOSリポジトリ全体やその履歴は取り込んでいません。
 配布ファイルの一覧とハッシュは RELEASE_CONTENT.json、確認結果は RELEASE_REVIEW.json に記録しています。
 これはコード・配布物の確認であり、あらゆる国の法的紛争が絶対に起きないという保証ではありません。
@@ -37,6 +37,8 @@ UIKitをブラウザ用DOMへ、RealmをIndexedDBへ置き換え、Web版では�
 ## コア・依存物の扱い
 
 - mGBAとWeb bridge: MPL-2.0のファイル単位ソース公開・通知を維持。inihとEmscriptenの通知も同梱。
+  MPL第3.3条によるAGPLとの組み合わせの扱いを MPL_SECONDARY_LICENSE.md に明記し、
+  改変した room-link.js にも両方の許諾を表示。改変部分のMPL許諾も維持します。
 - FCEUmm: GPL-2.0-or-laterからGPL-3.0を選択。Mesen-S: GPL-3.0-or-later。
   LGPL-2.1-or-laterの音声・フィルター部分はLGPL 3条に従いGPL-3.0との構成に使用。
   改変して再ビルドできる対応ソースを提供。ClownMDEmu: AGPL-3.0。
@@ -51,7 +53,8 @@ UIKitをブラウザ用DOMへ、RealmをIndexedDBへ置き換え、Web版では�
 Deltaのファイル形式を読む機能と、他人のスキンを再配布する権利は別です。
 スキンを同梱・プロキシ配布せず、利用者が選んだローカルファイルのみ端末で処理します。
 作者ごとの利用条件が適用され、公式サイトで紹介されていても、再配布が許可されているとは限りません。
-ROM、BIOS、セーブ、ゲーム画像、チートコード集は同梱しません。ROMやBIOSの入手先を案内しません。
+ゲームROM、実機から抽出したBIOS、利用者のセーブ、ゲーム画像、チートコード集は同梱しません。
+FreeBIOSなどのオープンソースによる代替実装は、元の許諾・著作権表示を保持して同梱します。ROMやBIOSの入手先を案内しません。
 所持やローカル処理だけで、任意のROMの取得・改変・利用が必ず適法になるとは表示しません。
 
 通信プレイを始めない通常の動作では、取得先はこのサイトのアプリファイルだけです。
@@ -119,3 +122,46 @@ Webラッパーが生成するMD構成は本体単体だけです。Sega CD・32
 64MBコアの更新検査は固定コミットから候補を作り、ソースの変更一覧・ビルド・保存互換性を確認します。
 人によるライセンス確認と配布レビューを省略せず、Actionsの成果物は検査レポートだけに限定します。
 新しい作者ソースや未審査のWASMを、自動で公開することはありません。
+
+## 公開後の再確認 — 2026-10-09
+
+### UIと構成
+
+| 確認範囲 | 移植元・結果 |
+| --- | --- |
+| ライブラリ・下部タブ | GameListView / GamesNavigationView / HomeTabBar。機種別の一覧、検索、選択したタブのラベル表示を保持。ゲーム機のロゴは文字、アイコンは独自ベクターに置換 |
+| ゲーム詳細・プレイ中メニュー | GameInfoView / GameInfoNavigationView / GameInfoDetailView / GameOptionsView / GameOption。詳細から明示的にプレイ、固定ヘッダー、グループと順序、ショートカットを確認 |
+| ステート・復旧 | SaveStateListView。手動／自動、サムネイル、続ける、編集後の削除確認を確認。追記保存と自動復旧の保護はWeb版の安全策として維持 |
+| 設定 | SettingsListView / SettingItem。「このWeb版について」を本家と同じ「その他」へ移動。購入・iCloud・ネイティブ専用項目は省略 |
+| インポート | ImportServiceListView / ImportFileCollectionViewCell。独自の大きな導入カードを本家のファイル選択カードへ置換。クラウド・LAN・URLダウンロードは省略 |
+| スキン・ボタン配置 | SkinSettingsView / FlexSkinSettingViewController / FlexItemView。プレビュー、ゲーム別スキン、画面／ボタンの編集を確認。標準の絵・幾何学アイコン、画面比率の維持と配置補助はWeb用 |
+| 共通部品 | ASListPage / ASListItemView / ASNavigationView。行生成を src/ui.js に集約。既存DOM・エスケープ・入力操作を保持 |
+
+参照Swiftは24ファイルすべて、固定コミットのGitオブジェクトとバイト単位で一致しました。
+これは画面構成と操作のソース移植であり、UIKit自体の実行や全機能・全寸法の一致を意味しません。
+Web版では音量・映像・入力設定は全ゲーム共通、スキン・配置・コア選択はゲーム別です。
+この差は現在の設定モデルによるもので、ライセンスが移植を禁じているためではありません。
+端末内保存、復旧、PWA更新、ブラウザの入力・音声・ファイル選択は引き続きWeb用の実装です。
+
+### 各依存物の再確認
+
+| 対象 | 確認した条件と配布上の処置 |
+| --- | --- |
+| ManicEMU | 原本の著作権・AGPL表示、変更通知、編集可能なWebソースとビルド手順、画面からのソース取得導線を保持 |
+| mGBA / rom64 / Web接続部 | MPL原文と対応ソースを保持。第3.3条の追加許諾を明示。Exhibit Bを適用するソースヘッダーは検出されず、ライセンス本文中の雛形とは区別 |
+| FCEUmm / DeSmuME 2015 / VBA-Next | GPL-2.0-or-laterの許諾を確認し、この構成ではGPL-3.0を選択。原文・作者・個別通知・対応ソースを保持 |
+| Mesen-S / melonDS | GPLv3系の許諾と依存物通知を保持。MesenのLGPL部分の取り扱い、melonDSのBSD-2-Clause FreeBIOSの通知を確認 |
+| ClownMDEmu | AGPL全文、コアとサブモジュールの固定版・作者通知・対応ソースを保持 |
+| jgenesis | GPL-3.0の原文と改変通知を保持。依存一覧129項目の許諾種別、同梱ソースと通知を照合。MIT等の選択可能な許諾を維持 |
+| Celio通信 | GPLデバイス処理とMPL通信処理を別ファイルで維持。後者の改変もMPLで提供し、組み合わせの追加許諾を明記。サーバー参照ソースと固定版を保持 |
+| PDF.js / inih / ツールチェーン | Apache-2.0、BSD、MIT/NCSA、LLVM例外等の作者・全文・個別通知を保持。PDF.jsは同梱した固定版を使用 |
+| 素材・利用者ファイル | 第三者スキンや純正スキン画像、ゲーム画像、ゲームROM、実機抽出BIOSを新たに同梱しない。利用者ファイルのアップロードAPIは作成しない |
+
+再スキャンの「non-commercial」候補2件は、claxonのApache-2.0説明と
+gbc-lcdシェーダーのUnlicense本文で、いずれも商用・非商用の両方を許す文章でした。
+非商用限定のコアを再導入したものではありません。
+コアのバイナリと対応ソースの固定ハッシュ・再ビルド証拠は変更せず再照合します。
+
+MPLの判断には[MPL本文](https://www.mozilla.org/en-US/MPL/2.0/)と
+[Mozillaの組み合わせガイド](https://www.mozilla.org/en-US/MPL/2.0/combining-mpl-and-gpl/)を使用しました。
+修正後、UI構成・通知・対応ソース・配布一覧を再確認し、公開には該当コミットのCI成功を必要とします。

@@ -18,6 +18,7 @@ Upstream: https://github.com/Manic-EMU/ManicEMU/tree/fbaeab79c214d5920bb51afa6f2
 | ASListPage / ASListItemView / ASNavigationView | Shared grouped rows, leading icons, trailing value/switch/chevron, compact navigation tools and close button in native-menu.css, style.css, index.html and src/app.js. |
 | SaveStateListView.getSaveStatesSection / segmented control / editing actions | src/manic-ui.js: stateRow. src/app.js: showStates. Manual/automatic tabs, thumbnail, number, date, Continue button; editing replaces Continue with selection checkboxes. Select-all and confirmed deletion. Automatic tab opens first when no manual state exists. |
 | GameOptionPerform | Browser equivalents for save, quick load, volume, speed, screenshot, skin, cheat, restart and exit actions. |
+| ImportServiceListView / ImportFileCollectionViewCell | src/app.js and style.css: the local Files card; cloud/LAN/download services are omitted. Original references and credits are retained. |
 | SettingsListView / SettingItem | General, advanced, support and other groups; appearance controls, automatic states, controller skins and grouped settings rows in src/app.js and style.css. |
 
 UIKit layout and Realm persistence are replaced with HTML/CSS/JavaScript and
@@ -46,7 +47,8 @@ the editable implementation, modification notices and the license.
   local save-data page uses the same grouping, without a separate tile layout.
 - Native images and Apple system symbols are not copied. Replacement vector
   icons and standard-skin source artwork are authored for this AGPL Web port.
-  No third-party skin, ROM, BIOS, game image or downloaded font is bundled.
+  No third-party skin, game ROM, dumped proprietary BIOS, game image or downloaded
+  font is bundled. Open-source replacement BIOS implementations keep their licenses.
 
 ## Game-detail behavior (modified 2026-10-09)
 
@@ -89,8 +91,8 @@ Screen-specific styles retain placement; the bottom tabs retain their gradient.
 The cover-change sheet retains GameInfoCoverView's local image selection. External
 catalog/search/automatic download code has been removed from the publication
 candidate. Existing cover pixels remain local; no third-party cover is shipped.
-The single available core is identified in Game Info; no ineffective switch-core
-row is shown. Native purchase/cloud/account/3DS-only controls remain omitted.
+Game Info identifies the selected core and offers compatible alternate cores.
+The switch is unavailable during play; save/state records are isolated per core. Native purchase/cloud/account/3DS-only controls remain omitted.
 
 ## Game selection (reviewed 2026-10-09)
 
@@ -116,3 +118,14 @@ and notices. Web settings preserve the native general/advanced/support/other
 grouping; Web-only storage, offline/update, recovery and accessibility controls
 use the same row components. Framework bindings, geometry, original skin art,
 network safeguards and browser audio/video code remain deliberate Web adaptations.
+
+
+## Follow-up review (2026-10-09)
+
+The original Web import hero and hardware chips were replaced by the source's
+compact Files service card. Supported extensions are in a collapsible helper.
+The About entry is in Other, following SettingsListView. Shared native row
+builders now live in ui.js and are re-exported by manic-ui.js for its callers;
+their DOM and escaping behavior are unchanged. The original Swift references
+remain byte-identical. Local recovery, offline updates and file validation are
+browser adaptations; they do not add cloud/account/upload services.

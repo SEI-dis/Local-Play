@@ -1,9 +1,15 @@
-/* SPDX-License-Identifier: MPL-2.0
+/* SPDX-License-Identifier: MPL-2.0 OR AGPL-3.0-or-later
  * Adapted from liru55/mgba-celio-web web/link-session.js,
  * revision 58d463ebe2302e4fc70098760dcfc84ca69329db (MPL-2.0).
  * Original notice: Browser transport for upstream CelioNet, rom64 c5a0ba984.
  * Modified 2026-10-08: separate bounded transport, pinned relay, explicit start,
  * promise-based shutdown, and existing JS device adapter. See NOTICES.md.
+ * Modified 2026-10-09: clarified the secondary-license offer below.
+ * This Source Code Form remains subject to the Mozilla Public License 2.0.
+ * Under MPL 2.0 section 3.3, this file (including this port's modifications)
+ * is also offered under GNU Affero General Public License version 3 or later
+ * as part of this combined work. No warranty. See ../LICENSE and
+ * ../MPL_SECONDARY_LICENSE.md; the original MPL rights are retained.
  * This module has no ROM, save, storage, or file API.
  */
 import {CelioDevice,LinkStatus} from './celio-device.js';

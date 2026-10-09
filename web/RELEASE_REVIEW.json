@@ -4,7 +4,7 @@
   "scope": "This exact static Web distribution, pinned core sources and manually dispatched workflows. No user ROM/save, extracted commercial BIOS, third-party skin or artwork is included. Open-source replacement implementations retain their notices.",
   "openItems": [],
   "note": "Engineering review of pinned dependencies, corresponding source, notices, distribution contents and runtime regression tests. Not a legal opinion or a grant of rights in user ROMs/artwork. iPhone hardware and commercial-game compatibility remain unverified; see RELEASE_VALIDATION.md. Any distribution/workflow change requires renewed review.",
-  "reviewedContentSha256": "31ea4ad5404c231c42f58d407922ac84ad41f938e75b0766d2f3eecfb885b969",
+  "reviewedContentSha256": "c6e92611ee6ae87079e80af6f3412fc45862500d997db5096d7518f26c55b680",
   "resolutions": [
     {
       "id": "corresponding-source",
@@ -19,27 +19,27 @@
     {
       "id": "noncommercial-core-combination",
       "evidenceFile": "LICENSE_AUDIT.md",
-      "sha256": "00873bbc6b0be758fea061686ad51c4f07c919a39f35298952cf3786a1e6b288"
+      "sha256": "aa62afac89071ae63d57d9e87a33e17337c825a7df0cfaafbbbfa5870d0f6095"
     },
     {
       "id": "asset-rights",
       "evidenceFile": "NOTICES.md",
-      "sha256": "4185f8e1dc7cd8d3557e7ddc6377c2cae8e3ac5c47a9f3dfb2b1652ca942a474"
+      "sha256": "7f8c0f170b3eb5eea358518d666f4947dfd71a0672f1a1539986799a02654b12"
     },
     {
       "id": "source-archive-materials",
       "evidenceFile": "SOURCES.json",
-      "sha256": "e8557f85cae8d91715bcbea90c3181463d4dfd133053986c8bc53590c38646db"
+      "sha256": "a746fc5493872670d219fdc9c4524ac58c7c9fc2b87d723e3050ac7cdc69fee5"
     },
     {
       "id": "external-artwork-policy",
       "evidenceFile": "LICENSE_AUDIT.md",
-      "sha256": "00873bbc6b0be758fea061686ad51c4f07c919a39f35298952cf3786a1e6b288"
+      "sha256": "aa62afac89071ae63d57d9e87a33e17337c825a7df0cfaafbbbfa5870d0f6095"
     },
     {
       "id": "runtime-validation",
       "evidenceFile": "RELEASE_VALIDATION.md",
-      "sha256": "65f0a8e47df9d882c1fb3c12ca58fb1d4e089b07e101670fc428c462e7ab78bb"
+      "sha256": "ec22fd876b1232a59c3ba9792d9b640099d52dc65a3b65f3cdf2229f4abc355d"
     },
     {
       "id": "alternate-corresponding-source",

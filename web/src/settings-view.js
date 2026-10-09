@@ -27,14 +27,13 @@ function renderSettings(){
  ]);
  const support=settingsGroup('サポート',[
   action('オフラインで使う','offline','import'),
-  action('保存・復旧の使い方','saveHelp','save'),
-  action('このWeb版について','about','game')
+  action('保存・復旧の使い方','saveHelp','save')
  ]);
- const links=settingsGroup('その他',[
+ const links=settingsGroup('その他',[action('このWeb版について','about','game'),...[
   ['update.html','アプリの更新','import'],
   ['privacy.html','プライバシーと利用条件','folder'],
   ['licenses.html','クレジット・ライセンス','folder']
- ].map(([href,label,ic])=>`<a class="row" href="${href}">${icon(ic)}<span>${label}</span>${icon('chevron')}</a>`));
+ ].map(([href,label,ic])=>`<a class="row" href="${href}">${icon(ic)}<span>${label}</span>${icon('chevron')}</a>`)]);
  $('#content').innerHTML=`<div class="page settings-page"><h1>設定</h1>${general}${advanced}${support}${links}<p class="settings-footer">LOCAL PLAY WEB · 0.3.0</p></div>`;
  bindSettings($('#content'));bindActions($('#content'),{controllers:showControllers,skins:()=>showSkins(),storage:showStorage,offline:showOffline,about:showAbout,video:showVideoSettings,audio:showAudioSettings,saveHelp:showSaveHelp});
  $$('[data-theme-choice]').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.themeChoice;applySettings();renderSettings();});

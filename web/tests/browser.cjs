@@ -14,7 +14,9 @@ const cartridges=require('./cartridges.cjs');
  // Unknown extension filters can gray out files in iOS's native document picker.
  // Desktop setInputFiles bypasses that picker, so keep this policy explicit.
  for(const id of ['rom-input','skin-input','save-input'])assert.equal(await p.locator('#'+id).getAttribute('accept'),null,'Custom formats must remain selectable on iOS: '+id);
- await p.locator('#rom-input').setInputFiles({name:'unsupported.txt',mimeType:'text/plain',buffer:Buffer.from('original fixture')});
+ await p.locator('[data-tab=imports]').click();
+ const chooser=p.waitForEvent('filechooser');await p.locator('#choose-rom').click();
+ await (await chooser).setFiles({name:'unsupported.txt',mimeType:'text/plain',buffer:Buffer.from('original fixture')});
  await p.getByRole('status').filter({hasText:'未対応の形式です。'}).waitFor();
  assert.equal(await p.locator('.game-launch').count(),0,'Picker accepts files; app rejects unsupported formats locally');
  for(const [system,generate] of Object.entries(cartridges)){
