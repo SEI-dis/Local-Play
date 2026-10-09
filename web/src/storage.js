@@ -11,6 +11,7 @@ const database=new Promise((resolve,reject)=>{
 });
 function write(db,names){try{return db.transaction(names,'readwrite',{durability:'strict'});}catch(e){if(e instanceof TypeError)return db.transaction(names,'readwrite');throw e;}}
 async function get(store,key){const db=await database;return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+async function has(store,key){const db=await database;return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).count(key);r.onsuccess=()=>resolve(r.result>0);r.onerror=()=>reject(r.error);});}
 async function all(store){const db=await database;return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 // A gallery keeps metadata only; image bytes are loaded for visible previews.
 export async function skinCatalog(){const db=await database;return new Promise((resolve,reject)=>{
@@ -25,7 +26,18 @@ async function removeStates(id,keys){
  if(!keys.length||keys.some(key=>typeof key!=='string'||!key.startsWith(id+':')))throw new Error('削除するステートを確認してください。');
  const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,'states');for(const key of new Set(keys))tx.objectStore('states').delete(key);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||new Error('削除できませんでした。'));});
 }
-async function addGame(game,bytes){const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,['library','roms']);tx.objectStore('library').put(game,game.id);tx.objectStore('roms').put(bytes,game.id);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});}
+async function addGame(game,bytes){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=write(db,['library','roms']);let failure;
+ tx.oncomplete=resolve;tx.onabort=()=>reject(failure||tx.error||new Error('ゲームの保存が中断されました。'));tx.onerror=()=>{};
+ const abort=e=>{failure=e;tx.abort();};
+ try{
+  // Preserve existing metadata when repairing a missing ROM or importing in
+  // two tabs. A synchronous clone/quota error must roll back both stores.
+  const library=tx.objectStore('library'),request=library.get(game.id);
+  request.onsuccess=()=>{try{if(!request.result)library.put(game,game.id);}catch(e){abort(e);}};
+  tx.objectStore('roms').put(bytes,game.id);
+ }catch(e){abort(e);}
+});}
 // Update only artwork, atomically. A delayed download must neither resurrect a
 // deleted game nor replace a hand-picked cover or newer game metadata.
 async function setGameCover(id,cover,{onlyMissing=false}={}){const db=await database;return new Promise((resolve,reject)=>{
@@ -99,6 +111,7 @@ async function commitProtectionBatch(entries){
 async function stateEntries(id){const db=await database;return new Promise((resolve,reject)=>{const list=[],r=db.transaction('states').objectStore('states').openCursor(IDBKeyRange.bound(id+':',id+':\uffff'));r.onsuccess=()=>{const c=r.result;if(!c){resolve(list);return;}list.push({key:c.key,value:c.value});c.continue();};r.onerror=()=>reject(r.error);});}
 
 // Keep storage work inside the update barrier, including waits for IndexedDB/locks.
+const hasWithActivity=guardUpdateTask(has);
 const getWithActivity=guardUpdateTask(get);
 const allWithActivity=guardUpdateTask(all);
 const putWithActivity=guardUpdateTask(put);
@@ -114,4 +127,4 @@ const setGameCoreWithActivity=guardUpdateTask(setGameCore);
 const commitProtectionBatchWithActivity=guardUpdateTask(commitProtectionBatch);
 const commitProtectionWithActivity=guardUpdateTask(commitProtection);
 const stateEntriesWithActivity=guardUpdateTask(stateEntries);
-export {commitProtectionBatchWithActivity as commitProtectionBatch, getWithActivity as get, allWithActivity as all, putWithActivity as put, removeWithActivity as remove, removeStatesWithActivity as removeStates, addGameWithActivity as addGame, setGameCoverWithActivity as setGameCover, setGameSkinWithActivity as setGameSkin, setGameControlsWithActivity as setGameControls, removeSkinWithActivity as removeSkin, removeGameWithActivity as removeGame, setGameCoreWithActivity as setGameCore, commitProtectionWithActivity as commitProtection, stateEntriesWithActivity as stateEntries};
+export {hasWithActivity as has, commitProtectionBatchWithActivity as commitProtectionBatch, getWithActivity as get, allWithActivity as all, putWithActivity as put, removeWithActivity as remove, removeStatesWithActivity as removeStates, addGameWithActivity as addGame, setGameCoverWithActivity as setGameCover, setGameSkinWithActivity as setGameSkin, setGameControlsWithActivity as setGameControls, removeSkinWithActivity as removeSkin, removeGameWithActivity as removeGame, setGameCoreWithActivity as setGameCore, commitProtectionWithActivity as commitProtection, stateEntriesWithActivity as stateEntries};

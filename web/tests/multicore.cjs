@@ -50,7 +50,9 @@ function nds(){const rom=require('./nds-cartridge.cjs')();rom.write('LPTE',12);r
   assert.deepEqual(await page.evaluate(async id=>[...(await (await import('./src/storage.js')).get('saves',id)).bytes],id),Array(8192).fill(0x36));
   assert.equal(await page.evaluate(async()=>{const {coreRegistry,supportsGame}=await import('./src/core-registry.js');return supportsGame(coreRegistry.gba[1],{size:67108864});}),false,'64 MiB games cannot use the 32 MiB core');
   await page.evaluate(async id=>{const db=await import('./src/storage.js');await db.removeGame(id);if(await db.get('saves',id+'@jgenesis')||(await db.stateEntries(id+'@jgenesis')).length)throw Error('Orphaned alternate data');},id);
-  assert.deepEqual(errors,[]);assert.ok(requests.every(r=>r.url().startsWith(base)&&['GET','HEAD'].includes(r.method())&&!r.postData()));
+  assert.deepEqual(errors,[]);
+  // WebKit may expose local Blob/File reads as same-origin requests.
+  assert.ok(requests.every(r=>{const url=new URL(r.url());return url.origin===new URL(base).origin&&['http:','https:','blob:'].includes(url.protocol)&&['GET','HEAD'].includes(r.method())&&!r.postData();}));
   console.log('PASS: native core picker; core-specific saves/states; live-session lock; original data intact; full deletion; local-only requests. '+kind);
  }finally{await browser.close();}
 })().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1);});

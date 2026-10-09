@@ -34,7 +34,10 @@ const playwright=require('./browser-runtime.cjs'),kind=process.env.BROWSER_ENGIN
    const ctx=image.getContext('2d');ctx.fillStyle='#f00';ctx.fillRect(0,0,256,192);ctx.fillStyle='#00f';ctx.fillRect(0,192,256,192);
    await core.restorePreview(image.toDataURL());core.setFilter('edge4x');core.setFilter('pixel');const colors=core.screens.map(c=>[...c.getContext('2d').getImageData(0,0,1,1).data]);core.close();return colors;
   });assert.deepEqual(preview,[[255,0,0,255],[0,0,255,255]],'Paused filter changes preserve separate screen snapshots');
-  assert.deepEqual(errors,[]);assert.ok(requests.every(r=>r.url().startsWith(base)&&['GET','HEAD'].includes(r.method())&&!r.postData()));
+  assert.deepEqual(errors,[]);
+  // WebKit may expose local Blob/File reads as requests; they never leave the
+  // browser. Keep origin, method and body restrictions for both URL types.
+  assert.ok(requests.every(r=>{const url=new URL(r.url());return url.origin===new URL(base).origin&&['http:','https:','blob:'].includes(url.protocol)&&['GET','HEAD'].includes(r.method())&&!r.postData();}));
   console.log('PASS: NDS library/launch, actual dual-screen input, 320px/portrait/landscape layouts, swapped stylus, power/filter settings, state restore and persistent battery. '+kind);
  }finally{await browser.close();}
 })().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1);});

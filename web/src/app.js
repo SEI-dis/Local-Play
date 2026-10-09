@@ -2,8 +2,10 @@
    Created by Aoshuang Lee / Max / Daiuno. Modified for Web on 2026-10-08. See NOTICES.md. */
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // UI port based on ManicEMU's GamesNavigationView, GameListView and HomeTabBar.
-import {dualScreen,largeFileIdentity} from './development.js';
-import {systems,detectSystem,escapeHTML as esc,icon,hash,bytesLabel} from './shared.js';
+import {dualScreen} from './development.js';
+import {importROM} from './rom-import.js';
+import {createImportProgress} from './import-progress.js';
+import {systems,detectSystem,escapeHTML as esc,icon,bytesLabel} from './shared.js';
 import * as db from './storage.js';
 import {createCore} from './core-factory.js';
 import {coreFor,saveKey,cheatsFor,defaultCore} from './core-registry.js';
@@ -126,7 +128,27 @@ function renderImports(){
 }
 
 function bindSettings(root){root.querySelectorAll('[data-setting]').forEach(el=>el.onchange=()=>{settings[el.dataset.setting]=el.type==='checkbox'?(el.dataset.invert?!el.checked:el.checked):['volume','speed','hapticStrength','deadZone'].includes(el.dataset.setting)?Number(el.value):el.value;if(el.dataset.setting==='hapticStrength')settings.haptics=!!settings.hapticStrength;const value=el.closest('.native-select')?.querySelector('.native-value');if(value)value.textContent=el.selectedOptions[0].textContent;applySettings();if(['haptics','hapticStrength'].includes(el.dataset.setting)){if(settings.haptics)tapHaptic(settings);else stopHaptics();}if($('#video-filter-note'))$('#video-filter-note').hidden=settings.filter!=='edge4x';if(['touchControls','showFps','ndsSwapScreens'].includes(el.dataset.setting))layoutSkin();});}
-async function importFiles(files){if(importing){toast('追加が終わるまでお待ちください。');return;}importing=true;let count=0;try{for(const file of files){const system=detectSystem(file.name);if(!system){toast(`${file.name}: 未対応の形式です。`);continue;}const maxMiB=system==='3ds'?4096:system==='nds'?512:64;if(file.size>maxMiB*1048576||!file.size){toast(`${file.name}: 空のファイル、または${maxMiB}MBを超えるファイルは追加できません。`);continue;}toast(`${file.name} を追加中…`);const bytes=system==='3ds'?file:new Uint8Array(await file.arrayBuffer());const id=system==='3ds'?await largeFileIdentity(file):await hash(bytes);if(await db.get('library',id)){toast('このゲームは追加済みです。');continue;}const game={id,name:file.name.replace(/\.[^.]+$/,''),filename:file.name,system,size:file.size,added:Date.now(),lastPlayed:0,favorite:false};await db.addGame(game,bytes);count++;}if(count){setTab('games');filter='all';query='';favorites=false;await refresh();toast(`${count}本のゲームを追加しました。`);}}catch(e){error(e);}finally{importing=false;$('#rom-input').value='';}}
+async function importFiles(files){
+ if(!files.length)return;
+ if(importing){toast('追加が終わるまでお待ちください。');return;}
+ importing=true;let count=0,duplicates=0,failure,progress;const skipped=[];
+ try{
+  progress=createImportProgress();
+  for(const [index,file] of files.entries()){
+   const system=detectSystem(file.name);
+   if(!system){skipped.push(`${file.name}: 未対応の形式です。`);continue;}
+   const maxMiB=system==='3ds'?4096:system==='nds'?512:64;
+   if(file.size>maxMiB*1048576||!file.size){skipped.push(`${file.name}: 空のファイル、または${maxMiB}MBを超えるファイルは追加できません。`);continue;}
+   progress.start(file,index+1,files.length);
+   const result=await importROM(file,system,progress.update);
+   if(result.added)count++;else duplicates++;
+  }
+ }catch(e){failure=e;}
+ finally{progress?.close();importing=false;$('#rom-input').value='';}
+ try{if(count){setTab('games');filter='all';query='';favorites=false;await refresh();}}catch(e){failure??=e;}
+ if(failure)error(failure);
+ else toast([count?`${count}本のゲームを追加しました。`:'',duplicates?`${duplicates}本は追加済みです。`:'',...skipped].filter(Boolean).join(' '));
+}
 $('#rom-input').onchange=guardUpdateTask(e=>importFiles([...e.target.files]));
 let dragDepth=0;window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();dragDepth++;document.body.classList.add('drop-active');}});window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('dragleave',()=>{if(--dragDepth<=0)document.body.classList.remove('drop-active');});window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;document.body.classList.remove('drop-active');if(!engine)importFiles([...e.dataTransfer.files]);});
 function menuControlCells(game=current){return {

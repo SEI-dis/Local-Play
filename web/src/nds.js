@@ -33,6 +33,7 @@ export class NDSCore extends MGBACore {
   touch.onpointerup=up;touch.onpointercancel=up;touch.onlostpointercapture=up;
  }
  async load(bytes,game={system:'nds'}){
+  if(bytes instanceof Blob)bytes=new Uint8Array(await bytes.arrayBuffer());
   this.core=coreFor(game);const create=await loadFactory(this.core.directory);this.m=await create({locateFile:()=>new URL(`../cores/${this.core.directory}/core.wasm`,import.meta.url).href});
   this.copyIn(bytes,(p,n)=>{if(!this.m._web_load(p,n))throw Error('このNDS ROMを読み込めませんでした。');});
   this.width=256;this.height=384;this.fps=this.m._web_fps();this.startLoop();

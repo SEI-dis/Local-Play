@@ -1,6 +1,6 @@
 {
   "name": "palmoemu",
-  "version": "0.3.5",
+  "version": "0.3.6",
   "private": true,
   "scripts": {
     "dev": "node scripts/serve.cjs",
@@ -48,7 +48,8 @@
     "test:multicore": "node tests/multicore.cjs",
     "test:skin-compatibility": "node tests/skin-compatibility.cjs",
     "test:3ds-save": "node tests/three-ds-save.cjs",
-    "test:extended-save": "node tests/extended-save.cjs"
+    "test:extended-save": "node tests/extended-save.cjs",
+    "test:rom-import": "node tests/rom-import.cjs"
   },
   "license": "AGPL-3.0-or-later"
 }
