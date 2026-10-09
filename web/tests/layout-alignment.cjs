@@ -26,7 +26,7 @@ const kind=process.env.BROWSER_ENGINE||'chromium',pw=require('./browser-runtime.
   const size=async value=>{await p.locator('#edit-size').fill(String(value));await p.locator('#edit-size').dispatchEvent('input');};
   const align=action=>p.locator(`[data-align="${action}"]`).click();
   const mode=value=>p.locator(`[data-edit-mode="${value}"]`).click();
-  const save=async()=>{await p.locator('#edit-save').click();await p.locator('#skin-select').waitFor();};
+  const save=async()=>{await p.locator('#edit-save').click();await p.locator('#skin-grid').waitFor();};
   const dir=path.join(__dirname,'../test-results/layout-alignment');fs.mkdirSync(dir,{recursive:true});
   await open();await p.locator('#edit-grid').uncheck();assert.equal(await p.locator('.edit-guides.show-grid').count(),0);
   await p.locator('#edit-snap').uncheck();await p.locator('#edit-cancel').click();assert.equal(await stored(),undefined,'Layout aids do not create layout changes');
@@ -61,13 +61,14 @@ const kind=process.env.BROWSER_ENGINE||'chromium',pw=require('./browser-runtime.
   }
   await p.locator('[data-edit-orientation=portrait]').click();await save();const saved=await stored();assert.equal(saved.portrait.a.opacity,.45);assert.equal(saved.landscape.a.opacity,.45);
   // Verify preview paint order at an overlap, allowing pointer inspection temporarily.
-  await p.locator('#skin-preview').scrollIntoViewIfNeeded();
-  const preview=await p.locator('.skin-mini').evaluate(e=>{
+  await p.locator('[data-preview-skin]').first().click();await p.locator('.skin-zoom .skin-mini').waitFor();
+  const preview=await p.locator('.skin-zoom .skin-mini').evaluate(e=>{
    const buttons=[...e.querySelectorAll('.skin-mini-button')],screen=e.querySelector('.skin-mini-screen'),r=screen.getBoundingClientRect();
    const a=buttons.find(b=>{const f=b.getBoundingClientRect();return Math.abs(f.x+f.width/2-r.x-r.width/2)<1&&Math.abs(f.y+f.height/2-r.y-r.height/2)<1;});
    if(!a)return {error:'No centered button',screen:r.toJSON(),buttons:buttons.map(b=>b.getBoundingClientRect().toJSON())};
    for(const el of [screen,a])el.style.pointerEvents='auto';const f=a.getBoundingClientRect(),hit=document.elementFromPoint(f.x+f.width/2,f.y+f.height/2);for(const el of [screen,a])el.style.removeProperty('pointer-events');return {hit:hit===a,opacity:getComputedStyle(a).opacity,element:hit?.outerHTML.slice(0,180)};
   });assert.ok(preview.hit&&preview.opacity==='0.45','Preview paints translucent button above the screen: '+JSON.stringify(preview));
+  await p.getByRole('button',{name:'プレビューを閉じる',exact:true}).click();
   await p.screenshot({path:path.join(dir,kind+'-preview.png')});await close();await p.reload();await open();await p.locator('#edit-reset').click();await p.locator('#edit-cancel').click();assert.deepEqual(await stored(),saved,'Cancel preserves saved overlapped layout');await close();
   await p.evaluate(async()=>{const {MGBACore}=await import('./src/mgba.js'),original=MGBACore.prototype.setKeys;window.keys=[];MGBACore.prototype.setKeys=function(k){keys.push(k);return original.call(this,k);};});
   await p.locator('#rom-input').setInputFiles({name:'Original overlay.gba',mimeType:'application/octet-stream',buffer:Buffer.from(require('./link.cjs').cartridge(31,992))});await p.locator('.game-launch').click();await p.locator('.game-info-play').click();await p.locator('#loading').waitFor({state:'hidden'});

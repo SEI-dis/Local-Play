@@ -4,12 +4,10 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {guardUpdateTask} from './update-activity.js';
 import * as db from './storage.js';
-import {systems,escapeHTML as esc} from './shared.js';
+import {systems,escapeHTML as esc,icon} from './shared.js';
 import {row} from './ui.js';
 import {builtins,loadSkin,importSkin,previewSkin,skinSupportsSystem} from './skins.js';
-import {chooseRepresentation} from './skin-format.js';
-import {mountSkinScreens} from './skin-screens.js';
-import {builtinLayout} from './skin-art.js';
+import {mountSkinPreview} from './skin-preview.js';
 import {mountControlEditor} from './control-editor.js';
 export function createSkinSettings(api){
  const {runtime,settings,setPause,sheet,applySettings,layoutSkin,refresh,toast,error,controlLayout,playerSize,frameStyle}=api;
@@ -31,55 +29,96 @@ async function editControls(system,game,id){
  });
  runtime.cleanup=()=>{cleanup();$('#sheet').classList.remove('control-edit');preview.urls.forEach(URL.revokeObjectURL);};
 }
-async function showSkins(system='gba',game=null){
+async function showSkins(system=settings.skinSystem||'gba',game=null){
+ if(!systems[system])system='gba';
  if(game){const record=await db.get('library',game.id);if(!record)throw new Error('ゲームが見つかりません。');game.skinId=record.skinId;game.controlLayout=record.controlLayout;system=game.system;}
- const saved=(await db.all('skins')).filter(s=>skinSupportsSystem(s.system,system));
+ else if(settings.skinSystem!==system){settings.skinSystem=system;applySettings();}
+ const saved=(await db.skinCatalog()).filter(s=>skinSupportsSystem(s.system,system)).sort((a,b)=>(a.importedAt||0)-(b.importedAt||0)||a.name.localeCompare(b.name));
  const choices=[...builtins.map(([id,name])=>({id:'builtin:'+id,name})),...saved];
  const shared=choices.some(s=>s.id===settings.skins?.[system])?settings.skins[system]:'builtin:classic';
- const selected=game?(choices.some(s=>s.id===game.skinId)?game.skinId:''):shared,effective=selected||shared;
+ let selected=game?(choices.some(s=>s.id===game.skinId)?game.skinId:''):shared,effective=selected||shared;
+ let standardId=effective.startsWith('builtin:')?effective:shared.startsWith('builtin:')?shared:'builtin:classic',editing=false,alive=true,busy=false;
+ const mounted=new Map(),pending=new Set(),zoomCleanups=new Set();
  const syncCurrent=async()=>{if(runtime.current){runtime.current.skinId=(await db.get('library',runtime.current.id))?.skinId;runtime.skinData=await loadSkin(runtime.current.system,runtime.current.skinId||settings.skins?.[runtime.current.system],settings.skins?.[runtime.current.system]);layoutSkin();}};
-
- sheet('スキン',`${game?`<p class="sheet-note skin-target">${esc(game.name)} の設定</p>`:'<p class="sheet-note">機種ごとの共通設定です。ゲーム別の指定がある場合は、そちらを優先します。</p>'}<div class="settings-group">${game?row('機種',`<span class="value">${systems[system].short}</span>`,'game'):row('機種',`<select id="skin-system">${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${k===system?'selected':''}>${s.short}</option>`).join('')}</select>`,'game')}${row('スキン',`<select id="skin-select">${game?`<option value="" ${!selected?'selected':''}>機種の設定を使う</option>`:''}${choices.map(s=>`<option value="${esc(s.id)}" ${selected===s.id?'selected':''}>${esc(s.name)}</option>`).join('')}</select>`,'image')}</div><div class="segmented skin-orientation" role="group" aria-label="プレビューの向き"><button data-skin-orientation="portrait">縦</button><button data-skin-orientation="landscape">横</button></div><div id="skin-preview" role="img" aria-label="スキンのプレビュー"></div><p class="sheet-note" id="skin-description" hidden></p><div id="skin-colors" aria-label="標準スキンの色">${builtins.map(([id,name])=>`<button data-skin-color="${id}" aria-label="${name}" aria-pressed="${effective==='builtin:'+id}" title="${name}"><i class="swatch-${id}"></i></button>`).join('')}</div>${effective.startsWith('builtin:')?'<button class="secondary" id="edit-controls">画面・ボタンのレイアウト</button>':'<p class="sheet-note">配置の編集は標準スキンで使えます。</p>'}<button class="primary" id="import-skin">スキンファイルを追加</button>${selected.startsWith('skin:')?'<button class="secondary danger" id="delete-skin">このスキンを削除</button>':''}<p class="sheet-note">Delta／Manic形式に対応しています。スキンは端末内だけで使用します。作者の利用条件をご確認ください。</p><details class="sheet-note"><summary>対応するスキン</summary>対応機種のDelta／Manicスキンを追加できます。複数画面・切り抜き・クイック操作に対応しています。表示効果はブラウザで近似再現します。未対応の効果・操作は読み込み後に表示します。</details><a class="row" href="https://faq.deltaemulator.com/using-delta/controller-skins" target="_blank" rel="noopener">Delta公式のスキン案内</a><a class="row" href="https://manicemu.site/guides/homemade-skins/#-official-skins-downloads" target="_blank" rel="noopener">Manic公式のスキン案内</a>`,!!runtime.engine);
- if($('#edit-controls'))$('#edit-controls').onclick=()=>editControls(system,game,effective).catch(error);
- if($('#skin-system'))$('#skin-system').onchange=e=>showSkins(e.target.value);
+ const card=(id,name)=>`<article class="skin-card" data-skin-card="${esc(id)}"><button class="skin-use" data-skin-choice="${esc(id)}" aria-label="${esc(name)}を使う" aria-pressed="false"><span class="skin-card-preview" role="img"></span><span class="skin-current" aria-hidden="true"></span></button><button class="skin-preview-open" data-preview-skin="${esc(id)}" aria-label="${esc(name)}をプレビュー">${icon('expand')}<span>プレビュー</span></button><p class="skin-card-name">${esc(name)}</p>${id.startsWith('skin:')?`<button class="skin-delete danger" data-delete-skin="${esc(id)}" aria-label="${esc(name)}を削除" hidden>${icon('trash')}<span>削除</span></button>`:''}</article>`;
+ sheet('スキン',`${game?`<p class="sheet-note skin-target">${esc(game.name)}</p><label class="row skin-inherit"><span>機種の設定を使う</span><input type="checkbox" id="skin-inherit" ${!selected?'checked':''}></label>`:`<div class="settings-group">${row('機種',`<select id="skin-system">${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${k===system?'selected':''}>${s.short}</option>`).join('')}</select>`,'game')}</div>`}<div class="segmented skin-orientation" role="group" aria-label="プレビューの向き"><button data-skin-orientation="portrait">縦画面</button><button data-skin-orientation="landscape">横画面</button></div><div id="skin-grid" class="skin-grid">${card(standardId,'標準')}${saved.map(s=>card(s.id,s.name)).join('')}<button id="import-skin" class="skin-add">${icon('plus')}<span>新規スキン追加</span></button></div><div class="skin-standard-options"><p class="label">標準スキンの色</p><div id="skin-colors" aria-label="標準スキンの色">${builtins.map(([id,name])=>`<button data-skin-color="${id}" aria-label="${name}" title="${name}"><i class="swatch-${id}"></i></button>`).join('')}</div><button class="secondary" id="edit-controls">画面・ボタンのレイアウト</button></div><details class="sheet-note skin-help"><summary>スキンについて</summary><p id="skin-description"></p><p>選んだスキンを縦・横の両方で使います。追加済みのスキンは、別のスキンに切り替えても残ります。</p><p>Delta／Manic形式に対応しています。スキンは端末内だけで使用します。作者の利用条件をご確認ください。</p><a class="row" href="https://faq.deltaemulator.com/using-delta/controller-skins" target="_blank" rel="noopener">Delta公式のスキン案内</a><a class="row" href="https://manicemu.site/guides/homemade-skins/#-official-skins-downloads" target="_blank" rel="noopener">Manic公式のスキン案内</a></details>`,!!runtime.engine);
+ const grid=$('#skin-grid'),standard=grid.firstElementChild;
+ $('#sheet').classList.add('skin-manager');
+ $('#sheet-tools').innerHTML=`<button class="sheet-tool skin-edit-toggle" id="manage-skins" ${saved.length?'':'disabled'}>編集</button>`;
+ const previewOptions=()=>({system,orientation:skinOrientation,viewport:playerSize,layout:controlLayout(system,game),frameStyle});
+ function disposeCard(node){const entry=mounted.get(node);if(entry){entry.cleanup();entry.preview.urls.forEach(URL.revokeObjectURL);mounted.delete(node);}node.querySelector('.skin-card-preview').replaceChildren();}
+ async function mountCard(node){
+  if(!alive||mounted.has(node)||pending.has(node))return;
+  const id=node.dataset.skinCard;pending.add(node);let preview;
+  try{
+   preview=await previewSkin(system,id);
+   if(!alive||!node.isConnected||node.dataset.skinCard!==id){preview.urls.forEach(URL.revokeObjectURL);return;}
+   const host=node.querySelector('.skin-card-preview'),entry={preview,cleanup:mountSkinPreview(host,preview.skin,previewOptions())};mounted.set(node,entry);
+   if(id===effective)$('#skin-description').textContent=[preview.skin.description,...(preview.skin.warnings||[])].filter(Boolean).join('\n');
+  }catch(e){preview?.urls.forEach(URL.revokeObjectURL);if(alive){const host=node.querySelector('.skin-card-preview');host.textContent='プレビューを表示できません';host.setAttribute('aria-label','プレビューを表示できません');}}
+  finally{pending.delete(node);if(alive&&node.dataset.skinCard!==id)mountCard(node);}
+ }
+ const observer=new IntersectionObserver(entries=>{for(const entry of entries){if(entry.isIntersecting)mountCard(entry.target);else disposeCard(entry.target);}},{root:$('#sheet'),rootMargin:'120px'});
+ grid.querySelectorAll('.skin-card').forEach(node=>observer.observe(node));
+ function updateSelection(){
+  grid.dataset.selection=selected;grid.dataset.effective=effective;
+  grid.querySelectorAll('.skin-card').forEach(node=>{const active=node.dataset.skinCard===effective;node.classList.toggle('is-current',active);node.querySelector('.skin-use').setAttribute('aria-pressed',String(active));const host=node.querySelector('.skin-card-preview');if(active)host.id='skin-preview';else host.removeAttribute('id');});
+  $$('[data-skin-color]').forEach(b=>b.setAttribute('aria-pressed',String(effective==='builtin:'+b.dataset.skinColor)));
+  if($('#skin-inherit'))$('#skin-inherit').checked=!selected;
+  $('#edit-controls').hidden=!effective.startsWith('builtin:');
+  const entry=[...mounted.entries()].find(([node])=>node.dataset.skinCard===effective)?.[1];
+  $('#skin-description').textContent=entry?[entry.preview.skin.description,...(entry.preview.skin.warnings||[])].filter(Boolean).join('\n'):'';
+ }
+ function refreshOrientation(){
+  $$('[data-skin-orientation]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.skinOrientation===skinOrientation)));
+  grid.dataset.orientation=skinOrientation;
+  for(const [node,entry] of mounted){entry.cleanup();entry.cleanup=mountSkinPreview(node.querySelector('.skin-card-preview'),entry.preview.skin,previewOptions());}
+ }
+ function enableControls(){
+  if(!alive)return;
+  grid.querySelectorAll('.skin-use,.skin-preview-open').forEach(b=>b.disabled=busy||editing);
+  $$('[data-skin-color],#skin-inherit,#edit-controls,[data-skin-orientation]').forEach(b=>b.disabled=busy||editing);
+  $('#manage-skins').disabled=busy||!saved.length;$('#import-skin').disabled=busy;
+ }
  const apply=async(id,targetSystem=system)=>{
   if(game){await db.setGameSkin(game.id,id);game.skinId=id||undefined;}
-  else{settings.skins={...settings.skins,[targetSystem]:id};applySettings();}
+  else{const next={...settings,skins:{...settings.skins,[targetSystem]:id}};localStorage.setItem('manic-settings',JSON.stringify(next));Object.assign(settings,next);applySettings();}
   await syncCurrent();await refresh();
  };
- const choose=async id=>{const controls=$$('#sheet-body button,#sheet-body select');controls.forEach(b=>b.disabled=true);try{await apply(id);await showSkins(system,game);}catch(e){error(e);controls.forEach(b=>{if(b.isConnected)b.disabled=false;});}};
- $('#skin-select').onchange=guardUpdateTask(e=>choose(e.target.value));
+ const choose=async id=>{
+  if(busy||editing)return;busy=true;enableControls();
+  try{
+   await apply(id);selected=id;effective=id||shared;
+   if(effective.startsWith('builtin:')&&effective!==standardId){
+    standardId=effective;disposeCard(standard);standard.dataset.skinCard=standardId;standard.querySelector('.skin-use').dataset.skinChoice=standardId;standard.querySelector('[data-preview-skin]').dataset.previewSkin=standardId;await mountCard(standard);
+   }
+   if(alive)updateSelection();
+  }catch(e){error(e);}finally{busy=false;enableControls();}
+ };
+ grid.querySelectorAll('[data-skin-choice]').forEach(b=>b.onclick=guardUpdateTask(()=>choose(b.dataset.skinChoice)));
  $$('[data-skin-color]').forEach(b=>b.onclick=guardUpdateTask(()=>choose('builtin:'+b.dataset.skinColor)));
- const host=$('#skin-preview'),preview=await previewSkin(system,effective);
- if(!host.isConnected){preview.urls.forEach(URL.revokeObjectURL);return;}
- const description=[preview.skin.description,...(preview.skin.warnings||[])].filter(Boolean).join('\n');$('#skin-description').textContent=description;$('#skin-description').hidden=!description;
- runtime.cleanup=()=>preview.urls.forEach(URL.revokeObjectURL);
- let previewScreenCleanup=()=>{};
- const drawPreview=()=>{
-  previewScreenCleanup();
-  const skin=preview.skin,wide=skinOrientation==='landscape',size=playerSize(),short=Math.min(size.width,size.height),long=Math.max(size.width,size.height);
-  const rep=skin.id.startsWith('builtin:')?builtinLayout(skin,wide?long:short,wide?short:long,controlLayout(system,game)[skinOrientation]):chooseRepresentation(skin,wide?long:short,wide?short:long);
-  const map=rep.mappingSize,scale=Math.min(host.clientWidth/map.width,240/map.height);
-  host.innerHTML=`<div class="skin-mini" style='width:${map.width*scale}px;height:${map.height*scale}px;background-image:url("${skin.images[rep.assets.resizable]}")'>${rep.screens.map(s=>`<div class="skin-mini-screen" style="${frameStyle(s.outputFrame,map)}"><span>${s.label||'LOCAL PLAY'}</span></div>`).join('')}${rep.items.map(item=>`<span class="skin-mini-button" style='${frameStyle(item.frame,map)}opacity:${item.opacity??1};background-image:url("${skin.images[item.asset?.normal]||''}")'></span>`).join('')}${(rep.actions||[]).map(a=>`<span class="skin-mini-tool" data-control="${a.id}" style="${frameStyle(a.frame,map)}opacity:${a.opacity??1};font-size:${Math.max(3,11*scale)}px">${a.label}</span>`).join('')}</div>`;
-  if(!skin.id.startsWith('builtin:')){
-   const mini=host.firstElementChild;mini.style.backgroundImage='none';mini.style.overflow='hidden';mini.querySelectorAll('.skin-mini-screen').forEach(el=>el.remove());
-   const sources=(system==='nds'?[0,1]:[0]).map((index)=>{const canvas=document.createElement('canvas');canvas.width=256;canvas.height=system==='nds'?192:171;const ctx=canvas.getContext('2d'),gradient=ctx.createLinearGradient(0,0,256,171);gradient.addColorStop(0,index?'#4b8baf':'#324969');gradient.addColorStop(1,'#172637');ctx.fillStyle=gradient;ctx.fillRect(0,0,256,canvas.height);ctx.fillStyle='#d9e5ef';ctx.font='13px sans-serif';ctx.textAlign='center';ctx.fillText('LOCAL PLAY',128,canvas.height/2);mini.append(canvas);return canvas;});
-   previewScreenCleanup=mountSkinScreens(mini,{screens:sources},rep,system,{ratio:scale});
-   const art=document.createElement('div');art.className='imported-art';art.style.cssText=frameStyle(rep.artFrame||{x:0,y:0,...map},map);art.style.backgroundImage=rep.assets.resizable?`url("${skin.images[rep.assets.resizable]}")`:'none';mini.append(art);
-  }
-  host.setAttribute('aria-label',`${skin.name}・${wide?'横':'縦'}画面のプレビュー`);
-  $$('[data-skin-orientation]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.skinOrientation===skinOrientation));
- };
- $$('[data-skin-orientation]').forEach(b=>b.onclick=()=>{skinOrientation=b.dataset.skinOrientation;drawPreview();});
- const observer=new ResizeObserver(drawPreview);observer.observe(host);window.addEventListener('resize',drawPreview);runtime.cleanup=()=>{previewScreenCleanup();observer.disconnect();window.removeEventListener('resize',drawPreview);preview.urls.forEach(URL.revokeObjectURL);};drawPreview();
-
+ if($('#skin-inherit'))$('#skin-inherit').onchange=guardUpdateTask(e=>choose(e.target.checked?'':effective));
+ if($('#skin-system'))$('#skin-system').onchange=guardUpdateTask(e=>showSkins(e.target.value).catch(error));
+ $('#edit-controls').onclick=()=>editControls(system,game,effective).catch(error);
+ $$('[data-skin-orientation]').forEach(b=>b.onclick=()=>{skinOrientation=b.dataset.skinOrientation;refreshOrientation();});
+ $('#manage-skins').onclick=()=>{editing=!editing;grid.classList.toggle('is-editing',editing);$('#manage-skins').textContent=editing?'完了':'編集';grid.querySelectorAll('[data-delete-skin]').forEach(b=>b.hidden=!editing);$('#import-skin').hidden=editing;enableControls();};
+ async function openPreview(id){
+  const preview=await previewSkin(system,id);if(!alive){preview.urls.forEach(URL.revokeObjectURL);return;}
+  const zoom=document.createElement('dialog');zoom.className='skin-zoom';zoom.setAttribute('aria-label',preview.skin.name+'のプレビュー');
+  zoom.innerHTML=`<header><h2>${esc(preview.skin.name)}</h2><button class="circle" aria-label="プレビューを閉じる">${icon('close')}</button></header><div class="skin-zoom-art" role="img"></div>`;
+  document.body.append(zoom);zoom.showModal();const unmount=mountSkinPreview(zoom.querySelector('.skin-zoom-art'),preview.skin,previewOptions());
+  let closed=false;const close=()=>{if(closed)return;closed=true;unmount();preview.urls.forEach(URL.revokeObjectURL);zoom.close();zoom.remove();zoomCleanups.delete(close);};zoomCleanups.add(close);zoom.querySelector('button').onclick=close;zoom.addEventListener('cancel',e=>{e.preventDefault();close();});
+ }
+ grid.querySelectorAll('[data-preview-skin]').forEach(b=>b.onclick=()=>openPreview(b.dataset.previewSkin).catch(error));
  $('#import-skin').onclick=()=>{$('#skin-input').onchange=guardUpdateTask(async e=>{const file=e.target.files[0];if(!file)return;try{toast('スキンを読み込み中…');const skin=await importSkin(file,game?.system);await apply(skin.id,skin.system);await showSkins(game?.system||skin.system,game);toast('スキンを追加しました。');}catch(e){error(e);}finally{e.target.value='';}});$('#skin-input').click();};
- if($('#delete-skin'))$('#delete-skin').onclick=()=>{
-  sheet('スキンを削除しますか？','<p class="sheet-note">このスキンを使っているゲームは、機種の設定に戻ります。ゲームやセーブは残ります。</p><div class="sheet-actions"><button class="secondary" id="cancel-skin-delete">キャンセル</button><button class="secondary danger" id="confirm-skin-delete">削除</button></div>',!!runtime.engine);
+ grid.querySelectorAll('[data-delete-skin]').forEach(b=>b.onclick=()=>{
+  const id=b.dataset.deleteSkin,skin=saved.find(s=>s.id===id);
+  sheet('スキンを削除しますか？',`<p class="sheet-note">${esc(skin.name)}</p><p class="sheet-note">このスキンを使っているゲームは、機種の設定に戻ります。ゲームやセーブは残ります。</p><div class="sheet-actions"><button class="secondary" id="cancel-skin-delete">キャンセル</button><button class="secondary danger" id="confirm-skin-delete">削除</button></div>`,!!runtime.engine);
   $('#cancel-skin-delete').onclick=()=>showSkins(system,game);
-  $('#confirm-skin-delete').onclick=async()=>{const button=$('#confirm-skin-delete');button.disabled=true;try{await db.removeSkin(selected);for(const k of Object.keys(settings.skins||{}))if(settings.skins[k]===selected)delete settings.skins[k];applySettings();await syncCurrent();await refresh();await showSkins(system,game);}catch(e){error(e);button.disabled=false;}};
- };
-
+  $('#confirm-skin-delete').onclick=guardUpdateTask(async()=>{const button=$('#confirm-skin-delete');button.disabled=true;try{await db.removeSkin(id);for(const k of Object.keys(settings.skins||{}))if(settings.skins[k]===id)delete settings.skins[k];applySettings();await syncCurrent();await refresh();await showSkins(system,game);}catch(e){error(e);if(button.isConnected)button.disabled=false;}});
+ });
+ runtime.cleanup=()=>{alive=false;observer.disconnect();for(const close of [...zoomCleanups])close();for(const node of [...mounted.keys()])disposeCard(node);$('#sheet').classList.remove('skin-manager');};
+ updateSelection();refreshOrientation();enableControls();await mountCard(standard);
 }
  return {showSkins};
 }

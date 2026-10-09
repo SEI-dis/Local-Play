@@ -35,7 +35,7 @@ const pw=require('./browser-runtime.cjs'),kind=process.env.BROWSER_ENGINE||'chro
   await sub.focus();await p.keyboard.press('ArrowRight');await p.keyboard.press('ArrowDown');
   await p.locator('[data-edit-orientation=landscape]').click();await size(85);
   await p.locator('#edit-selection').selectOption('screen-main');await size(90);
-  await p.locator('#edit-save').click();await p.locator('#skin-select').waitFor();const saved=await stored();
+  await p.locator('#edit-save').click();await p.locator('#skin-grid').waitFor();const saved=await stored();
   assert.equal(saved.portrait['screen-sub'].scale,.7);assert.equal(saved.landscape['screen-sub'].scale,.85);assert.equal(saved.landscape['screen-main'].scale,.9);
   await p.locator('#close-sheet').click();
   // Updating another setting after shared-layout save must not discard the layout.

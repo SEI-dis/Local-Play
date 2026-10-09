@@ -11,6 +11,12 @@ const database=new Promise((resolve,reject)=>{
 function write(db,names){try{return db.transaction(names,'readwrite',{durability:'strict'});}catch(e){if(e instanceof TypeError)return db.transaction(names,'readwrite');throw e;}}
 async function get(store,key){const db=await database;return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).get(key);r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
 async function all(store){const db=await database;return new Promise((resolve,reject)=>{const r=db.transaction(store).objectStore(store).getAll();r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error);});}
+// A gallery keeps metadata only; image bytes are loaded for visible previews.
+export async function skinCatalog(){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=db.transaction('skins'),request=tx.objectStore('skins').openCursor(),rows=[];
+ request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;const {id,name,system,importedAt}=cursor.value;rows.push({id,name,system,importedAt});cursor.continue();};
+ tx.oncomplete=()=>resolve(rows);tx.onabort=()=>reject(tx.error||new Error('スキンの一覧を開けませんでした。'));
+});}
 async function put(store,key,data){const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,store);tx.objectStore(store).put(data,key);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||new Error('保存が中断されました。'));tx.onerror=()=>{};});}
 async function remove(store,key){const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,store);tx.objectStore(store).delete(key);tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});}
 // Commit a confirmed selection of this game's manual states as one operation.

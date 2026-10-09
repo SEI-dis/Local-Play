@@ -13,7 +13,7 @@ const {cartridge}=require('./link.cjs');
   const close=()=>p.locator('#close-sheet').click();
   const openShared=async()=>{await p.locator('[data-tab=settings]').click();await p.locator('#content [data-action=skins]').click();await p.locator('.skin-mini').waitFor();};
   const edit=async()=>{await p.locator('#edit-controls').click();await p.locator('.edit-control').first().waitFor();};
-  const save=async()=>{await p.locator('#edit-save').click();await p.locator('#skin-select').waitFor();};
+  const save=async()=>{await p.locator('#edit-save').click();await p.locator('#skin-grid').waitFor();};
   const transparency=async(id,v)=>{await p.locator('#edit-selection').selectOption(id);await p.locator('#edit-opacity').fill(String(v));await p.locator('#edit-opacity').dispatchEvent('input');};
   const draftButton=id=>p.locator(`[data-edit-control="${id}"]`);
   const move=async(id,dx,dy)=>{const b=await draftButton(id).boundingBox();await p.mouse.move(b.x+b.width/2,b.y+b.height/2);await p.mouse.down();await p.mouse.move(b.x+b.width/2+dx,b.y+b.height/2+dy,{steps:8});await p.mouse.up();};

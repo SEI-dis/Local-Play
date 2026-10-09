@@ -129,3 +129,18 @@ builders now live in ui.js and are re-exported by manic-ui.js for its callers;
 their DOM and escaping behavior are unchanged. The original Swift references
 remain byte-identical. Local recovery, offline updates and file validation are
 browser adaptations; they do not add cloud/account/upload services.
+
+## Skin library (modified 2026-10-09)
+
+SkinSettingsView, SkinCollectionViewCell, AddSkinCollectionViewCell and
+SkinPreviewViewController guide the two-column library, current-selection marker,
+portrait/landscape preview tabs, separate enlarged preview and Add card.
+The three additional Swift files are retained unmodified at the same revision.
+Implementation: src/skin-settings.js, src/skin-preview.js and style.css.
+Imported records remain in IndexedDB when selection or a standard palette changes.
+The last platform is retained so reopening cannot silently hide another platform.
+The simplified Web preference still selects one skin for both orientations;
+orientation tabs change previews. Per-game inheritance and standard layout editing
+remain. Deletion is an edit action followed by confirmation, without multi-delete,
+cloud synchronization or bundled third-party skin artwork. Preview image URLs
+and screen renderers have independent lifetimes from gameplay.

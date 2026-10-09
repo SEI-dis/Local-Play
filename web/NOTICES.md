@@ -339,3 +339,9 @@ the HTML build before enabling a new tab. Busy, unknown and unresponsive tabs
 keep the update waiting. The manual updater and original notices are retained.
 Modified 2026-10-09: center the update indicator independently of menu sheets,
 allow time to read it, and show a local completion notice after automatic reload.
+
+Modified 2026-10-09: port the persistent skin library and separate previews from
+SkinSettingsView, SkinCollectionViewCell, AddSkinCollectionViewCell and
+SkinPreviewViewController. Preserve original Swift headers and AGPL notices.
+The Web port retains the last platform and requires edit mode plus confirmation
+to delete an imported skin. No third-party skin artwork is included.

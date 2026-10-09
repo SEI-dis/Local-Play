@@ -3,7 +3,7 @@
 const fs=require('node:fs'),path=require('node:path'),{spawnSync,fork}=require('node:child_process');
 const root=path.resolve(__dirname,'..'),scripts=require('../package.json').scripts;
 const webkit=process.argv.includes('--webkit');
-const supported=new Set(['browser','visibility','state-ui','responsive-skins','layout-sizing','layout-alignment','runtime-performance','speed-control','pitch-audio','privacy','native-menu','nds-browser','nds-skin','system-skins','link-panel','room-link','covers','multicore','skin-compatibility','update']);
+const supported=new Set(['browser','visibility','state-ui','responsive-skins','layout-sizing','layout-alignment','runtime-performance','speed-control','pitch-audio','privacy','native-menu','nds-browser','nds-skin','system-skins','link-panel','room-link','covers','multicore','skin-compatibility','skins','update']);
 const output=path.join(root,'test-results','suite-'+(webkit?'webkit':'chromium'));fs.mkdirSync(output,{recursive:true});
 async function startServer(){
  if(!process.argv.includes('--serve'))return null;

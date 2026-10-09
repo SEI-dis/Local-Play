@@ -28,7 +28,7 @@ const kind=process.env.BROWSER_ENGINE||'chromium',pw=require('./browser-runtime.
  await p.locator('[data-edit-mode=buttons]').click();await p.locator('#edit-selection').selectOption('b');await setSize(130);
  const dir=path.join(__dirname,'../test-results/layout-sizing');fs.mkdirSync(dir,{recursive:true});await p.screenshot({path:path.join(dir,kind+'-landscape-layout.png')});
  await p.locator('[data-edit-orientation=portrait]').click();await p.locator('[data-edit-mode=screen]').click();await p.screenshot({path:path.join(dir,kind+'-screen-editor.png')});
- await p.locator('#edit-save').click();await p.locator('#skin-select').waitFor();const saved=await stored();assert.equal(saved.portrait.a.scale,1.5);assert.equal(saved.portrait.screen.scale,.6);assert.equal(saved.landscape.screen.scale,.75);assert.equal(saved.landscape.b.scale,1.3);
+ await p.locator('#edit-save').click();await p.locator('#skin-grid').waitFor();const saved=await stored();assert.equal(saved.portrait.a.scale,1.5);assert.equal(saved.portrait.screen.scale,.6);assert.equal(saved.landscape.screen.scale,.75);assert.equal(saved.landscape.b.scale,1.3);
  await close();await p.reload();await openShared();await p.locator('[data-edit-mode=screen]').click();assert.equal(await p.locator('#edit-size').inputValue(),'60');
  await p.locator('#edit-reset').click();assert.equal(await p.locator('#edit-size').inputValue(),'100');await p.locator('[data-edit-orientation=landscape]').click();assert.equal(await p.locator('#edit-size').inputValue(),'75');
  await p.locator('#edit-cancel').click();assert.deepEqual(await stored(),saved);await close();

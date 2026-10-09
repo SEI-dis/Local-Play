@@ -158,6 +158,9 @@ GBA通信にはネット接続が必要です。
 「設定 → スキン」で機種共通のスキンを選べます。
 ゲームごとの指定は、ライブラリの「… → スキン設定」またはプレイ中のメニューから変更できます。
 「機種の設定を使う」を選ぶと共通設定に戻ります。ゲーム別の指定は再起動後も保持されます。
+追加したスキンはプレビュー付きの一覧に残り、標準色に変えた後も選び直せます。
+縦画面・横画面のプレビューを切り替えられます。選択するスキンは縦・横で共通です。
+最後に見ていた機種も保持します。削除は「編集」から選び、確認後に行います。
 
 対応する全機種に専用スキンがあります。「機種標準」の配色に加え、パープル・グラファイト・
 ミント・サンセットの4色を選べます。既存の色指定・配置設定は引き継ぎ、未指定時は機種標準になります。
@@ -242,7 +245,7 @@ ROM・セーブファイルは送りませんが、ゲームの通信データ�
 | `src/app.js` | アプリの状態、起動・保存・操作の連携 |
 | `src/ui.js` / `controls.css` | 共通の設定行・グループ・スイッチと、ボタン・入力部品の色・形 |
 | `src/settings-view.js` | 設定一覧、映像・音量・操作・保存案内・保存容量の画面 |
-| `src/skin-settings.js` | スキン選択・プレビューと配置編集の呼び出し |
+| `src/skin-settings.js` / `src/skin-preview.js` | スキン一覧・独立したプレビューと配置編集の呼び出し |
 | `src/skins.js` / `src/skin-format.js` / `src/skin-zip.js` | 外部スキンの端末内取り込み・形式検査・配置の正規化 |
 | `src/skin-screens.js` / `src/skin-inputs.js` | 外部スキンの複数画面・表示効果・タッチとショートカット |
 | `src/state-dialogs.js` | 手動／自動ステート一覧・クイック保存／読み込み |
@@ -366,7 +369,7 @@ npm run test:nds
 - `TEST_URL`: 対応テストのアクセス先。固定の4173番ポートを使うテストもあるため、通常は既定URLで起動してください。
 
 WebKit対応は browser / visibility / state-ui / responsive-skins / layout-sizing / layout-alignment / runtime-performance /
-speed-control / pitch-audio / privacy / native-menu / nds-browser / nds-skin / system-skins / link-panel / room-link / covers / multicore / skin-compatibility の各 `.cjs` です。
+speed-control / pitch-audio / privacy / native-menu / nds-browser / nds-skin / system-skins / link-panel / room-link / covers / multicore / skin-compatibility / skins / update の各 `.cjs` です。
 音声APIのないWebKitビルドでは、音声検査をスキップしたことを表示します。
 PC版WebKitの検査は、iPhone実機の速度・発熱・消費電力やOS標準メニューの検証を代替しません。
 
