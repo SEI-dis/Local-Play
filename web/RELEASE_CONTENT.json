@@ -47,8 +47,8 @@
     },
     {
       "path": "NOTICES.md",
-      "bytes": 19385,
-      "sha256": "7f8c0f170b3eb5eea358518d666f4947dfd71a0672f1a1539986799a02654b12",
+      "bytes": 20034,
+      "sha256": "56b17c624af3fadbaafb48bd0052b17f4d82bf80568140afd007c97e3af53a3d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -65,15 +65,21 @@
     },
     {
       "path": "RELEASE_VALIDATION.md",
-      "bytes": 9540,
-      "sha256": "ec22fd876b1232a59c3ba9792d9b640099d52dc65a3b65f3cdf2229f4abc355d",
+      "bytes": 9763,
+      "sha256": "7cd05e4c78dbc4ca0b28ef851227f60d4d5ed2f5c69377d79d1ca8c7ee05e4a6",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "SOURCES.json",
       "bytes": 19369,
-      "sha256": "a746fc5493872670d219fdc9c4524ac58c7c9fc2b87d723e3050ac7cdc69fee5",
+      "sha256": "b8c05959d8e8814f51a8eebf27021b84cebd5b00a0683ce7b96b337f74c1a498",
       "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "assets/apple-touch-icon.png",
+      "bytes": 10513,
+      "sha256": "20d62b6bccd72d031c30f3ca9bdf47821aeb45c00aee47b7c8074735380a0130",
+      "component": "original-web-artwork"
     },
     {
       "path": "assets/controller.svg",
@@ -88,9 +94,21 @@
       "component": "original-web-artwork"
     },
     {
+      "path": "assets/icon-192.png",
+      "bytes": 11562,
+      "sha256": "e0c61b53e3488992c0d7838d5d1a3440a29c8f8baa30ff8b0ad371318228979b",
+      "component": "original-web-artwork"
+    },
+    {
+      "path": "assets/icon-512.png",
+      "bytes": 44480,
+      "sha256": "262ae8a279dc53a13c2a85aec6d46a26c7de1deafa1b258b3f3cf41c912ffa6a",
+      "component": "original-web-artwork"
+    },
+    {
       "path": "assets/icon.svg",
-      "bytes": 440,
-      "sha256": "54b0d8289d04e610aabdd79a4e3246e0a9e9089510ef1d35dc284fc7901b130a",
+      "bytes": 1896,
+      "sha256": "f5e6c8d8e24f13233d1b4aef69ea2c4e0ee6232c8c8637f0495e1e583cdec422",
       "component": "original-web-artwork"
     },
     {
@@ -209,14 +227,14 @@
     },
     {
       "path": "index.html",
-      "bytes": 4426,
-      "sha256": "abc168d7d158b84e56026bff378a84dd8e2f5d42f46ec91a03cecc3ce9ef459d",
+      "bytes": 4567,
+      "sha256": "fd72a69fd86992d3901f221dc12e30753eca5caddd6800b94bc832bd1ff7cdaf",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "licenses.html",
-      "bytes": 13122,
-      "sha256": "8a474a71f02e90f3683228f9cebaab82e1d1daf3eb4a729e179b58f67db09ce6",
+      "bytes": 13324,
+      "sha256": "fe1093fd96cc81bc1de7b990a669ab4e8dcb06dca19f1c9691bd983a76c155e9",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -407,8 +425,8 @@
     },
     {
       "path": "manifest.webmanifest",
-      "bytes": 282,
-      "sha256": "6c43eb91e57211af442b3e5761210f45d988b35f7e1a1c732f5b5c13b9db45fd",
+      "bytes": 457,
+      "sha256": "4d55bfe8a3b6a6bfafd37133ed3b4fad08d0307e14673625714cc192b91ccdaa",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -431,8 +449,8 @@
     },
     {
       "path": "privacy.html",
-      "bytes": 4567,
-      "sha256": "20a250507b596a435155467abec0f4172cb402adb8d1f4549517422edc9ddca3",
+      "bytes": 4769,
+      "sha256": "b92496edac59718ae406ed4483d46cea1af5a24db3edf177a75f166c07cf0289",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -445,6 +463,12 @@
       "path": "scripts/audit-git.py",
       "bytes": 2786,
       "sha256": "e6827ab8c85bef5aebaa7459a07555f2960bbc206b18b6cd148c4759fc9923d3",
+      "component": "web-port-code-and-documentation"
+    },
+    {
+      "path": "scripts/build-icons.cjs",
+      "bytes": 1322,
+      "sha256": "c9b2eaef7ec112c641b9188af4426161d6b630c00732236357390476ef843764",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38363,8 +38387,8 @@
     },
     {
       "path": "update.html",
-      "bytes": 1002,
-      "sha256": "cf9e7a6c0fa95be4a28a475be4d740e917e65c26325dc0e039f78025e831130c",
+      "bytes": 1204,
+      "sha256": "888050734a8e7ba52e6dfd6aa133117c07abd563bf113f842134de07c6b34396",
       "component": "web-port-code-and-documentation"
     },
     {
