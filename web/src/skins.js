@@ -35,6 +35,7 @@ async function renderImage(bytes,name){
  return new Promise((resolve,reject)=>canvas.toBlob(blob=>blob?resolve(blob):reject(new Error('画像の変換に失敗しました。')),'image/png'));
 }
 export async function importSkin(file,expectedSystem){
+ if(!/\.(deltaskin|manicskin)$/i.test(file.name))throw new Error('DeltaまたはManic形式のスキンを選択してください。');
  if(file.size>20*1024*1024)throw new Error('20MBを超えるスキンは追加できません。');const buffer=await file.arrayBuffer(),files=await readSkinZip(buffer),infoName=[...files.keys()].find(n=>/(^|\/)info\.json$/i.test(n));
  if(!infoName||files.get(infoName).length>128*1024)throw new Error('スキンの設定ファイルがないか、大きすぎます。');
  const prefix=infoName.slice(0,-9),info=JSON.parse(new TextDecoder().decode(files.get(infoName))),system=String(info.gameTypeIdentifier||'').split('.').pop().toLowerCase();

@@ -4,7 +4,7 @@
   "scope": "This exact static Web distribution, pinned core sources and manually dispatched workflows. No user ROM/save, extracted commercial BIOS, third-party skin or artwork is included. Open-source replacement implementations retain their notices.",
   "openItems": [],
   "note": "Engineering review of pinned dependencies, corresponding source, notices, distribution contents and runtime regression tests. Not a legal opinion or a grant of rights in user ROMs/artwork. iPhone hardware and commercial-game compatibility remain unverified; see RELEASE_VALIDATION.md. Any distribution/workflow change requires renewed review.",
-  "reviewedContentSha256": "70af73bcfb8bf3581e5ae55c4273d5c6284baf692cd704c6342e6b0be7c4560a",
+  "reviewedContentSha256": "31ea4ad5404c231c42f58d407922ac84ad41f938e75b0766d2f3eecfb885b969",
   "resolutions": [
     {
       "id": "corresponding-source",
@@ -24,7 +24,7 @@
     {
       "id": "asset-rights",
       "evidenceFile": "NOTICES.md",
-      "sha256": "d31e82db6f4a02b60401b3820b63d74b18d525e068d17e8b9da2b5bd63acc01d"
+      "sha256": "4185f8e1dc7cd8d3557e7ddc6377c2cae8e3ac5c47a9f3dfb2b1652ca942a474"
     },
     {
       "id": "source-archive-materials",
@@ -39,7 +39,7 @@
     {
       "id": "runtime-validation",
       "evidenceFile": "RELEASE_VALIDATION.md",
-      "sha256": "a30c06bb4caee42915e7ca1d1732fdde9244b92c7ac64ce6a137013d7736bbfb"
+      "sha256": "65f0a8e47df9d882c1fb3c12ca58fb1d4e089b07e101670fc428c462e7ab78bb"
     },
     {
       "id": "alternate-corresponding-source",

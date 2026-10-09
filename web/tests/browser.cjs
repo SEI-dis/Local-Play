@@ -11,6 +11,12 @@ const cartridges=require('./cartridges.cjs');
  const p=await ctx.newPage(),requests=[],errors=[];
  p.on('request',r=>requests.push({url:r.url(),method:r.method(),body:r.postDataBuffer()?.length||0}));p.on('pageerror',e=>errors.push(e.message));
  const base=process.env.TEST_URL||'http://127.0.0.1:4173/';await p.goto(base);
+ // Unknown extension filters can gray out files in iOS's native document picker.
+ // Desktop setInputFiles bypasses that picker, so keep this policy explicit.
+ for(const id of ['rom-input','skin-input','save-input'])assert.equal(await p.locator('#'+id).getAttribute('accept'),null,'Custom formats must remain selectable on iOS: '+id);
+ await p.locator('#rom-input').setInputFiles({name:'unsupported.txt',mimeType:'text/plain',buffer:Buffer.from('original fixture')});
+ await p.getByRole('status').filter({hasText:'未対応の形式です。'}).waitFor();
+ assert.equal(await p.locator('.game-launch').count(),0,'Picker accepts files; app rejects unsupported formats locally');
  for(const [system,generate] of Object.entries(cartridges)){
   const file=path.join(os.tmpdir(),'manic-web-test-'+process.pid+'-'+system+'.'+(system==='snes'?'sfc':system));fs.writeFileSync(file,generate());
   try{await p.locator('#rom-input').setInputFiles(file);await p.getByRole('button',{name:'manic-web-test-'+process.pid+'-'+system+'の設定を開く',exact:true}).waitFor();}finally{fs.unlinkSync(file);}

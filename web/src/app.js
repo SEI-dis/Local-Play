@@ -221,12 +221,17 @@ function confirmRestart(){
 function showStates(...args){return stateDialogs.showStates(...args);}
 function confirmStateSave(...args){return stateDialogs.confirmStateSave(...args);}
 function showQuickLoad(){return stateDialogs.showQuickLoad();}
-function chooseSaveImport(game){saveImportTarget=game;$('#save-input').accept=coreFor(game).adapter==='jgenesis'?'.sav,.srm,.jgsav':game.system==='nds'?'.sav,.srm,.dsv':'.sav,.srm';$('#save-input').click();}
+function chooseSaveImport(game){saveImportTarget=game;$('#save-input').click();}
 $('#save-input').onchange=async e=>{
  const file=e.target.files[0],game=saveImportTarget||current;saveImportTarget=null;if(!file||!game)return;
  let temporaryCore,temporaryProtection;
  try{
-  const bytes=new Uint8Array(await file.arrayBuffer());if(!bytes.length||bytes.length>coreFor(game).maxSave)throw Error('セーブファイルのサイズを確認してください。');
+  const core=coreFor(game),extension=file.name.split('.').pop().toLowerCase();
+  if(extension==='jgsav'&&core.adapter!=='jgenesis')throw Error('このセーブはjgenesis用です。コアを変更してから読み込んでください。');
+  const extensions=core.adapter==='jgenesis'?['sav','srm','jgsav']:game.system==='nds'?['sav','srm','dsv']:['sav','srm'];
+  if(!extensions.includes(extension))throw Error('対応するセーブファイルを選択してください（'+extensions.map(value=>'.'+value).join(' / ')+'）。');
+  if(!file.size||file.size>core.maxSave)throw Error('セーブファイルのサイズを確認してください。');
+  const bytes=new Uint8Array(await file.arrayBuffer());if(!bytes.length||bytes.length>core.maxSave)throw Error('セーブファイルのサイズを確認してください。');
   if(coreFor(game).adapter!=='jgenesis'&&(/\.jgsav$/i.test(file.name)||new TextDecoder().decode(bytes.subarray(0,8))==='LPJGSV01'))throw Error('このセーブはjgenesis用です。コアを変更してから読み込んでください。');
   if(engine){
    if(current?.id!==game.id)throw Error('プレイ中のゲームを終了してから読み込んでください。');

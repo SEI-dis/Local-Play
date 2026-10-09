@@ -41,8 +41,8 @@
     },
     {
       "path": "NOTICES.md",
-      "bytes": 18270,
-      "sha256": "d31e82db6f4a02b60401b3820b63d74b18d525e068d17e8b9da2b5bd63acc01d",
+      "bytes": 18584,
+      "sha256": "4185f8e1dc7cd8d3557e7ddc6377c2cae8e3ac5c47a9f3dfb2b1652ca942a474",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -59,8 +59,8 @@
     },
     {
       "path": "RELEASE_VALIDATION.md",
-      "bytes": 7851,
-      "sha256": "a30c06bb4caee42915e7ca1d1732fdde9244b92c7ac64ce6a137013d7736bbfb",
+      "bytes": 8347,
+      "sha256": "65f0a8e47df9d882c1fb3c12ca58fb1d4e089b07e101670fc428c462e7ab78bb",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -203,8 +203,8 @@
     },
     {
       "path": "index.html",
-      "bytes": 4394,
-      "sha256": "31bad2be0395fc45aa4d70cf5df519d399889d2796158a5ff54fd80ff9176bc3",
+      "bytes": 4426,
+      "sha256": "abc168d7d158b84e56026bff378a84dd8e2f5d42f46ec91a03cecc3ce9ef459d",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -37889,8 +37889,8 @@
     },
     {
       "path": "src/app.js",
-      "bytes": 51890,
-      "sha256": "2ba4946266c513ceb248e1c68b8299f4ab8c5d096b5a504dd81822b7bb784128",
+      "bytes": 52415,
+      "sha256": "fc695cd4b20c684af0e113cb80ab46fbc289ca7e5953dce2baf417c434d7b814",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38063,8 +38063,8 @@
     },
     {
       "path": "src/skins.js",
-      "bytes": 7336,
-      "sha256": "d8a2aae027449164230149ab2827ef24f40d988f73af84ff845c0ec41ea3fbd7",
+      "bytes": 7474,
+      "sha256": "2e339f0aa82775a9848fe3f11ad4c77458f361945ccbc22ebc02a64d76013cff",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38129,8 +38129,8 @@
     },
     {
       "path": "tests/browser.cjs",
-      "bytes": 4213,
-      "sha256": "1eb0ac058721ba8e70506deb99ed167dd64526fc189b6194843ef2c85c42757e",
+      "bytes": 4898,
+      "sha256": "9bf860517477e219b046c071d35ab64a89655231d1de61f44a3563e0a92b642f",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -38291,8 +38291,8 @@
     },
     {
       "path": "tests/skins.cjs",
-      "bytes": 5282,
-      "sha256": "5735f09a0073b6b561a6c3ba5eacb26ca98e891df3ff7e9d36f2ac5271f86b90",
+      "bytes": 5675,
+      "sha256": "24a8d101bf29111326ab59f5d97b7844227a5e6fcbffa5339c63e81a4459eed8",
       "component": "web-port-code-and-documentation"
     },
     {

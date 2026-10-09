@@ -2,6 +2,11 @@
 
 This is an unofficial Web port of ManicEMU, not a release endorsed by its authors.
 
+Modified 2026-10-09: removed native file-picker extension filters for ROMs,
+controller skins and saves because iOS file providers may disable supported
+custom extensions. Format and size checks remain local; skin/save extensions
+are checked before reading their contents. No upload or network API was added.
+
 Modified 2026-10-09: added an original non-modal GBA communication panel, draggable
 placement, a gameplay Wi-Fi shortcut and a copy button inside the room-number field.
 The communication transport and its upstream attribution are unchanged.
