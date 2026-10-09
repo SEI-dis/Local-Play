@@ -28,10 +28,17 @@ jobs:
       - run: python3 -B web/scripts/prepare-release.py
       - run: node work/release/web/scripts/check-release.cjs
   validate:
+    name: ${{ matrix.engine }} (${{ matrix.shard }}/3)
     runs-on: windows-latest
     timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        engine: [chromium, webkit]
+        shard: [1, 2, 3]
     env:
       BROWSER_CHANNEL: msedge
+      BROWSER_ENGINE: ${{ matrix.engine }}
       PLAYWRIGHT_MODULE: ${{ github.workspace }}/work/test-deps/node_modules/playwright
       CELIO_SERVER_ROOT: ${{ github.workspace }}/work/celio-server
       CELIO_REFERENCE_ROOT: ${{ github.workspace }}/work/celio-reference
@@ -57,18 +64,22 @@ jobs:
         run: |
           npm install --prefix work/test-deps --no-audit --no-fund --ignore-scripts playwright@1.62.1
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          node work/test-deps/node_modules/playwright/cli.js install webkit
+          if ($env:BROWSER_ENGINE -eq 'webkit') {
+            node work/test-deps/node_modules/playwright/cli.js install webkit
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+          $selection = node web/scripts/test-all.cjs --list --shard=${{ matrix.shard }}/3
           if ($LASTEXITCODE) { exit $LASTEXITCODE }
-          python -B -X utf8 web/scripts/prepare-link-tests.py
-      - name: Full Edge suite
-        run: node web/scripts/test-all.cjs --serve
-      - name: Supported WebKit suite
-        if: success() || failure()
-        run: node web/scripts/test-all.cjs --serve --webkit
+          if (($selection | ConvertFrom-Json).tests.name -contains 'test:room-link') {
+            python -B -X utf8 web/scripts/prepare-link-tests.py
+            if ($LASTEXITCODE) { exit $LASTEXITCODE }
+          }
+      - name: Run all suites assigned to this shard
+        run: node web/scripts/test-all.cjs --serve --shard=${{ matrix.shard }}/3
       - name: Keep synthetic test diagnostics
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         with:
-          name: test-results
+          name: test-results-${{ matrix.engine }}-${{ matrix.shard }}
           path: web/test-results/
           retention-days: 7

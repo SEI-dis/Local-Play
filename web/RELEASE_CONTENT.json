@@ -65,14 +65,14 @@
     },
     {
       "path": "README.md",
-      "bytes": 39358,
-      "sha256": "19d56d887ca2469035a389b8881f245745265aa161e58f6a2934565432ed605c",
+      "bytes": 39669,
+      "sha256": "b520a7f37c370c081536e998245004d6a64e1ac889fb9228dd0333e470de373a",
       "component": "web-port-code-and-documentation"
     },
     {
       "path": "RELEASE_VALIDATION.md",
-      "bytes": 29615,
-      "sha256": "d524e909609764efd297006cd46d570d1fb9167f723f95aac89a086ea788309c",
+      "bytes": 30993,
+      "sha256": "5137c5e4e9774c8094b68810748d1fd6e84bfa8d17e06de2c1408001c7972197",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -852,7 +852,7 @@
     {
       "path": "index.html",
       "bytes": 4671,
-      "sha256": "6f07e4b795060002243ec6b54006edad6a6c0a8d12154719e76bd791d45b5c10",
+      "sha256": "f9781b7be920061ec7740319bb90aa5a6327b49514100e92d6066d3bf9409e04",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -1175,8 +1175,8 @@
     },
     {
       "path": "scripts/test-all.cjs",
-      "bytes": 3120,
-      "sha256": "fe71193dd90b907e3ac25536404dd8c626423076a4bf9b8a4a25618af741f8b6",
+      "bytes": 5265,
+      "sha256": "1074ac100336c728053dc236264d3ba67416bb54b072ae1809fa2afee9c84236",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39797,8 +39797,8 @@
     },
     {
       "path": "tests/covers.cjs",
-      "bytes": 4443,
-      "sha256": "f57065c65d649a22aaa47e0b05c0a5fbc8fb5a202a4c8f649465dc2db1c4d518",
+      "bytes": 4759,
+      "sha256": "c3f7b6c24c3fb8874826717c2cbe03c27dae0a8ea1d18bbd3131185e87400159",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39857,8 +39857,8 @@
     },
     {
       "path": "tests/link.cjs",
-      "bytes": 5131,
-      "sha256": "4ad4e9b2564e228d3ed181d827fe6602bfb07eacc3becb94852d2d0395c7fb6b",
+      "bytes": 5373,
+      "sha256": "ae2e7d4d30985b18dbabc067b9e9f9c1c0c6b7892514133dc37bcc86e0002dfe",
       "component": "web-port-code-and-documentation"
     },
     {
@@ -39917,8 +39917,8 @@
     },
     {
       "path": "tests/room-link.cjs",
-      "bytes": 12677,
-      "sha256": "f293587d1dbf73136c15129b84c98f0c7f103c5fc61670c21b5abac12108883b",
+      "bytes": 13190,
+      "sha256": "74cc7c7c9bb373a7f9f7fa186e933a95ab53976442356256c606569f603aa0b1",
       "component": "web-port-code-and-documentation"
     },
     {

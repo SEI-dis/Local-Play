@@ -5,7 +5,7 @@
 ManicEMUの画面・メニュー・設定をWeb向けに移植し、公開ソースの構成に沿って再現したアプリです。
 Web版のコードはAGPL-3.0-or-laterで公開しています。「標準」の画像とスキンは新規に作成しました。別の選択肢として、CC BY 4.0で公開されたManicEMU標準スキン7機種を同梱しています。[クレジット](licenses.html#skins)を参照してください。
 
-最終更新：2026-10-09。アプリのバージョンは `0.3.4` です。設定の下部に、使用中のバージョンとビルド番号を表示します。
+最終更新：2026-10-09。アプリのバージョンは `0.3.5` です。設定の下部に、使用中のバージョンとビルド番号を表示します。
 この文書は同梱するWeb版の動作を説明します。
 
 ## 起動・更新
@@ -387,7 +387,7 @@ npm run test:nds
 - `TEST_URL`: 対応テストのアクセス先。固定の4173番ポートを使うテストもあるため、通常は既定URLで起動してください。
 
 WebKit対応は browser / visibility / state-ui / responsive-skins / layout-sizing / layout-alignment / runtime-performance /
-speed-control / pitch-audio / privacy / native-menu / nds-browser / nds-skin / system-skins / link-panel / room-link / covers / multicore / skin-compatibility / skins / update の各 `.cjs` です。
+speed-control / pitch-audio / privacy / native-menu / nds-browser / nds-skin / system-skins / link-panel / direct-link / haptics / room-link / covers / multicore / skin-compatibility / skins / bundled-skins / skin-orientation / update / extended-save の各 `.cjs` です。
 音声APIのないWebKitビルドでは、音声検査をスキップしたことを表示します。
 PC版WebKitの検査は、iPhone実機の速度・発熱・消費電力やOS標準メニューの検証を代替しません。
 
@@ -416,11 +416,13 @@ node web/scripts/test-all.cjs --webkit
 ```
 
 結果は無視対象の `web/test-results/suite-*` に保存します。一件でも失敗すると非ゼロ終了します。
+CIはEdge・WebKitを各3組、計6ジョブに分けて並列実行し、実行中のログを逐次表示します。
+`--shard=1/3` で1組だけ実行でき、`--list` で対象一覧を確認できます。全組の成功が公開条件です。
 個別の失敗を修正した後は、該当テストと関連テストを再実行してください。
 
 CIや起動済みサーバーのない環境では `--serve` を付けます。テスト側でループバックサーバーを起動し、
 準備完了後に検査を開始して、成功・失敗にかかわらず終了時に自分のサーバーだけを停止します。
-既定は4173番です。別の開発サーバーが使用中なら `PORT=4174` などを環境変数に設定してください。
+`--serve` は空いているポートを自動で割り当てるため、開発サーバーと併用できます。
 
 ```sh
 node web/scripts/test-all.cjs --serve

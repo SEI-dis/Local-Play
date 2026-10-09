@@ -1,11 +1,13 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 // Local artwork and synthetic cartridges only. External networking is forbidden.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const kind=process.env.BROWSER_ENGINE||'chromium',pw=require(process.env.PLAYWRIGHT_MODULE||'playwright');
+const kind=process.env.BROWSER_ENGINE||'chromium',pw=require('./browser-runtime.cjs');
 (async()=>{
  const browser=await pw[kind].launch({headless:true,...(kind==='chromium'?{channel:process.env.BROWSER_CHANNEL||'msedge'}:{})});
+ let context;
  try{
-  const context=await browser.newContext({viewport:{width:390,height:844}}),page=await context.newPage(),requests=[],errors=[];
+  context=await browser.newContext({viewport:{width:390,height:844}});
+  const page=await context.newPage(),requests=[],errors=[];
   const base=process.env.TEST_URL||'http://127.0.0.1:4173/';
   context.on('request',r=>{if(/^https?:/.test(r.url()))requests.push({url:r.url(),method:r.method(),body:r.postData()});});
   await context.route('**/*',route=>new URL(route.request().url()).origin===new URL(base).origin?route.continue():route.abort());
@@ -35,6 +37,11 @@ const kind=process.env.BROWSER_ENGINE||'chromium',pw=require(process.env.PLAYWRI
   assert.equal(await page.evaluate(async id=>(await (await import('./src/storage.js')).get('library',id)).cover,saved.g.id),saved.g.cover,'Invalid input never replaces a saved cover');
   for(const r of requests){assert.equal(new URL(r.url).origin,new URL(base).origin);assert.ok(['GET','HEAD'].includes(r.method));assert.equal(r.body,null);}
   assert.deepEqual(errors,[]);console.log('PASS: legacy online preference is inert; local cover import, reload, migration and invalid-image preservation send no external requests or user content.');
-  await context.close();
- }finally{await browser.close();}
-})().catch(e=>{console.error(e);process.exitCode=1;});
+ }finally{
+  // WebKit on Windows can finish every assertion but stall while closing a
+  // context with a service worker. Always reach our owned browser's cleanup.
+  let timer;
+  try{if(context)await Promise.race([context.close(),new Promise(resolve=>{timer=setTimeout(resolve,5000);})]);}
+  finally{clearTimeout(timer);await browser.close();}
+ }
+})().then(()=>process.exit(0)).catch(e=>{console.error(e);process.exit(1);});

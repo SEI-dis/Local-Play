@@ -12,9 +12,12 @@ function cartridge(own,wanted){
   mark('handshake');emit(0xe1c020ba);read();emit(0xe1570004);branch('handshake',1);
   load(2,0x8FFF);emit(0xe1c020ba);read();emit(0xe3a02000);emit(0xe1c020ba);read();
   load(2,own);load(3,wanted);emit(0xe3a0a008);
-  mark('data');emit(0xe1c020ba);read();emit(0xe1570003);branch('found',0);emit(0xe25aa001);branch('data',1);
+  mark('data');emit(0xe1c020ba);read();emit(0xe1570003);branch('found',0);mark('next');emit(0xe25aa001);branch('data',1);
   emit(0xe3a0b000);emit(0xe1c0b0ba);read();emit(0xe3a0a008);branch('data');
-  mark('found');emit(0xe1c170b0);mark('end');branch('end');
+  // Receiving a peer word must not stop our own transfers. At unequal frame
+  // rates the first recipient may still have fewer than the 32 outgoing words
+  // needed to flush a Celio packet; halting here starves the other participant.
+  mark('found');emit(0xe1c170b0);branch('next');
   mark('delay');emit(0xe1d9b0b6);emit(0xe35b00a0);branch('delay',2);
   mark('vblank');emit(0xe1d9b0b6);emit(0xe35b00a0);branch('vblank',3);emit(0xe1a0f00e);
   for(const f of literal){const at=words.length;emit(f.value);words[f.at]=(0xe59f0000|(f.r<<12)|((at-f.at-2)*4))>>>0;}

@@ -35,11 +35,11 @@ assert.ok(reference&&serverRoot,'Specify the pinned local compatibility fixtures
    remote.on('close',()=>ws.close({code:1000}));remote.on('error',()=>ws.close({code:1011}));ws.onClose(()=>remote.close());
   });return c;
  }
- async function ours(p,own,wanted){await p.goto(base);await p.evaluate(async rom=>{
+ async function ours(p,own,wanted,speed=1){await p.goto(base);await p.evaluate(async({rom,speed})=>{
    const {MGBACore}=await import('./src/mgba.js'),{RoomLink}=await import('./src/room-link.js');
-   const core=new MGBACore(document.createElement('canvas'));await core.load(new Uint8Array(rom));window.test={core,status:[]};
+   const core=new MGBACore(document.createElement('canvas'));await core.load(new Uint8Array(rom));core.setSpeed(speed);window.test={core,status:[]};
    test.link=new RoomLink(core.linkIO(),{onStatus:s=>test.status.push(s),onEnd:(s,info)=>test.end={s,...info}});
- },[...cartridge(own,wanted)]);}
+ },{rom:[...cartridge(own,wanted)],speed});}
  async function theirs(p,own,wanted){await p.goto(base+'__reference__/');await p.evaluate(async rom=>{
    const ids=['link-usb-support','link-usb-online','link-status','link-hud-status','link-host','link-join','link-local-start','link-usb-start','link-pick-save2','link-blank2','link-room','link-server','link-end','link-backup','link-export2','link-hud','link-view0','link-view1','link-usb-start','link-save2','link-save2-name','link-open','link-hud-settings'];
    for(const id of new Set(ids)){const e=document.createElement('input');e.id=id;document.body.append(e);}
@@ -49,15 +49,18 @@ assert.ok(reference&&serverRoot,'Specify the pinned local compatibility fixtures
    await test.session.onGame();const tick=t=>{test.session.tick(t,0);test.raf=requestAnimationFrame(tick);};test.raf=requestAnimationFrame(tick);
  },[...cartridge(own,wanted)]);}
  try{
-  for(const host of ['ours','theirs']){
-   const a=await context(),z=await context(),p=await a.newPage(),q=await z.newPage();console.log('Loading local core');await ours(p,31,992);console.log('Loading reference core');await theirs(q,992,31);console.log('Connecting',host);
+  // Exercise both roles at normal speed, plus deliberately uneven scheduling.
+  // A successful recipient must keep sending until the other CPU also receives.
+  // This test-only speed skew does not change the application's 1x link limit.
+  for(const {host,speed} of [{host:'ours',speed:1},{host:'theirs',speed:1},{host:'theirs',speed:5}]){
+   const a=await context(),z=await context(),p=await a.newPage(),q=await z.newPage();console.log('Loading local core');await ours(p,31,992,speed);console.log('Loading reference core');await theirs(q,992,31);console.log('Connecting',host,'test speed',speed);
    let room;
    if(host==='ours'){await p.evaluate(()=>test.link.start());try{await p.waitForFunction(()=>test.link.joined,null,{timeout:10000});}catch(e){console.log(await p.evaluate(()=>({status:test.status,end:test.end,ready:test.link.socket.readyState})));throw e;}room=await p.evaluate(()=>test.link.room);await q.locator('#link-room').fill(room);await q.locator('#link-join').click();}
    else {await q.locator('#link-host').click();await q.waitForFunction(()=>/^\d{4}$/.test(document.getElementById('link-room').value));room=await q.locator('#link-room').inputValue();await p.evaluate(r=>test.link.start(r),room);}
    try{await p.waitForFunction(()=>test.core.canvas.getContext('2d').getImageData(0,0,1,1).data[1]>200,null,{timeout:30000});await q.waitForFunction(()=>test.m.HEAPU8[test.m._web_pixels()]>200,null,{timeout:30000});}
-   catch(e){console.log('diagnostic',await p.evaluate(()=>({status:test.status,phase:test.link.device.phase,sent:test.link.sent,received:test.link.received,end:test.end})),await q.locator('#link-status').textContent());throw e;}
+   catch(e){console.log('diagnostic',await p.evaluate(()=>({status:test.status,phase:test.link.device.phase,sent:test.link.sent,received:test.link.received,end:test.end})),await q.evaluate(()=>({status:document.getElementById('link-status').textContent,pixel:[...test.m.HEAPU8.slice(test.m._web_pixels(),test.m._web_pixels()+4)]})));throw e;}
    assert.ok(await p.evaluate(()=>test.link.sent>0&&test.link.received>0));await p.evaluate(()=>test.link.close());await q.waitForFunction(()=>!test.session.busy);assert.match(await q.locator('#link-status').textContent(),/通信前/);
-   await p.evaluate(()=>test.core.close());await a.close();await z.close();console.log('PASS: actual GBA CPUs exchange words with unmodified published liru55 WASM + transport; host='+host);
+   await p.evaluate(()=>test.core.close());await a.close();await z.close();console.log('PASS: actual GBA CPUs exchange words with unmodified published liru55 WASM + transport; host='+host+'; test speed='+speed);
   }
   // User-visible room UI, durable backup and rollback in separate browser libraries.
   const a=await context(),z=await context(),pages=[await a.newPage(),await z.newPage()];
