@@ -27,13 +27,13 @@ export class MGBACore {
   }
   scheduleFrame(){if(!this.closed&&!this.paused&&this.tick&&this.raf==null)this.raf=requestAnimationFrame(this.tick);}
   copyIn(bytes,fn){const p=this.m._malloc(bytes.length);if(!p)throw new Error('メモリを確保できませんでした。');try{this.m.HEAPU8.set(bytes,p);return fn(p,bytes.length);}finally{this.m._free(p);}}
-  draw(){
+  draw(output=this.video){
     const ptr=this.m._web_pixels(),w=this.width,h=this.height,memory=this.m.HEAPU8.buffer;
     if(this.pixelSource?.buffer!==memory||this.pixelSource.byteOffset!==ptr||this.pixelSource.length!==256*h)this.pixelSource=new Uint32Array(memory,ptr,256*h);
     if(this.pixelTarget?.buffer!==this.image.data.buffer)this.pixelTarget=new Uint32Array(this.image.data.buffer);
     const src=this.pixelSource,dst=this.pixelTarget;
     for(let y=0;y<h;y++){const from=y*256,to=y*w;for(let x=0;x<w;x++)dst[to+x]=src[from+x]|0xff000000;}
-    this.video.draw(this.image);this.presented++;
+    output.draw(this.image);this.presented++;
   }
   async unlockAudio(){const AudioContext=window.AudioContext||window.webkitAudioContext;if(!AudioContext)return;this.ac??=new AudioContext();if(!this.gain){this.gain=this.ac.createGain();this.gain.connect(this.ac.destination);this.gain.gain.value=this.volume;}if(this.ac.state!=='running')await this.ac.resume();}
   audio(){

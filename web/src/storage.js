@@ -68,8 +68,12 @@ const equal=(a,b)=>!!a&&!!b&&a.length===b.length&&a.every((v,i)=>v===b[i]);
 // Save, retained generations and crash marker commit together, or none do.
 // No asynchronous hashing/network calls are allowed inside this transaction.
 async function commitProtection(id,sessionId,save,recovery,clean=false){
+ return commitProtectionBatch([{id,sessionId,save,recovery,clean}]);
+}
+async function commitProtectionBatch(entries){
  const db=await database;return new Promise((resolve,reject)=>{
   const tx=write(db,['saves','backups','recoveries','sessions']);let failure;
+  for(const {id,sessionId,save,recovery,clean=false} of entries){
   const sessions=tx.objectStore('sessions'),request=sessions.get(id);
   request.onsuccess=()=>{
    const session=request.result;
@@ -87,6 +91,7 @@ async function commitProtection(id,sessionId,save,recovery,clean=false){
    if(recovery){const store=tx.objectStore('recoveries'),r=store.get(id);r.onsuccess=()=>store.put([recovery,...(r.result||[])].slice(0,5),id);}
    sessions.put({...session,dirty:!clean,checkedAt:Date.now()},id);
   };
+  }
   tx.oncomplete=resolve;tx.onabort=()=>reject(failure||tx.error||new Error('保存が中断されました。以前の保存データは残っています。'));tx.onerror=()=>{};
  });
 }
@@ -106,6 +111,7 @@ const setGameControlsWithActivity=guardUpdateTask(setGameControls);
 const removeSkinWithActivity=guardUpdateTask(removeSkin);
 const removeGameWithActivity=guardUpdateTask(removeGame);
 const setGameCoreWithActivity=guardUpdateTask(setGameCore);
+const commitProtectionBatchWithActivity=guardUpdateTask(commitProtectionBatch);
 const commitProtectionWithActivity=guardUpdateTask(commitProtection);
 const stateEntriesWithActivity=guardUpdateTask(stateEntries);
-export {getWithActivity as get, allWithActivity as all, putWithActivity as put, removeWithActivity as remove, removeStatesWithActivity as removeStates, addGameWithActivity as addGame, setGameCoverWithActivity as setGameCover, setGameSkinWithActivity as setGameSkin, setGameControlsWithActivity as setGameControls, removeSkinWithActivity as removeSkin, removeGameWithActivity as removeGame, setGameCoreWithActivity as setGameCore, commitProtectionWithActivity as commitProtection, stateEntriesWithActivity as stateEntries};
+export {commitProtectionBatchWithActivity as commitProtectionBatch, getWithActivity as get, allWithActivity as all, putWithActivity as put, removeWithActivity as remove, removeStatesWithActivity as removeStates, addGameWithActivity as addGame, setGameCoverWithActivity as setGameCover, setGameSkinWithActivity as setGameSkin, setGameControlsWithActivity as setGameControls, removeSkinWithActivity as removeSkin, removeGameWithActivity as removeGame, setGameCoreWithActivity as setGameCore, commitProtectionWithActivity as commitProtection, stateEntriesWithActivity as stateEntries};

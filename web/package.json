@@ -1,6 +1,6 @@
 {
   "name": "palmoemu",
-  "version": "0.3.4",
+  "version": "0.3.5",
   "private": true,
   "scripts": {
     "dev": "node scripts/serve.cjs",
@@ -9,6 +9,8 @@
     "test:browser": "node tests/browser.cjs",
     "test:features": "node tests/features.cjs",
     "test:link": "node tests/link.cjs",
+    "test:direct-link": "node tests/direct-link.cjs",
+    "test:haptics": "node tests/haptics.cjs",
     "test:link-panel": "node tests/link-panel.cjs",
     "build:offline": "node scripts/build-offline.cjs",
     "test:visibility": "node tests/visibility.cjs",

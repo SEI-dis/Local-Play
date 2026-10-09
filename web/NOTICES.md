@@ -109,6 +109,14 @@ bounded word queues and optional room-based Celio relay transport.
 src/celio-device.js retains GPL-3.0-only; the GPL/AGPL combination follows section 13.
 The old AGPL src/peer-link.js remains only for the isolated legacy protocol test.
 
+2026-10-09: The same pinned upstream web/celio-serial.js is retained verbatim.
+Local/USB coordination from link-session.js is adapted into src/direct-link.js;
+serial framing is adapted into src/celio-serial.js. Both modified files retain
+MPL-2.0, additionally offered under AGPL-3.0-or-later under MPL section 3.3.
+Changes add bounded validation, cancellable USB cleanup, and deferred shutdown.
+New AGPL application modules coordinate two independent cores and atomically
+commit their saves. No new core binary, ROM, firmware or artwork is included.
+
 liru55/mgba-celio-web web/link-session.js (58d463ebe2302e4fc70098760dcfc84ca69329db):
 MPL-2.0 browser transport adapted into src/room-link.js. Original source and license
 are retained in sources/celio-web-transport. Modified 2026-10-08: bounded transport,

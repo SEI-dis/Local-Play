@@ -31,7 +31,7 @@ def component(path):
     if path.startswith('sources/libretro') or path.startswith(('cores/nes/','cores/snes/','cores/md/')): return 'source-built-libretro-cores'
     if path.startswith('vendor/pdfjs/') or path.startswith('sources/pdfjs'): return 'pdfjs-apache-2.0'
     if path.startswith('vendor/emulatorjs/'): return 'emulatorjs-modified-ui'
-    if path.startswith('sources/celio-web-transport') or path == 'src/room-link.js': return 'celio-web-transport-mpl-2.0'
+    if path.startswith('sources/celio-web-transport') or path in {'src/room-link.js', 'src/direct-link.js', 'src/celio-serial.js'}: return 'celio-web-transport-mpl-2.0'
     if path.startswith('sources/celio') or path == 'src/celio-device.js': return 'celio-gpl-source'
     if path.startswith('licenses/'): return 'retained-license-notices'
     return 'web-port-code-and-documentation'

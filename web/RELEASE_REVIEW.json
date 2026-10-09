@@ -4,7 +4,7 @@
   "scope": "This exact static Web distribution, pinned core sources and manually dispatched deployment. The 3DS host adapter is disabled in the static distribution; Azahar binaries are excluded and their distribution audit is separate. No user ROM/save or extracted commercial BIOS is included. Third-party artwork is limited to the seven explicitly reviewed CC BY 4.0 ManicEMUSkins standard skins pinned in BUNDLED_SKINS.json; newer System.core assets and unrelated skins are excluded. Open-source replacement implementations retain their notices.",
   "openItems": [],
   "note": "Engineering review of pinned dependencies, corresponding source, notices, distribution contents and runtime regression tests. Not a legal opinion or a grant of rights in user ROMs/artwork. iPhone hardware and commercial-game compatibility remain unverified; see RELEASE_VALIDATION.md. Any distribution/workflow change requires renewed review.",
-  "reviewedContentSha256": "1c8f73a417fd3535effdbb6e06c119c109a831c6d3d45f597f6615ba747cc476",
+  "reviewedContentSha256": "fedc277ddeb318825ce6ae7d93bcd333806b00a92b053e239a48fa65cd24f5a5",
   "resolutions": [
     {
       "id": "corresponding-source",
@@ -24,12 +24,12 @@
     {
       "id": "asset-rights",
       "evidenceFile": "NOTICES.md",
-      "sha256": "d519b918bf9071591fbc41af29a47c6a1a7bdf7922fb3fff0213df0c7425ccec"
+      "sha256": "152344a1122af57892cd225f3d170d3c1e194c97e1c0d9b1616f5b1ace36a7b6"
     },
     {
       "id": "source-archive-materials",
       "evidenceFile": "SOURCES.json",
-      "sha256": "3575827118915fd6b6f050eeeb35cb78aff454b1b540120a5c63a40a90c4cdc8"
+      "sha256": "05fc01127d5312c4b04215738539b889a571639ea1a9779f6a82e84e61145bcf"
     },
     {
       "id": "external-artwork-policy",
@@ -39,7 +39,7 @@
     {
       "id": "runtime-validation",
       "evidenceFile": "RELEASE_VALIDATION.md",
-      "sha256": "75b8e5ad5ec1092edd4617f6267a64f01482c18354bfa7b37e50f88a1d73cc89"
+      "sha256": "d524e909609764efd297006cd46d570d1fb9167f723f95aac89a086ea788309c"
     },
     {
       "id": "alternate-corresponding-source",

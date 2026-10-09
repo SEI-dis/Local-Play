@@ -6,7 +6,7 @@ export const row=(label,control,ic='settings')=>`<label class="row">${icon(ic)}<
 export const detail=(title,text,control,ic)=>row(`${title}<small>${text}</small>`,control,ic);
 export const action=(label,id,ic='chevron',extra='')=>`<button class="row ${extra}" data-action="${id}">${icon(ic)}<span>${label}</span>${ic==='back'||ic==='chevron'?'':icon('chevron')}</button>`;
 export const settingsGroup=(title,rows)=>`<div class="label">${title}</div><div class="settings-group">${rows.join('')}</div>`;
-export const switchControl=(setting,checked)=>`<input data-setting="${setting}" type="checkbox" ${checked?'checked':''}>`;
+export const switchControl=(setting,checked,{disabled=false}={})=>`<input data-setting="${setting}" type="checkbox" ${disabled?'disabled':''} ${checked?'checked':''}>`;
 
 /* ASListPage / ASListItemView port. Copyright © 2026 Manic EMU.
    Created by Daiuno. Web adaptation and shared-row refactor: 2026-10-09.

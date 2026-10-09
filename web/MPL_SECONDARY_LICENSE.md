@@ -3,7 +3,7 @@
 Modified 2026-10-09.
 
 The MPL-2.0-covered portions of the pinned mGBA core, the mGBA Web bridge
-in `sources/mgba-web-port/`, and the adapted transport `src/room-link.js`
+in `sources/mgba-web-port/`, and the adapted transport `src/room-link.js`, `src/direct-link.js` and `src/celio-serial.js`
 are distributed as part of the larger AGPL Web application under MPL-2.0
 and, as permitted by MPL section 3.3, additionally under
 AGPL-3.0-or-later. Recipients retain the choice provided by MPL section 3.3.

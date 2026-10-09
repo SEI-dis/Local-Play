@@ -2,6 +2,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 import {row,action,detail,settingsGroup,switchControl} from './ui.js';
 import {escapeHTML as esc,icon,bytesLabel} from './shared.js';
+import {supportsHaptics,hapticNote} from './haptics.js';
 import {videoFilters} from './video.js';
 export function videoFilterNote(filter){return `<p class="sheet-note" id="video-filter-note" ${filter==='edge4x'?'':'hidden'}>輪郭補正4倍は、元の色を保ちながら斜めの線や角を細かく整えます。処理負荷が増えるため、動作が重い場合は2倍やピクセルに戻してください。</p>`;}
 export function createSettingsView(api){
@@ -22,7 +23,7 @@ function renderSettings(){
   action('コントローラー・キーボード','controllers','game'),
   action('映像とフレームレート','video','image'),
   action('音量と速度','audio','volume'),
-  detail('タッチの振動','ボタンを押すと振動します（対応端末のみ）',switchControl('haptics',settings.haptics),'game'),
+  detail('タッチの振動',hapticNote(),switchControl('haptics',supportsHaptics()&&settings.haptics,{disabled:!supportsHaptics()}),'game'),
   action('セーブと保存容量','storage','save')
  ]);
  const support=settingsGroup('サポート',[

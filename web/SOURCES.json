@@ -81,7 +81,8 @@
       "commit": "58d463ebe2302e4fc70098760dcfc84ca69329db",
       "license": "MPL-2.0",
       "localSource": "sources/celio-web-transport",
-      "modifiedSource": "src/room-link.js"
+      "modifiedSource": "src/room-link.js",
+      "additionalModifiedSources": ["src/direct-link.js", "src/celio-serial.js"]
     }
   },
   "toolchain": {
@@ -151,6 +152,7 @@
     "sources/build-evidence.json": "0a0fdafb76b5fca1d09218d6717ed4c4896ec424c870206b16a36cf0d75cc030",
     "sources/celio-device-source.tar.gz": "0c0a5e7e2b2ae0626fd011571e73cf4084f01172889e28a17b2f031ff3ded907",
     "sources/celio-server-source.tar.gz": "3297aebba1cce33c696f6e472fb41b437ae0181c329c9fe7f1f44ef9837278e6",
+    "sources/celio-web-transport/celio-serial.js": "2562ad97ccde5abbb7a9562d2b62b6e6560ab49084fbe7a4061c0855a119c8ac",
     "sources/celio-web-transport/LICENSE": "fab3dd6bdab226f1c08630b1dd917e11fcb4ec5e1e020e2c16f83a0a13863e85",
     "sources/celio-web-transport/link-session.js": "063e1a11aeee3ed43e5a3178f206920e8388c8c3c6a22f024daddc7980ad3d65",
     "sources/desmume2015-source.tar.gz": "966f3f2aee97124699cd385a35ec75f86c8ed95c49eb950b9bc09ff1359bb696",

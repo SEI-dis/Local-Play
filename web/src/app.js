@@ -12,8 +12,8 @@ import {setupOffline,offlineStatus} from './offline.js';
 import {startAutoUpdates} from './auto-update.js';
 import {guardUpdateTask} from './update-activity.js';
 let appReady=false;
-import {RoomLink} from './room-link.js';
-import {LinkSafety} from './link-safety.js';
+import {supportsHaptics,tapHaptic,stopHaptics} from './haptics.js';
+import {createLinkControls} from './link-controls.js';
 import {SaveProtection} from './save-safety.js';
 import {loadSkinPair,releaseSkin} from './skins.js';
 import {skinOrientation} from './skin-selection.js';
@@ -53,6 +53,12 @@ for(const type of ['contextmenu','selectstart','dragstart'])document.addEventLis
 let saveImportTarget=null,playRunAt=0;
 let dpadViews=[];
 const linkPanel=floatingPanel($('#link-panel'),{handle:$('#link-panel-drag'),trigger:$('#player-link'),close:$('#link-panel-close'),onInteract:release});
+const linkControls=createLinkControls({
+ state:{get engine(){return engine;},set engine(v){engine=v;},get current(){return current;},get protection(){return protection;},
+ get link(){return link;},set link(v){link=v;},get starting(){return linkStarting;},set starting(v){linkStarting=v;},
+ get message(){return linkMessage;},set message(v){linkMessage=v;},get blocked(){return linkSaveBlocked;},set blocked(v){linkSaveBlocked=v;}},
+ setPause,release,applySettings,updateLinkButton,panel:linkPanel,toast,error,exitGame,download
+});
 $('#player-link').innerHTML=icon('wifi');$('#link-panel-icon').innerHTML=icon('wifi');$('#link-panel-close').innerHTML=icon('close');
 $('#player-link').onclick=()=>linkPanel.visible?linkPanel.hide():showLink();
 function toast(text){const el=$('#toast');($('#sheet').open?$('#sheet'):document.body).append(el);el.textContent=text;el.classList.add('show');clearTimeout(toastTimer);toastTimer=setTimeout(()=>el.classList.remove('show'),3500);}
@@ -119,7 +125,7 @@ function renderImports(){
  };
 }
 
-function bindSettings(root){root.querySelectorAll('[data-setting]').forEach(el=>el.onchange=()=>{settings[el.dataset.setting]=el.type==='checkbox'?(el.dataset.invert?!el.checked:el.checked):['volume','speed','hapticStrength','deadZone'].includes(el.dataset.setting)?Number(el.value):el.value;if(el.dataset.setting==='hapticStrength')settings.haptics=!!settings.hapticStrength;const value=el.closest('.native-select')?.querySelector('.native-value');if(value)value.textContent=el.selectedOptions[0].textContent;applySettings();if($('#video-filter-note'))$('#video-filter-note').hidden=settings.filter!=='edge4x';if(['touchControls','showFps','ndsSwapScreens'].includes(el.dataset.setting))layoutSkin();});}
+function bindSettings(root){root.querySelectorAll('[data-setting]').forEach(el=>el.onchange=()=>{settings[el.dataset.setting]=el.type==='checkbox'?(el.dataset.invert?!el.checked:el.checked):['volume','speed','hapticStrength','deadZone'].includes(el.dataset.setting)?Number(el.value):el.value;if(el.dataset.setting==='hapticStrength')settings.haptics=!!settings.hapticStrength;const value=el.closest('.native-select')?.querySelector('.native-value');if(value)value.textContent=el.selectedOptions[0].textContent;applySettings();if(['haptics','hapticStrength'].includes(el.dataset.setting)){if(settings.haptics)tapHaptic(settings);else stopHaptics();}if($('#video-filter-note'))$('#video-filter-note').hidden=settings.filter!=='edge4x';if(['touchControls','showFps','ndsSwapScreens'].includes(el.dataset.setting))layoutSkin();});}
 async function importFiles(files){if(importing){toast('追加が終わるまでお待ちください。');return;}importing=true;let count=0;try{for(const file of files){const system=detectSystem(file.name);if(!system){toast(`${file.name}: 未対応の形式です。`);continue;}const maxMiB=system==='3ds'?4096:system==='nds'?512:64;if(file.size>maxMiB*1048576||!file.size){toast(`${file.name}: 空のファイル、または${maxMiB}MBを超えるファイルは追加できません。`);continue;}toast(`${file.name} を追加中…`);const bytes=system==='3ds'?file:new Uint8Array(await file.arrayBuffer());const id=system==='3ds'?await largeFileIdentity(file):await hash(bytes);if(await db.get('library',id)){toast('このゲームは追加済みです。');continue;}const game={id,name:file.name.replace(/\.[^.]+$/,''),filename:file.name,system,size:file.size,added:Date.now(),lastPlayed:0,favorite:false};await db.addGame(game,bytes);count++;}if(count){setTab('games');filter='all';query='';favorites=false;await refresh();toast(`${count}本のゲームを追加しました。`);}}catch(e){error(e);}finally{importing=false;$('#rom-input').value='';}}
 $('#rom-input').onchange=guardUpdateTask(e=>importFiles([...e.target.files]));
 let dragDepth=0;window.addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){e.preventDefault();dragDepth++;document.body.classList.add('drop-active');}});window.addEventListener('dragover',e=>e.preventDefault());window.addEventListener('dragleave',()=>{if(--dragDepth<=0)document.body.classList.remove('drop-active');});window.addEventListener('drop',e=>{e.preventDefault();dragDepth=0;document.body.classList.remove('drop-active');if(!engine)importFiles([...e.dataTransfer.files]);});
@@ -130,7 +136,7 @@ function menuControlCells(game=current){return {
  fastForward:nativeSelect('早送り','speed','fast',[[1,'通常速度'],...[2,3,4,5].map(n=>[n,n+'倍速'])],settings.speed),
  preservePitch:nativeToggle('倍速中も音程を維持','preservePitch','volume',settings.preservePitch,{detail:'テンポは倍速のまま、音の高さを保ちます'}),
  shaders:nativeSelect('シェーダー','filter','image',videoFilters,settings.filter)+videoFilterNote(settings.filter),
- haptic:nativeSelect('触覚','hapticStrength','haptic',[[0,'オフ'],[8,'弱振動'],[20,'強振動']],settings.haptics?(settings.hapticStrength||8):0),
+ haptic:supportsHaptics()?nativeSelect('触覚','hapticStrength','haptic',[[0,'オフ'],[8,'弱振動'],[20,'強振動']],settings.haptics?(settings.hapticStrength||8):0):nativeAction('触覚',null,'haptic','このブラウザでは非対応'),
  controllerSetting:nativeAction('コントローラー設定','controllers','game'),
  deadZone:nativeSelect('デッドゾーン','deadZone','joystick',[[.1,'10%'],[.2,'20%'],[.3,'30%'],[.4,'40%'],[.5,'50%']],settings.deadZone??.4),
  hideControls:nativeToggle('コントロール非表示','touchControls','hide',!settings.touchControls,{invert:true}),
@@ -208,13 +214,13 @@ function layoutSkin(force=true){if(!current||!skinPair||!engine)return;
   if(builtin&&settings.touchControls){const maxWidth=dualScreen(current.system)?(skinRect.width-30)/2:rep.wide?rep.side*ratio-20:(skinRect.width-30)/2;badge.style.top=skinRect.top-stageRect.top+8+'px';badge.style.maxWidth=Math.max(1,maxWidth)+'px';if(id==='fps-meter')badge.style.left=skinRect.left-stageRect.left+10+'px';else badge.style.right=stageRect.right-skinRect.right+10+'px';}
  }
  for(const a of rep.actions||[]){const f=a.frame;$('#'+a.id).style.cssText=`left:${skinRect.left-stageRect.left+f.x*ratio}px;top:${skinRect.top-stageRect.top+f.y*ratio}px;width:${f.width*ratio}px;height:${f.height*ratio}px;right:auto;bottom:auto;min-width:0;padding:0;opacity:${a.opacity??1};`;}
- if(imported){dpadViews=[];skinInputs=mountSkinInputs($('#touch-controls'),rep,skinData.images,{keybits,pressed,updateKeys,action:skinAction,engine,ratio,swap:!!settings.ndsSwapScreens,selected:command=>({volume:settings.muted,reverseScreens:settings.ndsSwapScreens,toggleControlls:!settings.touchControls})[command],paused:()=>paused,haptic:()=>{if(settings.haptics)navigator.vibrate?.(settings.hapticStrength||8);}});return;}
+ if(imported){dpadViews=[];skinInputs=mountSkinInputs($('#touch-controls'),rep,skinData.images,{keybits,pressed,updateKeys,action:skinAction,engine,ratio,swap:!!settings.ndsSwapScreens,selected:command=>({volume:settings.muted,reverseScreens:settings.ndsSwapScreens,toggleControlls:!settings.touchControls})[command],paused:()=>paused,haptic:()=>{tapHaptic(settings);}});return;}
  $('#touch-controls').innerHTML=rep.items.map((item,i)=>{const pad=!Array.isArray(item.inputs),inputs=pad?['dpad']:item.inputs;return `<button class="skin-button${pad?' dpad':''}" data-item="${i}" aria-label="${pad?'十字キー':esc(item.label||inputs.join('+').toUpperCase())}" style='${frameStyle(item.frame,map)}opacity:${item.opacity??1};background-image:url("${skinData.images[item.asset?.normal]||''}")'>${pad?['up','down','left','right'].map(d=>`<span class="dpad-direction${item.asset?.normal?'':' baked'}" data-direction="${d}" aria-hidden="true" hidden></span>`).join(''):''}</button>`;}).join('');
  dpadViews=$$('.dpad-direction').map(el=>{const inputs=rep.items[Number(el.parentElement.dataset.item)].inputs,key=keybits[inputs[el.dataset.direction]];return {el,mask:key===undefined?0:1<<key,on:false};});
  $$('.skin-button').forEach(btn=>{const item=rep.items[Number(btn.dataset.item)];function input(e){if(Array.isArray(item.inputs)){if(item.inputs.includes('menu'))return;pressed.set(e.pointerId,item.inputs.reduce((v,k)=>v|(keybits[k]===undefined?0:1<<keybits[k]),0));}else{const r=btn.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;let bits=0;for(const [d,on] of [['left',x<-.15],['right',x>.15],['up',y<-.15],['down',y>.15]])if(on&&keybits[item.inputs[d]]!==undefined)bits|=1<<keybits[item.inputs[d]];pressed.set(e.pointerId,bits);}btn.classList.add('pressed');updateKeys();}
- btn.onpointerdown=e=>{e.preventDefault();engine?.unlockAudio();if(item.inputs.includes?.('menu')){showGameMenu();return;}if(paused)return;if($('#link-panel').contains(document.activeElement))document.activeElement.blur();btn.setPointerCapture(e.pointerId);if(settings.haptics)navigator.vibrate?.(settings.hapticStrength||8);input(e);};btn.onpointermove=e=>{if(pressed.has(e.pointerId)&&!Array.isArray(item.inputs))input(e);};const up=e=>{pressed.delete(e.pointerId);btn.classList.remove('pressed');updateKeys();};btn.onpointerup=up;btn.onpointercancel=up;btn.onlostpointercapture=up;});}
+ btn.onpointerdown=e=>{e.preventDefault();engine?.unlockAudio();if(item.inputs.includes?.('menu')){showGameMenu();return;}if(paused)return;if($('#link-panel').contains(document.activeElement))document.activeElement.blur();btn.setPointerCapture(e.pointerId);tapHaptic(settings);input(e);};btn.onpointermove=e=>{if(pressed.has(e.pointerId)&&!Array.isArray(item.inputs))input(e);};const up=e=>{pressed.delete(e.pointerId);btn.classList.remove('pressed');updateKeys();};btn.onpointerup=up;btn.onpointercancel=up;btn.onlostpointercapture=up;});}
 function updateKeys(){let keys=0;for(const mask of pressed.values())keys|=mask;if(paused)keys=0;engine?.setKeys(keys);for(const view of dpadViews){const on=!!(keys&view.mask);if(on!==view.on){view.on=on;view.el.hidden=!on;}}}
-function release(){skinInputs?.release();pressed.clear();updateKeys();$$('.pressed').forEach(b=>b.classList.remove('pressed'));}
+function release(){stopHaptics();skinInputs?.release();pressed.clear();updateKeys();$$('.pressed').forEach(b=>b.classList.remove('pressed'));}
 function setPause(v){if(!v&&(linkStarting||link?.closed))return;if(v&&playRunAt&&current){current.playDuration=(current.playDuration||0)+Math.max(0,Date.now()-playRunAt);playRunAt=0;}else if(!v&&!playRunAt&&engine)playRunAt=Date.now();paused=v;$('#resume-game').hidden=!v;release();engine?.pause(v);if(!v)engine?.unlockAudio();}
 $('#resume-game').onclick=()=>{if(engine&&!document.hidden)setPause(false);};
 function backgroundPause(){if(!engine)return;const wasPaused=paused,wasLinked=!!link;setPause(true);if(link?.connected)link.close('画面を離れたため接続を終了しました。');if(!wasPaused&&!wasLinked)persist({checkpoint:settings.recovery,reason:'background'}).catch(error);}
@@ -314,7 +320,7 @@ function skinAction(command){
   cheatCodes:()=>{if(coreFor(current).cheats){setPause(true);showCheats();}else toast('このコアではチートを使えません。');},
   filters:()=>{setPause(true);showVideoSettings();dialogResume=true;},resolution:()=>{setPause(true);showVideoSettings();dialogResume=true;},
   controllers:()=>{setPause(true);showControllers();dialogResume=true;},
-  volume:()=>{settings.muted=!settings.muted;applySettings();},haptics:()=>{settings.haptics=!settings.haptics;applySettings();toast(settings.haptics?'振動：オン':'振動：オフ');},
+  volume:()=>{settings.muted=!settings.muted;applySettings();},haptics:()=>{if(!supportsHaptics()){toast('このブラウザは振動に対応していません。');return;}settings.haptics=!settings.haptics;applySettings();if(settings.haptics)tapHaptic(settings);else stopHaptics();toast(settings.haptics?'振動：オン':'振動：オフ');},
   reverseScreens:()=>{if(!dualScreen(current.system)){toast('2画面のゲームで使えます。');return;}settings.ndsSwapScreens=!settings.ndsSwapScreens;applySettings();layoutSkin();},
   toggleControlls:()=>{settings.touchControls=!settings.touchControls;applySettings();layoutSkin();},restart:()=>{setPause(true);confirmRestart();},quit:()=>{setPause(true);sheet('ゲームを終了しますか？','<div class="sheet-actions"><button class="secondary" id="skin-stay">キャンセル</button><button class="primary" id="skin-exit">終了</button></div>',true);$('#skin-stay').onclick=closeSheet;$('#skin-exit').onclick=()=>exitGame().catch(error);},
   screenshot:()=>{const a=document.createElement('a');a.href=engine.screenshot();a.download=current.name+'.png';a.click();}
@@ -361,36 +367,7 @@ function showLink(){
  if(!engine||current?.system!=='gba'||!coreFor(current).link||exiting)return;
  if($('#sheet').open)closeSheet();release();renderLinkPanel();linkPanel.show();
 }
-function renderLinkPanel(){
-  const active=link,body=$('#link-panel-body');
-  body.innerHTML=`<p id="link-status" role="status">${esc(linkMessage||'部屋を作るか、相手の部屋に参加します。')}</p>${active?`<div class="stack"><label for="link-room-number">部屋番号</label><div class="link-room-field"><input class="text-input" id="link-room-number" readonly inputmode="none" value="${esc(active.room||'準備中…')}"><button class="link-copy" id="link-copy" aria-label="部屋番号をコピー" ${active.joined&&!active.closed?'':'disabled'}>${icon('copy')}<span>コピー</span></button></div><button class="secondary danger" id="link-stop" ${active.closed?'disabled':''}>通信を中止</button></div>`:`<div class="stack"><button class="primary" id="link-create" ${linkStarting?'disabled':''}>部屋を作る</button><label for="link-input">部屋番号で参加</label><div class="link-room-field"><input class="text-input" id="link-input" inputmode="numeric" maxlength="4" autocomplete="off" placeholder="4桁の番号" ${linkStarting?'disabled':''}><button class="secondary" id="link-join" ${linkStarting?'disabled':''}>参加</button></div></div>`}<p class="sheet-note">開始すると中継サーバーに接続します。ROM・セーブファイルは送信しません。</p><details class="sheet-note"><summary>通信について</summary><p>パネル上部をドラッグすると移動できます。閉じても通信は続きます。</p><p>Celio方式に対応するGBAゲーム用です。相手も同じ中継サーバーを使ってください。部屋番号はパスワードではありません。</p><p>ゲームの通信データ（プレイヤー情報や交換内容など）は、中継サーバー経由で相手に届きます。</p><p>開始前に端末内へバックアップします。切断や中止時は通信前に戻ります。ゲーム内で通信を終えると結果を保存します。接続後に別のタブやアプリへ移ると切断します。</p><p><a href="privacy.html" target="_blank" rel="noopener">プライバシー</a></p></details>`;
-  const update=text=>{linkMessage=text;const el=$('#link-status');if(el)el.textContent=text;const number=$('#link-room-number');if(number&&link)number.value=link.room||'準備中…';const copy=$('#link-copy');if(copy)copy.disabled=!link?.joined||!!link?.closed;updateLinkButton();};
-  const start=async room=>{
-    if(link||linkStarting)return;
-    if(room!==''&&!/^\d{4}$/.test(room)){toast('4桁の部屋番号を入力してください。');return;}
-    linkStarting=true;setPause(true);update('バックアップを保存しています…');body.querySelectorAll('button,input').forEach(b=>b.disabled=true);
-    const core=engine,game=current,safety=new LinkSafety(protection,core);
-    try{
-      await safety.begin();if(engine!==core||current!==game)throw new Error('ゲームが変更されました。');
-      const n=new RoomLink(core.linkIO(),{onStatus:text=>{if(n.connected&&document.hidden){n.close('画面を離れたため接続を終了しました。');return;}update(text);},onEnd:async(text,{keep})=>{
-        setPause(true);update('通信を終了しています…');if($('#link-stop'))$('#link-stop').disabled=true;
-        try{await safety.finish(keep);linkMessage=text+(keep?'':' 通信前に戻しました。');}
-        catch(e){linkSaveBlocked=true;linkMessage='復旧を完了できませんでした。保存済みのバックアップを残して終了します。';error(e);}
-        finally{if(link===n)link=null;core.setCheats(game.cheats||[]);applySettings();}
-        if(linkSaveBlocked){await exitGame();toast(linkMessage);return;}
-        if(current?.system==='gba')renderLinkPanel();toast(linkMessage);
-      }});
-      link=n;core.setCheats([]);linkStarting=false;applySettings();setPause(false);n.start(room);renderLinkPanel();
-    }catch(e){if(link)await link.close(e.message);else{linkMessage=e.message;error(e);}}
-    finally{linkStarting=false;updateLinkButton();if(!link&&current?.system==='gba')renderLinkPanel();}
-  };
-  if($('#link-create'))$('#link-create').onclick=()=>start('');
-  if($('#link-join'))$('#link-join').onclick=()=>{const number=$('#link-input').value.trim();if(!/^\d{4}$/.test(number)){toast('4桁の部屋番号を入力してください。');return;}return start(number);};
-  if($('#link-input'))$('#link-input').onkeydown=e=>{if(e.key==='Enter'){e.preventDefault();$('#link-join').click();}};
-  if($('#link-copy'))$('#link-copy').onclick=async()=>{if(!link?.joined||link.closed)return;try{await navigator.clipboard.writeText(link.room);toast('コピーしました。');}catch{const input=$('#link-room-number');input?.focus();input?.select();toast('部屋番号を選択してコピーしてください。');}};
-  if($('#link-stop'))$('#link-stop').onclick=async()=>{const button=$('#link-stop');button.disabled=true;await link?.close();};
-  updateLinkButton();linkPanel.place();
-}
+function renderLinkPanel(){linkControls.render();}
 matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(settings.theme==='auto')applySettings();});
 setupOffline().catch(e=>console.warn('Offline setup:',e.message));
 function openGameLink(){if(engine||!location.hash.startsWith('#game='))return;const game=library.find(g=>g.id===location.hash.slice(6));if(game)showDetails(game);else toast('このブラウザにゲームがありません。先にROMを追加してください。');}
