@@ -87,19 +87,25 @@ function renderGames(){
  if($('#search')){$('#search').oninput=e=>{query=e.target.value;renderLibrary();};$('#system-filter').onchange=e=>{filter=e.target.value;renderLibrary();};$('#favorites').onclick=()=>{favorites=!favorites;renderGames();};}renderLibrary();
 }
 function renderLibrary(){const games=library.filter(g=>(filter==='all'||g.system===filter)&&(!favorites||g.favorite)&&g.name.toLowerCase().includes(query.toLowerCase()));
- if(!games.length){$('#library').innerHTML=`<div class="empty-library"><img src="assets/empty.svg" alt=""><h2>${library.length?'ゲームが見つかりません':'ゲームを追加しましょう'}</h2><p>${library.length?'検索や絞り込み条件を変更してください。':'お気に入りのゲームを、いつでもここから。<br>端末内のROMを選んでライブラリに追加できます。'}</p><button class="primary" id="add-first">${icon('plus')}ゲームを追加</button></div>`;$('#add-first').onclick=()=>$('#rom-input').click();return;}
+ if(!games.length){$('#library').innerHTML=`<div class="empty-library"><img src="assets/${library.length?'empty':'icon'}.svg" class="${library.length?'':'app-icon'}" alt=""><h2>${library.length?'ゲームが見つかりません':'ゲームを追加しましょう'}</h2><p>${library.length?'検索や絞り込み条件を変更してください。':'お気に入りのゲームを、いつでもここから。<br>端末内のROMを選んでライブラリに追加できます。'}</p><button class="primary" id="add-first">${icon('plus')}ゲームを追加</button></div>`;$('#add-first').onclick=()=>$('#rom-input').click();return;}
  $('#library').innerHTML=Object.entries(systems).map(([k,s])=>{const group=games.filter(g=>g.system===k).sort((a,b)=>a.name.localeCompare(b.name,'ja'));if(!group.length)return '';return `<section class="system-section"><h2 class="section-title"><span>${s.short}</span><span class="count">${group.length}</span>${icon('chevron')}</h2><div class="game-grid">${group.map(g=>`<article class="game-card"><button class="game-launch" data-game="${g.id}" aria-label="${esc(g.name)}の設定を開く" aria-haspopup="dialog"><div class="cover ${g.cover?'':'empty-cover'}" style="--system-color:${s.color}"><img src="${g.cover||`assets/controller.svg`}" alt=""><span class="badge">${g.size===67108864&&k==='gba'?'64 MB':s.short}</span>${g.favorite?`<span class="heart-mark">${icon('heart')}</span>`:''}</div><h3 class="game-name">${esc(g.name)}</h3></button><button class="game-options" data-details="${g.id}" aria-label="${esc(g.name)}のメニュー">${icon('more')}</button></article>`).join('')}</div></section>`;}).join('');
  $$('[data-game]').forEach(b=>b.onclick=()=>showDetails(library.find(g=>g.id===b.dataset.game)));$$('[data-details]').forEach(b=>b.onclick=()=>showDetails(library.find(g=>g.id===b.dataset.details)));
 }
-// ImportServiceListView / ImportFileCollectionViewCell: Daiuno / Max,
-// Copyright © 2025 Manic EMU. Ported 2026-10-09; local Files service only.
+// ManicEMU ImportServiceListView and its motto, file, service and footer cells.
+// Copyright © 2025–2026 Manic EMU. Daiuno / Max. Ported 2026-10-09.
+// Local Files, skin settings and game-specific save import; original Web artwork.
 function renderImports(){
- $('#content').innerHTML=`<div class="page"><h1>インポート</h1>
+ $('#content').innerHTML=`<section class="page import-page" aria-labelledby="import-heading"><header class="import-hero"><img src="assets/icon.svg" alt=""><h1 id="import-heading">インポート</h1></header>
   <button class="import-file" id="choose-rom"><span class="import-file-icon">${icon('folder')}</span><span><strong>ファイル</strong><small>端末内のROMを追加</small></span></button>
-  <p class="sheet-note">ドラッグ＆ドロップでも追加できます。ZIPは解凍してください。</p>
-  <details class="import-formats"><summary>対応する形式</summary><p class="sheet-note">${Object.values(systems).map(s=>`${s.short}：${s.ext.map(ext=>'.'+ext).join(' / ')}`).join('<br>')}</p></details>
-  <p class="sheet-note">ROMとセーブは端末内に保存します。利用する権利のあるROMを使用してください。</p></div>`;
+  <div class="import-services"><button class="import-service" id="import-skins"><span class="import-service-icon skin-service">${icon('image')}</span><strong>スキン</strong><small>追加・変更</small></button><button class="import-service" id="import-saves" ${library.length?'':'disabled'}><span class="import-service-icon save-service">${icon('saveImport')}</span><strong>セーブデータ</strong><small>${library.length?'ゲームを選んで読み込む':'先にゲームを追加'}</small></button></div>
+  <div class="import-drop"><span class="import-drop-icon">${icon('import')}</span><span><strong>ドラッグ＆ドロップ</strong><small>ROMをこの画面にドロップ</small></span></div>
+  <details class="import-formats"><summary>対応する形式</summary><p class="sheet-note">${Object.values(systems).map(s=>`${s.short}：${s.ext.map(ext=>'.'+ext).join(' / ')}`).join('<br>')}</p><p class="sheet-note">ZIPは解凍してください。ROMとセーブは端末内に保存します。利用する権利のあるROMを使用してください。</p></details></section>`;
  $('#choose-rom').onclick=()=>$('#rom-input').click();
+ $('#import-skins').onclick=()=>showSkins();
+ $('#import-saves').onclick=()=>{
+  sheet('セーブデータ','<p class="sheet-note">読み込み先のゲームを選んでください。</p><div class="settings-group">'+library.map(game=>`<button class="row" data-import-save="${esc(game.id)}">${icon('game')}<span>${esc(game.name)}</span>${icon('chevron')}</button>`).join('')+'</div>');
+  $$('[data-import-save]').forEach(button=>button.onclick=()=>{const game=library.find(game=>game.id===button.dataset.importSave);if(game)chooseSaveImport(game);});
+ };
 }
 
 function bindSettings(root){root.querySelectorAll('[data-setting]').forEach(el=>el.onchange=()=>{settings[el.dataset.setting]=el.type==='checkbox'?(el.dataset.invert?!el.checked:el.checked):['volume','speed','hapticStrength','deadZone'].includes(el.dataset.setting)?Number(el.value):el.value;if(el.dataset.setting==='hapticStrength')settings.haptics=!!settings.hapticStrength;const value=el.closest('.native-select')?.querySelector('.native-value');if(value)value.textContent=el.selectedOptions[0].textContent;applySettings();if($('#video-filter-note'))$('#video-filter-note').hidden=settings.filter!=='edge4x';if(['touchControls','showFps','ndsSwapScreens'].includes(el.dataset.setting))layoutSkin();});}

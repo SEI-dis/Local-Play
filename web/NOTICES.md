@@ -298,6 +298,17 @@ The SVG and generated artwork are provided under AGPL-3.0-or-later.
 No third-party artwork, console logo or downloaded font was used.
 All root HTML pages explicitly declare the iOS touch icon; the Web manifest
 also declares PNG icons, including a maskable icon with an opaque background.
+Installation links use content-hashed copies of those PNGs to avoid reusing
+older home-screen images. The original filenames remain available. The manifest
+uses PNG icons only; the empty library uses the same original SVG artwork.
+
+Modified 2026-10-09: expanded the import-screen layout port using the pinned
+ManicEMU ImportMottoCollectionViewCell, ImportServiceListCollectionViewCell and
+ImportFooterCollectionReusableView sources by Daiuno / Max (2025–2026).
+Their original source headers and AGPL license are retained. The top artwork
+is Local Play's original icon. Native mascot art, Apple symbols and unsupported
+import services are not included. The local skin and per-game save flows remain
+the existing Web implementations.
 
 
 Modified 2026-10-09: expanded the local Delta / Manic format reader and added

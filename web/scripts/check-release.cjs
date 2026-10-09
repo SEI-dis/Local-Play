@@ -7,6 +7,7 @@ const python=process.env.PYTHON||(process.platform==='win32'?'python':'python3')
 run(python,['-B','-X','utf8',path.join(__dirname,'audit-content.py')]);
 run(python,['-B','-X','utf8',path.join(__dirname,'package_source.py'),'--check']);
 run(process.execPath,[path.join(__dirname,'build-offline.cjs'),'--check']);
+run(process.execPath,[path.join(__dirname,'build-icons.cjs'),'--check']);
 for(const [file,expected] of Object.entries(manifest.files)){const bytes=fs.readFileSync(path.join(root,file));assert.equal(crypto.createHash('sha256').update(bytes).digest('hex'),expected,'Changed upstream asset: '+file);}
 function scan(dir){for(const entry of fs.readdirSync(dir,{withFileTypes:true})){const file=path.join(dir,entry.name);assert.ok(!entry.isSymbolicLink(),'Symlink in deployment');if(entry.isDirectory()){assert.ok(!['node_modules','.git','test-results','playwright-report'].includes(entry.name),'Non-release directory: '+entry.name);scan(file);}else {assert.ok(!/\.(nds|dsv|gba|gb|gbc|nes|sfc|smc|smd|gen|bin|sav|srm|state|ss\d)$/i.test(entry.name),'ROM/save in release: '+file);if(/\.md$/i.test(entry.name)){const b=fs.readFileSync(file);assert.notEqual(b.subarray(256,260).toString(),'SEGA','MD ROM in release');}assert.ok(fs.statSync(file).size<100*1024*1024,'File exceeds GitHub limit: '+file);}}}
 scan(root);for(const name of ['index.html']){const s=fs.readFileSync(path.join(root,name),'utf8');assert.ok(s.includes("connect-src 'self' blob:"));assert.ok(s.includes('Content-Security-Policy'));}

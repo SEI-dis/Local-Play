@@ -6,7 +6,7 @@ Copyright © 2024–2026 Manic EMU. Created by Aoshuang Lee, Max, Daiuno and oth
 Full license: ../../licenses/ManicEMU-AGPL-3.0.txt.
 Upstream: https://github.com/Manic-EMU/ManicEMU/tree/fbaeab79c214d5920bb51afa6f2d786fb2b12a58
 
-## Source-to-port mapping (modified 2026-10-08)
+## Source-to-port mapping (modified 2026-10-09)
 
 | Upstream source | Web implementation |
 | --- | --- |
@@ -18,7 +18,7 @@ Upstream: https://github.com/Manic-EMU/ManicEMU/tree/fbaeab79c214d5920bb51afa6f2
 | ASListPage / ASListItemView / ASNavigationView | Shared grouped rows, leading icons, trailing value/switch/chevron, compact navigation tools and close button in native-menu.css, style.css, index.html and src/app.js. |
 | SaveStateListView.getSaveStatesSection / segmented control / editing actions | src/manic-ui.js: stateRow. src/app.js: showStates. Manual/automatic tabs, thumbnail, number, date, Continue button; editing replaces Continue with selection checkboxes. Select-all and confirmed deletion. Automatic tab opens first when no manual state exists. |
 | GameOptionPerform | Browser equivalents for save, quick load, volume, speed, screenshot, skin, cheat, restart and exit actions. |
-| ImportServiceListView / ImportFileCollectionViewCell | src/app.js and style.css: the local Files card; cloud/LAN/download services are omitted. Original references and credits are retained. |
+| ImportServiceListView / ImportMottoCollectionViewCell / ImportFileCollectionViewCell / ImportServiceListCollectionViewCell / ImportFooterCollectionReusableView | src/app.js and style.css: the top artwork, full-width Files card, two-column local-service cards and dashed drop hint. Skin settings and per-game save import reuse existing local flows. Cloud/LAN/download, clipboard, multi-disc and patching services are omitted. Artwork and vector icons are original Web replacements. Original references and credits are retained. |
 | SettingsListView / SettingItem | General, advanced, support and other groups; appearance controls, automatic states, controller skins and grouped settings rows in src/app.js and style.css. |
 
 UIKit layout and Realm persistence are replaced with HTML/CSS/JavaScript and

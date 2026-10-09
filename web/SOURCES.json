@@ -3,7 +3,7 @@
     "repository": "https://github.com/Manic-EMU/ManicEMU",
     "commit": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
     "license": "AGPL-3.0-or-later",
-    "changes": "Web port of library/navigation, GameInfoView/detail/navigation/cover, GameOptionsView, SaveStateListView, SettingsListView/SettingItem and FlexSkinSettingViewController/FlexItemView layout editing. New browser storage/runtime adapters. Native artwork/logos are not redistributed.",
+    "changes": "Web port of library/navigation, GameInfoView/detail/navigation/cover, GameOptionsView, SaveStateListView, ImportServiceListView and its motto/file/service/footer cells, SettingsListView/SettingItem and FlexSkinSettingViewController/FlexItemView layout editing. New browser storage/runtime adapters. Native artwork/logos are not redistributed.",
     "referenceSource": "sources/manicemu-ui"
   },
   "mgba": {
@@ -178,8 +178,11 @@
     "sources/manicemu-ui/GamesNavigationView.swift": "ab8fffd7b0c374d7eedc7f2e345c18d5fb1e8e7aa385d5e2415378aa093abe40",
     "sources/manicemu-ui/HomeTabBar.swift": "7b4bcd26da3e81b9eb013c5b0c404d9f665ad539690222eb6ba72c1a34036562",
     "sources/manicemu-ui/ImportFileCollectionViewCell.swift": "3b5da9ce359afe8c9fe3d0d2f2b78ab02201c9821f3b5f35f59707e44fc49511",
+    "sources/manicemu-ui/ImportFooterCollectionReusableView.swift": "344fd13b1ff32bf5195255e01ae4674610a0e52a251b8a2403a2c89fe1a27e84",
+    "sources/manicemu-ui/ImportMottoCollectionViewCell.swift": "39813a3f4a68f19adcc2372d6f5f756ff5308fdab6909a1c04300dab32de9472",
+    "sources/manicemu-ui/ImportServiceListCollectionViewCell.swift": "2f89cd4ea298870fcd15ced37392d87880193a066cd0a18f5401aa2ef701c680",
     "sources/manicemu-ui/ImportServiceListView.swift": "bb41fa0242aee3bdfcdb53fdabba8d21aa8402bae5c44e4db8c9d3308d5012a9",
-    "sources/manicemu-ui/README.md": "a3d805cc017abb93d3b591649c5097ee6c50c2d7bd0c2838378e355c222d46ef",
+    "sources/manicemu-ui/README.md": "0f36ddaac92121476d7dc354206b1d26447bdf69aa4a23fe3f5f32324c5bc4fc",
     "sources/manicemu-ui/SaveStateListView.swift": "9748278a90767e5950be547b51fac9ed33a958d048ba9453e5e219a7a6ca3f7f",
     "sources/manicemu-ui/SettingItem.swift": "261e78b05f7cb93ba1fecc8f911b518b9686eacd8bfd86ccd2a0f12374af52ac",
     "sources/manicemu-ui/SettingsListView.swift": "f066b02851a495021c23adfb297145b2c2932f54e06829c4068ef5308c99d3f9",
