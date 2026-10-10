@@ -12,7 +12,7 @@ import {guardUpdateTask} from './update-activity.js';
 
 export const backupLimits=Object.freeze({file:192*1048576,bytes:128*1048576,games:1000,records:10000});
 const format='PalmoEMU-save-backup',version=1,settingsKey='manic-settings',pendingKey=db.backupMetadataPrefix+'pending';
-const dataStores=['saves','states','backups','recoveries'],gameFields=['id','system','size','preferences','coreKey','cheats','coreCheats','controlLayout'];
+const dataStores=['saves','states','backups','recoveries'],gameFields=['id','system','size','preferences','coreKey','cheats','coreCheats','controlLayout','category','favorite'];
 const validId=id=>typeof id==='string'&&/^[a-f0-9]{64}$/.test(id),validHash=validId;
 const plain=x=>!!x&&typeof x==='object'&&!Array.isArray(x)&&Object.getPrototypeOf(x)===Object.prototype;
 const fail=message=>{throw Error(message||'バックアップの形式が正しくありません。');};
@@ -49,6 +49,10 @@ function cleanGame(game,importing=false){
  if(importing)keys(game,gameFields);
  if(!validId(game.id)||!Object.hasOwn(coreRegistry,game.system)||!Number.isSafeInteger(game.size)||game.size<1)fail('ゲームの識別情報が正しくありません。');
  const result={id:game.id,system:game.system,size:game.size};
+ // New exports explicitly retain empty/false values. Missing fields on an old
+ // import stay absent so restore can preserve the current library metadata.
+ if(Object.hasOwn(game,'category')){if(!['','playing','completed','backlog'].includes(game.category))fail('ゲームの分類が正しくありません。');result.category=game.category;}else if(!importing)result.category='';
+ if(Object.hasOwn(game,'favorite')){if(typeof game.favorite!=='boolean')fail('お気に入り設定が正しくありません。');result.favorite=game.favorite;}else if(!importing)result.favorite=false;
  if(game.preferences!=null)result.preferences=importing?strict(game.preferences,sanitizeGamePreferences(game.preferences)):sanitizeGamePreferences(game.preferences);
  if(game.coreKey!=null){const core=coreRegistry[game.system].find(c=>c.key===game.coreKey);if(!core||!supportsGame(core,game))fail('未対応のコア設定が含まれています。');result.coreKey=game.coreKey;}
  if(game.cheats!=null)result.cheats=cheats(game.cheats);

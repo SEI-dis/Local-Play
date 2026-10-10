@@ -145,3 +145,22 @@ orientation tabs change previews. Per-game inheritance and standard layout editi
 remain. Deletion is an edit action followed by confirmation, without multi-delete,
 cloud synchronization or bundled third-party skin artwork. Preview image URLs
 and screen renderers have independent lifetimes from gameplay.
+
+## Library organization (reviewed 2026-10-10)
+
+The same pinned ManicEMU revision informed the independent browser modules
+src/library.js, src/library-view.js and library.css. References not already
+bundled as Swift originals are recorded by URL and hash in SOURCES.json under
+browserLibraryOrganization; no additional native source or artwork is copied.
+
+| Upstream behavior | Web implementation |
+| --- | --- |
+| GameListView.selectionMode / GamesToolView selection controls | Explicit selection mode, current-results select-all / clear, contextual batch actions; ordinary card activation still opens Game Info. Changing a filter clears the Web selection. |
+| Theme.GameSortType / GameListStyleCollectionViewCell / GameListView.sortDatas | Name ascending/descending, recent play, newest import and longest play duration; persisted sort and grouping preferences. Web labels state the actual direction, and Japanese/numeric comparison has stable ID tie-breaking. |
+| GameOption.availableOptions(games:) / GameOptionPerform.delete | Explicitly scoped category/favorite/delete batches; confirmed deletion locks every selected game before a single IndexedDB transaction. No native cloud deletion, ROM sharing or unsupported batch options are ported. |
+| CategorySelectionView selectedIndex for agreeing targets | A common choice is marked only when selected games share it. PalmoEMU's unclassified / playing / completed / backlog categories are manually assigned progress metadata, not the upstream platform-variant categories. The upstream cover-matching side effect is omitted. |
+
+ROMs and saves are unchanged by category/favorite edits. Backups include these
+optional metadata fields; older files without them preserve current values.
+Classification/filtering creates no network requests or external metadata lookup.
+Existing authors, AGPL license terms and byte-identical Swift references remain.

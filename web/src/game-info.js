@@ -8,13 +8,14 @@ import {coreRegistry,coreFor,saveKey,supportsGame} from './core-registry.js';
 import * as db from './storage.js';
 import {gameInfoHero,groupedOptions,nativeAction,orderedOptionGroups,gameShortcuts} from './manic-ui.js';
 import {createCoverDialog} from './cover-dialog.js';
+import {categoryLabel} from './library.js';
 
 export function createGameInfo(api){
  const coverDialog=createCoverDialog({...api,showGame:show});
  const $=s=>document.querySelector(s);
  const nativeSheet=(title,html)=>{api.sheet(title,html);$('#sheet').classList.add('native-menu');};
  const bind=handlers=>$('#sheet-body').querySelectorAll('[data-action]').forEach(b=>b.onclick=guardUpdateTask(()=>Promise.resolve().then(()=>handlers[b.dataset.action]?.()).catch(api.error)));
- async function update(game,changes){const fresh=await db.get('library',game.id);if(!fresh)throw Error('ゲームが見つかりません。');Object.assign(game,fresh,changes);await db.put('library',game.id,game);await api.refresh();}
+ async function update(game,changes){const fresh=Object.hasOwn(changes,'favorite')?(await db.setGamesLibraryMetadata([game.id],changes))[0]:await db.setGameDetails(game.id,changes);for(const key of Object.keys(game))delete game[key];Object.assign(game,fresh);await api.refresh();}
  function info(game){
   nativeSheet('ゲーム情報',`<div class="settings-group">${nativeAction('ゲーム機','', 'game',systems[game.system].name)}${nativeAction('コア','','core',coreFor(game).name)}${nativeAction('ROM容量','','folder',bytesLabel(game.size))}</div><p class="sheet-note">ROM・セーブはこのブラウザ内に保存されます。速度・音量・映像・操作はゲームごとに保存します。未変更の項目には共通設定を使います。</p><p class="sheet-note"><a href="licenses.html">クレジット・ライセンス・対応ソース</a></p><button class="secondary wide-button" data-action="back">ゲーム詳細に戻る</button>`);
   bind({back:()=>show(game)});
@@ -54,7 +55,7 @@ export function createGameInfo(api){
  function show(game){
   const scrollTop=api.beginGame?.(game)||0;
   const cells={
-   cover:nativeAction('カバー変更','cover','image'),skins:nativeAction('スキン設定','gameSkin','shirt'),
+   cover:nativeAction('カバー変更','cover','image'),skins:nativeAction('スキン設定','gameSkin','shirt'),category:nativeAction('分類を変更','category','folder',categoryLabel(game)),
    stateList:nativeAction('セーブステートを確認','states','state'),importSave:nativeAction('セーブデータをインポート','importSave','saveImport'),shareSave:nativeAction('セーブデータをエクスポート','exportSaved','saveExport'),
    cheatCode:coreFor(game).cheats?nativeAction('チートコード','cheats','code'):'',
    switchCore:nativeAction('コアを変更','switchCore','core',coreFor(game).name),
@@ -66,7 +67,7 @@ export function createGameInfo(api){
   $('#sheet-tools').innerHTML=`<button class="sheet-tool" id="game-info-button" aria-label="ゲーム情報">${icon('info')}</button><button class="sheet-tool" id="game-more-button" aria-label="その他の操作">${icon('more')}</button>`;
   $('#game-info-button').onclick=()=>info(game);$('#game-more-button').onclick=()=>more(game);
   api.bindSettings($('#sheet-body'));
-  bind({resetPreferences:()=>api.resetPreferences?.(game),switchCore:()=>chooseCore(game),play:()=>{api.closeSheet({dismiss:true});return api.launch(game);},safeMode:()=>safeMode(game),rename:()=>rename(game),cover:()=>coverDialog.open(game),gameSkin:()=>api.showSkins(game.system,game),states:()=>api.showStates(game),importSave:()=>api.importSave(game),exportSaved:()=>exportSave(game),cheats:()=>api.showCheats(game),controllers:api.showControllers,optionOrder:()=>sortOptions(game,cells),shortcuts:()=>shortcuts(game),copyLink:()=>copyLink(game),delete:()=>remove(game)});
+  bind({category:()=>api.showCategory(game),resetPreferences:()=>api.resetPreferences?.(game),switchCore:()=>chooseCore(game),play:()=>{api.closeSheet({dismiss:true});return api.launch(game);},safeMode:()=>safeMode(game),rename:()=>rename(game),cover:()=>coverDialog.open(game),gameSkin:()=>api.showSkins(game.system,game),states:()=>api.showStates(game),importSave:()=>api.importSave(game),exportSaved:()=>exportSave(game),cheats:()=>api.showCheats(game),controllers:api.showControllers,optionOrder:()=>sortOptions(game,cells),shortcuts:()=>shortcuts(game),copyLink:()=>copyLink(game),delete:()=>remove(game)});
   $('.native-options').scrollTop=scrollTop;
  }
  return {show};

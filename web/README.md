@@ -5,7 +5,7 @@
 ManicEMUの画面・メニュー・設定をWeb向けに移植し、公開ソースの構成に沿って再現したアプリです。
 Web版のコードはAGPL-3.0-or-laterで公開しています。「標準」の画像とスキンは新規に作成しました。別の選択肢として、CC BY 4.0で公開されたManicEMU標準スキン7機種を同梱しています。[クレジット](licenses.html#skins)を参照してください。
 
-最終更新：2026-10-10。アプリのバージョンは `0.3.8` です。設定の下部に、使用中のバージョンとビルド番号を表示します。
+最終更新：2026-10-10。アプリのバージョンは `0.3.9` です。設定の下部に、使用中のバージョンとビルド番号を表示します。
 この文書は同梱するWeb版の動作を説明します。
 
 ## 起動・更新
@@ -95,6 +95,24 @@ iPhone実機の速度・発熱は未検証です。
 - チートに対応するコアでは、コードを入力して追加します。ゲームのバージョンに合うコードを使用してください。VBA-Next・melonDS・jgenesisのチートはこのWeb版では未対応です。
 - 別のタブやアプリへ移ると一時停止します。戻ったら「タップして再開」を押してください。
 - 操作ボタンでは長押し時のコピーメニュー・文字選択・画像ドラッグを抑止します。ゲームの長押し操作は使えます。部屋番号やチートなどの入力欄ではコピー／貼り付けを残しています。iPhone実機での長押し表示は未検証です。
+
+## ライブラリの整理
+
+機種・分類・お気に入り・ゲーム名の条件を組み合わせて絞り込めます。
+分類は「未分類」「プレイ中」「クリア済み」「あとで遊ぶ」の4種類で、ゲーム詳細の「分類を変更」からも設定できます。
+進行状況を手動で整理するための分類で、ゲームの起動やセーブ内容には影響しません。
+
+「並べ替えと表示方法」では、名前順／名前の逆順／最近遊んだ順／追加が新しい順／プレイ時間が長い順を選べます。
+表示は「機種ごと」「分類ごと」「まとめて表示」から選択し、並べ替えと表示方法をこのブラウザに保存します。
+
+「選択」を押すとゲームの起動前メニューを開く代わりに複数のゲームを選べます。「すべて選択」は現在の絞り込み結果だけが対象です。
+分類の変更、お気に入りへの追加／解除、削除をまとめて操作できます。絞り込み条件を変更すると選択を解除します。
+削除前には対象名と件数を表示し、確認後にこのブラウザ内のROM・各コアのセーブ・ステート・保存履歴をまとめて削除します。端末上の元ファイルは残ります。
+対象のどれかが別タブでプレイ中の場合は削除しません。保存処理が失敗した場合も一部だけ削除せず、選択を保って再操作できます。
+
+選択モード・並べ替え・一括操作はManicEMUの固定版ソースを参考にしたWeb実装です。
+この進行状況分類はPalmoEMUの追加機能で、ManicEMUの機種の派生カテゴリ変更とは異なります。
+分類とお気に入りは端末内に保存し、一括バックアップにも含めます。外部へ送信しません。
 
 ## ゲーム詳細とメニュー
 
@@ -205,7 +223,7 @@ CPU等の状態と、その時点のゲーム内セーブRAMを一緒に戻し�
 | 含むもの | 含まないもの |
 | --- | --- |
 | 全コア・GBA通信2Pを含むゲーム内セーブ、全手動ステート、各最大5回分のセーブ履歴・自動ステート | ROM・実機BIOS、ステートのスクリーンショット |
-| 共通／ゲーム別の対応設定、コア選択、キー割り当て、連射・押しっぱなし設定、チート、編集した操作配置 | カバー画像、スキン画像・ファイル・選択状態、ゲーム名・ROMファイル名 |
+| 共通／ゲーム別の対応設定、コア選択、キー割り当て、連射・押しっぱなし設定、チート、編集した操作配置、分類・お気に入り | カバー画像、スキン画像・ファイル・選択状態、ゲーム名・ROMファイル名 |
 | ROM照合用SHA-256・機種・容量、コア識別情報 | セッション、クラッシュ診断、オフラインキャッシュ、RAM内の巻き戻し記録 |
 
 形式は `PalmoEMU-save-backup` バージョン1です。最大1000ゲーム・10000保存項目、保存データ合計128MiB、ファイル192MiBまでです。
@@ -214,6 +232,7 @@ CPU等の状態と、その時点のゲーム内セーブRAMを一緒に戻し�
 復元先には利用する権利のある同じROMを先に追加します。ファイル選択後に内容・ハッシュ・対応コアを検査し、
 一致するゲームとROM未追加の件数を表示します。選択しただけでは変更しません。確認すると、一致したゲームの保存データ・個別設定と共通設定を置き換えます。
 ROM未追加のゲームは復元せず、既存のROM・カバー・ゲーム名を維持します。スキンは別途追加・選択してください。
+分類・お気に入りを含むバックアップではその状態も復元します。これらの項目がない旧バックアップを読み込んだ場合は、現在の分類・お気に入りを保ちます。
 
 すべてのタブでゲームを終了してから復元します。プレイ中のロック、破損・未対応項目、保存容量不足があれば復元を拒否します。
 セーブ類は1回のIndexedDBトランザクションで置き換え、復元前のデータ・設定を端末内に1世代残します。
@@ -327,6 +346,7 @@ ROM・セーブファイルは送りませんが、ゲームの通信データ�
 | ファイル | 担当 |
 | --- | --- |
 | `src/app.js` | アプリの状態、起動・保存・操作の連携 |
+| `src/library.js` / `src/library-view.js` / `library.css` | ライブラリの絞り込み・並べ替え・グループ表示、複数選択と一括操作 |
 | `src/ui.js` / `controls.css` | 共通の設定行・グループ・スイッチと、ボタン・入力部品の色・形 |
 | `src/settings-view.js` | 設定一覧、映像・音量・操作・保存案内・保存容量の画面 |
 | `src/game-preferences.js` | ゲーム別設定、共通設定からの継承、個別リセット |
@@ -447,6 +467,7 @@ npm run test:nds
 | スキン・機種別／ゲーム別設定 | `npm run test:skins`、`npm run test:game-skins` |
 | 画面サイズ・回転・配置・ボタン操作 | `npm run test:responsive`、`npm run test:control-editor`、`npm run test:layout-sizing`、`npm run test:layout-alignment`、`npm run test:dpad` |
 | 描画・音声・倍速・フィルター | `npm run test:runtime`、`npm run test:speed`、`npm run test:video` |
+| ライブラリの分類・並べ替え・複数選択、一括変更・削除の原子性とプレイ中保護 | `node tests/library.cjs`、`node tests/library-bulk.cjs` |
 | 起動前のROMメニューと子画面の戻り方・スクロール保持 | `node tests/game-navigation.cjs` |
 | 音程維持の常時適用・音声の停止・旧設定の移行 | `npm run test:time-stretch`（生成PCM）、`npm run test:audio-pitch`（Web AudioとUI） |
 | バックグラウンド移行 | `npm run test:visibility` |
@@ -466,7 +487,7 @@ npm run test:nds
 - `TEST_URL`: 対応テストのアクセス先。固定の4173番ポートを使うテストもあるため、通常は既定URLで起動してください。
 
 WebKit対応は browser / visibility / state-ui / responsive-skins / layout-sizing / layout-alignment / runtime-performance /
-speed-control / pitch-audio / privacy / native-menu / game-navigation / nds-browser / nds-skin / system-skins / link-panel / direct-link / haptics / room-link / covers / multicore / skin-compatibility / skins / bundled-skins / skin-orientation / update / extended-save / rom-import / diagnostics / game-preferences / input-controls / backup / rewind の各 `.cjs` です。
+speed-control / pitch-audio / privacy / native-menu / game-navigation / library / library-bulk / nds-browser / nds-skin / system-skins / link-panel / direct-link / haptics / room-link / covers / multicore / skin-compatibility / skins / bundled-skins / skin-orientation / update / extended-save / rom-import / diagnostics / game-preferences / input-controls / backup / rewind の各 `.cjs` です。
 音声APIのないWebKitビルドでは、音声検査をスキップしたことを表示します。
 PC版WebKitの検査は、iPhone実機の速度・発熱・消費電力やOS標準メニューの検証を代替しません。
 

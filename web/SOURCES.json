@@ -188,7 +188,7 @@
     "sources/manicemu-ui/ImportMottoCollectionViewCell.swift": "39813a3f4a68f19adcc2372d6f5f756ff5308fdab6909a1c04300dab32de9472",
     "sources/manicemu-ui/ImportServiceListCollectionViewCell.swift": "2f89cd4ea298870fcd15ced37392d87880193a066cd0a18f5401aa2ef701c680",
     "sources/manicemu-ui/ImportServiceListView.swift": "bb41fa0242aee3bdfcdb53fdabba8d21aa8402bae5c44e4db8c9d3308d5012a9",
-    "sources/manicemu-ui/README.md": "02425edc08bec672a71f2ebca9e04a9045375b2b6cd6014b28ceb65418d9c2aa",
+    "sources/manicemu-ui/README.md": "a710e457ed734606c45d129012a071f6470bfc6437c6a5d1ad11682e01861ebf",
     "sources/manicemu-ui/SaveStateListView.swift": "9748278a90767e5950be547b51fac9ed33a958d048ba9453e5e219a7a6ca3f7f",
     "sources/manicemu-ui/SettingItem.swift": "261e78b05f7cb93ba1fecc8f911b518b9686eacd8bfd86ccd2a0f12374af52ac",
     "sources/manicemu-ui/SettingsListView.swift": "f066b02851a495021c23adfb297145b2c2932f54e06829c4068ef5308c99d3f9",
@@ -422,5 +422,140 @@
       "maxRecords": 10000,
       "notes": "Local manual file, no encryption/upload/account. Excludes ROM/BIOS, game names, filenames, images, skin assets/selections, diagnostic/session/cache data and volatile rewind history."
     }
+  },
+  "browserLibraryOrganization": {
+    "license": "AGPL-3.0-or-later",
+    "localModules": [
+      "src/library.js",
+      "src/library-view.js",
+      "library.css"
+    ],
+    "changes": "Original browser library filters, explicit sorting/grouping, visible-results multi-selection and confirmed atomic batch deletion. Fixed progress categories and favorite batches are PalmoEMU features. Optional backup category/favorite fields preserve current metadata when missing from old backups.",
+    "referenceOnly": true,
+    "references": [
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Games/Views/GameListView.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "6593e477dab8c8095389c331cb7e64c765522d1219e6291b7dc16f42f4e3cb1e",
+        "authors": "Max, Copyright © 2025 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "reviewedLines": [
+          {
+            "start": 54,
+            "end": 130
+          },
+          {
+            "start": 369,
+            "end": 386
+          },
+          {
+            "start": 517,
+            "end": 556
+          },
+          {
+            "start": 659,
+            "end": 714
+          },
+          {
+            "start": 791,
+            "end": 810
+          }
+        ],
+        "use": "Behavior reference: Sorting, selection mode, visible-result selection and contextual batch toolbar. Existing unmodified reference retained."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Games/Views/GamesToolView.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "94150f059ce856a5a0a56910b3cda0ff92a1133db4560f186952adf39e8ef25f",
+        "authors": "Daiuno, Copyright © 2025 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "reviewedLines": [
+          {
+            "start": 85,
+            "end": 145
+          }
+        ],
+        "use": "Behavior reference: Explicit selection mode and select-all/clear controls; no Swift code copied."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Settings/Models/Theme.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "688f170a89f4ac21f2c0d62ee094e7410596248ca59be3bd3fd6f0d77b947369",
+        "authors": "Daiuno, Copyright © 2025 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "reviewedLines": [
+          {
+            "start": 47,
+            "end": 75
+          }
+        ],
+        "use": "Behavior reference: Named sort kinds and directions; no Swift code copied."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Settings/Views/GameListStyleCollectionViewCell.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "dfcf1fed0ba632540291a20d78a6bc43976a5e2f8c6b51232c7cd404c6f0c394",
+        "authors": "Daiuno, Copyright © 2025 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "reviewedLines": [
+          {
+            "start": 78,
+            "end": 145
+          }
+        ],
+        "use": "Behavior reference: Persisted sort choice and refreshing the list after a change; no Swift code copied."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Games/Models/GameOption.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "c98b526c3607eaf37680071681e37ae68ab98d9b76bab2c3e269e7befc0d6875",
+        "authors": "Daiuno, Copyright © 2026 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "reviewedLines": [
+          {
+            "start": 445,
+            "end": 468
+          },
+          {
+            "start": 1338,
+            "end": 1415
+          }
+        ],
+        "use": "Behavior reference: Action availability across selected games. Web batches are limited to category, favorite and deletion; existing unmodified reference retained."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Games/Models/GameOptionPerform.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "58586dd1e57194d7f016f2782e0a872363410c1f60bad55273ce8d32ee65992b",
+        "authors": "Daiuno, Copyright © 2026 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "reviewedLines": [
+          {
+            "start": 109,
+            "end": 120
+          },
+          {
+            "start": 222,
+            "end": 228
+          }
+        ],
+        "use": "Behavior reference: Deletion confirmation and category action routing. No cloud/native deletion code copied; existing unmodified reference retained."
+      },
+      {
+        "url": "https://github.com/Manic-EMU/ManicEMU/blob/fbaeab79c214d5920bb51afa6f2d786fb2b12a58/ManicEmu/ManicEmu/Sources/Business/Common/Views/CategorySelectionView.swift",
+        "revision": "fbaeab79c214d5920bb51afa6f2d786fb2b12a58",
+        "sha256": "e0bbb8aae485b3692c68e5910a708262bf537b947accfaba80ee8897a6a8863f",
+        "authors": "Daiuno, Copyright © 2026 Manic EMU",
+        "license": "AGPL-3.0-or-later",
+        "reviewedLines": [
+          {
+            "start": 10,
+            "end": 49
+          }
+        ],
+        "use": "Behavior reference: Shared selected-value indication only. Native categories are platform variants; Web progress categories are independent. No native code or online cover matching copied."
+      }
+    ],
+    "dataScope": "Classification/favorites stay in local library metadata and explicit local backups. Sort/group preferences stay in localStorage. No ROM/save upload, remote cover lookup, new native runtime, binary or third-party artwork."
   }
 }

@@ -7,7 +7,7 @@ import {escapeHTML as esc,icon} from './shared.js';
 // GameOption.defaultGroupAndSort, filtered by the current scene/core just as
 // availableOptions does upstream. Empty groups are not rendered.
 export const gameOptionGroups=[
- ['cover','skins'],
+ ['cover','skins','category'],
  ['stateList','importSave','shareSave','saveData'],
  ['switchCore'],
  ['cheatCode','manual'],

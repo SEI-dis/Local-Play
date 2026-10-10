@@ -34,7 +34,7 @@ const kind=process.env.BROWSER_ENGINE||'chromium',browserType=require('./browser
   await page.locator('[data-details]').click();await page.locator('.game-info-play').waitFor();await notStarted();await page.locator('#close-sheet').click();
   await details();assert.equal(await page.locator('#sheet-tools button').count(),2);assert.match(await page.locator('.game-info-subtitle').textContent(),/合計1時間56分/);
   const rows=await page.locator('.native-options [data-menu-option]').evaluateAll(list=>list.map(el=>el.dataset.menuOption));
-  assert.deepEqual(rows.slice(0,5),['cover','skins','stateList','importSave','shareSave']);assert.ok(rows.indexOf('volume')<rows.indexOf('haptic'));assert.equal(rows.at(-1),'delete');
+  assert.deepEqual(rows.slice(0,6),['cover','skins','category','stateList','importSave','shareSave']);assert.ok(rows.indexOf('volume')<rows.indexOf('haptic'));assert.equal(rows.at(-1),'delete');
   assert.ok(rows.includes('switchCore'),'Supported alternate cores use the native core setting');assert.ok(!rows.includes('shareRom'),'Legacy menu order cannot restore ROM sharing');assert.ok(rows.includes('copyLink'));assert.equal(await page.getByText('ROMを共有',{exact:true}).count(),0);
   await shot('game-info-top');
   const header=await page.locator('.game-info-hero').boundingBox();await page.locator('.native-options').evaluate(el=>el.scrollTop=el.scrollHeight);assert.deepEqual(await page.locator('.game-info-hero').boundingBox(),header,'Title and play remain pinned while options scroll');await shot('game-info-bottom');

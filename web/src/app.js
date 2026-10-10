@@ -18,7 +18,7 @@ import {createImportProgress} from './import-progress.js';
 import {systems,detectSystem,escapeHTML as esc,icon,bytesLabel} from './shared.js';
 import * as db from './storage.js';
 import {createCore} from './core-factory.js';
-import {coreFor,saveKey,cheatsFor,defaultCore} from './core-registry.js';
+import {coreFor,saveKey,cheatsFor} from './core-registry.js';
 import {videoFilters} from './video.js';
 import {setupOffline,offlineStatus} from './offline.js';
 import {startAutoUpdates} from './auto-update.js';
@@ -39,12 +39,13 @@ import {createSkinSettings} from './skin-settings.js';
 import {createStateDialogs} from './state-dialogs.js';
 import {groupedOptions,gameShortcuts,stateDate,nativeAction,nativeSelect,nativeToggle} from './manic-ui.js';
 import {createGameInfo} from './game-info.js';
+import {createLibraryView} from './library-view.js';
 import {floatingPanel} from './floating-panel.js';
 import {row,action} from './ui.js';
 import {createSettingsView,videoFilterNote} from './settings-view.js';
 let link=null,linkMessage='',linkStarting=false,linkSaveBlocked=false,exiting=false,sheetCleanup=()=>{};
 const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
-let library=[],tab=tabFromHash(),filter='all',query='',favorites=false,engine=null,current=null,skinPair=null,paused=false,toastTimer,saveLock=null,launching=false,importing=false,dialogResume=false;
+let library=[],tab=tabFromHash(),engine=null,current=null,skinPair=null,paused=false,toastTimer,saveLock=null,launching=false,importing=false,dialogResume=false;
 const finishStartupInputs=holdStartupInputs();
 try{await applyPendingBackupSettings();}catch(e){diagnostics.record(e,'startup');const message=document.createElement('p');message.textContent=e.message||'保存データを開けませんでした。';$('#content').replaceChildren(message);const retry=document.createElement('button');retry.className='primary';retry.textContent='再読み込みして復元を完了';retry.onclick=()=>location.reload();$('#content').append(retry);throw e;}
 let savedSettings={};try{savedSettings=JSON.parse(localStorage.getItem('manic-settings')||'{}');}catch{}
@@ -136,18 +137,11 @@ function setTab(id){
  const url=new URL(location.href);url.hash=id==='games'?'':id;
  history.replaceState(history.state,'',url);
 }
-for(const [id,ic,label] of [['games','game','ゲーム'],['imports','import','インポート'],['settings','settings','設定']]){const b=$(`[data-tab="${id}"]`);b.innerHTML=icon(ic)+`<span>${label}</span>`;b.onclick=()=>{setTab(id);render();};}
+for(const [id,ic,label] of [['games','game','ゲーム'],['imports','import','インポート'],['settings','settings','設定']]){const b=$(`[data-tab="${id}"]`);b.innerHTML=icon(ic)+`<span>${label}</span>`;b.onclick=()=>{libraryView.leave();setTab(id);render();};}
 async function refresh(){library=await db.all('library');render();}
 function render(){if(engine)return;settingsGame=gameMenuReturn?.game||null;$$('[data-tab]').forEach(b=>{b.classList.toggle('active',b.dataset.tab===tab);b.setAttribute('aria-current',b.dataset.tab===tab?'page':'false');});if(tab==='games')renderGames();else if(tab==='imports')renderImports();else renderSettings();}
-function renderGames(){
- $('#content').innerHTML=`${library.length?`<div class="toolbar"><label class="search">${icon('search')}<input id="search" placeholder="ゲームを検索" aria-label="ゲームを検索" value="${esc(query)}"></label><button class="favorite-filter ${favorites?'selected':''}" id="favorites" aria-label="お気に入りだけを表示" aria-pressed="${favorites}">${icon('heart')}</button><select id="system-filter" aria-label="機種で絞り込み"><option value="all">すべて</option>${Object.entries(systems).map(([k,s])=>`<option value="${k}" ${filter===k?'selected':''}>${s.short}</option>`).join('')}</select></div>`:''}<div id="library" class="library"></div>`;
- if($('#search')){$('#search').oninput=e=>{query=e.target.value;renderLibrary();};$('#system-filter').onchange=e=>{filter=e.target.value;renderLibrary();};$('#favorites').onclick=()=>{favorites=!favorites;renderGames();};}renderLibrary();
-}
-function renderLibrary(){const games=library.filter(g=>(filter==='all'||g.system===filter)&&(!favorites||g.favorite)&&g.name.toLowerCase().includes(query.toLowerCase()));
- if(!games.length){$('#library').innerHTML=`<div class="empty-library"><img src="assets/${library.length?'empty':'icon'}.svg" class="${library.length?'':'app-icon'}" alt=""><h2>${library.length?'ゲームが見つかりません':'ゲームを追加しましょう'}</h2><p>${library.length?'検索や絞り込み条件を変更してください。':'お気に入りのゲームを、いつでもここから。<br>端末内のROMを選んでライブラリに追加できます。'}</p><button class="primary" id="add-first">${icon('plus')}ゲームを追加</button></div>`;$('#add-first').onclick=()=>$('#rom-input').click();return;}
- $('#library').innerHTML=Object.entries(systems).map(([k,s])=>{const group=games.filter(g=>g.system===k).sort((a,b)=>a.name.localeCompare(b.name,'ja'));if(!group.length)return '';return `<section class="system-section"><h2 class="section-title"><span>${s.short}</span><span class="count">${group.length}</span>${icon('chevron')}</h2><div class="game-grid">${group.map(g=>`<article class="game-card"><button class="game-launch" data-game="${g.id}" aria-label="${esc(g.name)}の設定を開く" aria-haspopup="dialog"><div class="cover ${g.cover?'':'empty-cover'}" style="--system-color:${s.color}"><img src="${g.cover||`assets/controller.svg`}" alt=""><span class="badge">${g.size===67108864&&k==='gba'?'64 MB':s.short}</span>${g.favorite?`<span class="heart-mark">${icon('heart')}</span>`:''}</div><h3 class="game-name">${esc(g.name)}</h3></button><button class="game-options" data-details="${g.id}" aria-label="${esc(g.name)}のメニュー">${icon('more')}</button></article>`).join('')}</div></section>`;}).join('');
- $$('[data-game]').forEach(b=>b.onclick=()=>showDetails(library.find(g=>g.id===b.dataset.game)));$$('[data-details]').forEach(b=>b.onclick=()=>showDetails(library.find(g=>g.id===b.dataset.details)));
-}
+const libraryView=createLibraryView({games:()=>library,showGame:showDetails,add:()=>$('#rom-input').click(),sheet,closeSheet,refresh,toast,error});
+function renderGames(){libraryView.render();}
 // ManicEMU ImportServiceListView and its motto, file, service and footer cells.
 // Copyright © 2025–2026 Manic EMU. Daiuno / Max. Ported 2026-10-09.
 // Local Files, skin settings and game-specific save import; original Web artwork.
@@ -183,7 +177,7 @@ async function importFiles(files){
   }
  }catch(e){diagnostics.record(e,'import');failure=e;}
  finally{progress?.close();importing=false;$('#rom-input').value='';}
- try{if(count){setTab('games');filter='all';query='';favorites=false;await refresh();}}catch(e){failure??=e;}
+ try{if(count){setTab('games');libraryView.reset();await refresh();}}catch(e){failure??=e;}
  if(failure)error(failure);
  else toast([count?`${count}本のゲームを追加しました。`:'',duplicates?`${duplicates}本は追加済みです。`:'',...skipped].filter(Boolean).join(' '));
 }
@@ -204,7 +198,7 @@ function menuControlCells(game=current){return {
  hideControls:nativeToggle('コントロール非表示','touchControls','hide',!settings.touchControls,{invert:true}),
  screenScaling:nativeSelect('画面スケーリング','screenScaling','expand',[['fit','アスペクト比を維持'],['stretch','引き伸ばし'],['fill','画面を埋める']],settings.screenScaling||'fit')
 };}
-const gameInfo=createGameInfo({sheet,closeSheet,launch,refresh,error,toast,download,showSkins,showControllers,showCheats,
+const gameInfo=createGameInfo({sheet,closeSheet,launch,refresh,error,toast,download,showSkins,showControllers,showCheats,showCategory:game=>libraryView.showCategory(game),
  showStates:game=>showStates(null,false,{game}),importSave:game=>chooseSaveImport(game),
  onClose:cleanup=>{sheetCleanup=cleanup;},beginGame:game=>{settingsGame=game;if(gameMenuReturn?.game.id!==game.id)gameMenuReturn={game,scrollTop:0};else gameMenuReturn.game=game;return gameMenuReturn.scrollTop;},preferenceSummary:gamePreferenceSummary,resetPreferences:game=>resetGamePreferences(game,()=>gameInfo.show(game)),settings:()=>settings,saveSettings:applySettings,controlCells:menuControlCells,bindSettings});
 // ManicEMU Game.handleTapAction's normal selection route. Core startup belongs
@@ -239,7 +233,7 @@ async function launch(game,{safeMode=false,skipRecovery=false}={}){
   engine.onKeyboard=showCoreKeyboard;engine.onError=e=>{diagnostics.record(e,'core');setPause(true);void rewindSession.clear({halt:true});error(e);};engine.unlockAudio()?.catch?.(()=>{});await engine.load(bytes,game,systems[game.system]);
   if(previous.save?.bytes)await engine.restore(await protection.verify(previous.save));
   engine.pause(false);
-  engine.setCheats?.(safeMode||!coreFor(game).cheats?[]:cheatsFor(game));game.lastPlayed=Date.now();await db.put('library',game.id,game);paused=false;playRunAt=Date.now();$('#resume-game').hidden=true;rewindSession.attach(engine,{...game,coreKey:coreFor(game).key});applySettings();layoutSkin();$('#loading').hidden=true;$('#save-status').hidden=false;engine.unlockAudio()?.catch?.(()=>{});startPadPoll();
+  engine.setCheats?.(safeMode||!coreFor(game).cheats?[]:cheatsFor(game));game.lastPlayed=Date.now();await db.setGameDetails(game.id,{lastPlayed:game.lastPlayed});paused=false;playRunAt=Date.now();$('#resume-game').hidden=true;rewindSession.attach(engine,{...game,coreKey:coreFor(game).key});applySettings();layoutSkin();$('#loading').hidden=true;$('#save-status').hidden=false;engine.unlockAudio()?.catch?.(()=>{});startPadPoll();
   if(!safeMode&&!skipRecovery&&previous.interrupted&&previous.recoveries.some(r=>protection.compatible(r))){setPause(true);await showRecovery(true);}
  }catch(e){diagnostics.record(e,'startup');await rewindSession.dispose();clearImportedSkin();releaseSkin();skinPair=null;await engine?.close();engine=null;current=null;settingsGame=null;await protection.close();$('#player').hidden=true;$('#loading').hidden=true;throw e;}finally{launching=false;}
 }
@@ -364,7 +358,7 @@ $('#save-input').onchange=guardUpdateTask(async e=>{
   }
  }catch(errorValue){error(errorValue);}finally{await temporaryCore?.close();await temporaryProtection?.close();e.target.value='';}
 });
-async function exitGame(){if(linkStarting||exiting)return;exiting=true;try{const wasLinked=!!link;await link?.close();if(!engine)return;setPause(true);await rewindSession.dispose();await preferences.flush();await persist({checkpoint:settings.recovery&&!wasLinked,clean:true,reason:'exit'});if(current&&!current.cover){try{const cover=engine.screenshot(),updated=await db.setGameCover(current.id,{cover,coverSource:'screenshot'},{onlyMissing:true});if(updated)Object.assign(current,updated);}catch(e){console.warn('Cover image could not be stored:',e.name);}}if(current){const stored=await db.get('library',current.id);if(stored)await db.put('library',current.id,{...stored,playDuration:current.playDuration||0});}dialogResume=false;$('#sheet').close();clearImportedSkin();await engine.close();await protection.close();releaseSkin();engine=null;current=null;settingsGame=null;linkPanel.reset();updateLinkButton();linkMessage='';linkSaveBlocked=false;skinPair=null;pressed.clear();$('#screen').replaceChildren();$('#player').hidden=true;if(document.fullscreenElement)await document.exitFullscreen();await refresh();}finally{exiting=false;}}
+async function exitGame(){if(linkStarting||exiting)return;exiting=true;try{const wasLinked=!!link;await link?.close();if(!engine)return;setPause(true);await rewindSession.dispose();await preferences.flush();await persist({checkpoint:settings.recovery&&!wasLinked,clean:true,reason:'exit'});if(current&&!current.cover){try{const cover=engine.screenshot(),updated=await db.setGameCover(current.id,{cover,coverSource:'screenshot'},{onlyMissing:true});if(updated)Object.assign(current,updated,{playDuration:current.playDuration});}catch(e){console.warn('Cover image could not be stored:',e.name);}}if(current)await db.setGameDetails(current.id,{playDuration:current.playDuration||0});dialogResume=false;$('#sheet').close();clearImportedSkin();await engine.close();await protection.close();releaseSkin();engine=null;current=null;settingsGame=null;linkPanel.reset();updateLinkButton();linkMessage='';linkSaveBlocked=false;skinPair=null;pressed.clear();$('#screen').replaceChildren();$('#player').hidden=true;if(document.fullscreenElement)await document.exitFullscreen();await refresh();}finally{exiting=false;}}
 function download(bytes,name){const url=URL.createObjectURL(new Blob([bytes]));const a=document.createElement('a');a.href=url;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(url),10000);}
 function updateSpeedButton(){
  const speed=link?1:settings.speed,button=$('#boost');
@@ -410,7 +404,7 @@ async function showOffline(){
  // asynchronous status query. Captured elements cannot update a later sheet.
  button.disabled=false;
 }
-async function applyCheats(next,game=current){const old=cheatsFor(game),live=current?.id===game.id?engine:null;try{if(live)await rewindSession.clear();live?.setCheats(next);const fresh=await db.get('library',game.id);if(!fresh)throw Error('ゲームが見つかりません。');const changes=defaultCore(game)?{cheats:next}:{coreCheats:{...fresh.coreCheats,[coreFor(game).key]:next}};await db.put('library',game.id,{...fresh,...changes});Object.assign(game,changes);}catch(e){live?.setCheats(old);throw e;}}
+async function applyCheats(next,game=current){const old=cheatsFor(game),live=current?.id===game.id?engine:null;try{if(live)await rewindSession.clear();live?.setCheats(next);const updated=await db.setGameCheats(game.id,coreFor(game).key,next);for(const key of ['cheats','coreCheats']){if(Object.hasOwn(updated,key))game[key]=updated[key];else delete game[key];}}catch(e){live?.setCheats(old);throw e;}}
 function showCheats(game=current){if(!coreFor(game).cheats)return;const list=cheatsFor(game),mgba=coreFor(game).adapter==='mgba';const formats=game.system==='gba'?[[0,'自動判定'],[1,'CodeBreaker'],[2,'GameShark'],[3,'Action Replay'],[4,'VBA（アドレス:値）']]:[[0,'自動判定'],[1,'GameShark'],[2,'Game Genie'],[3,'VBA（アドレス:値）']];
  sheet('チート',`<p class="sheet-note">ゲームのバージョンに合うコードを入力してください。使用前にセーブを書き出しておきましょう。</p><div class="settings-group">${list.map((c,i)=>`<div class="row"><label class="cheat-toggle"><input type="checkbox" data-cheat-toggle="${i}" ${c.enabled?'checked':''}> ${esc(c.name)}</label><button class="danger" data-cheat-delete="${i}">削除</button></div>`).join('')}</div><div class="label">追加</div><div class="stack"><input class="text-input" id="cheat-name" aria-label="チート名" maxlength="100" placeholder="名前"><select class="text-input" id="cheat-type" aria-label="コード形式">${(mgba?formats:[[0,'コアのコード形式']]).map(([v,t])=>`<option value="${v}">${t}</option>`).join('')}</select><textarea class="text-input" id="cheat-code" aria-label="チートコード" rows="5" maxlength="16384" placeholder="コードを1行ずつ入力"></textarea><button class="primary" id="cheat-add">有効にして追加</button></div>${mgba?'':'<p class="sheet-note">追加したコードが効いているかは、ゲーム内で確認してください。</p>'}`,true);
  $$('[data-cheat-toggle]').forEach(b=>b.onchange=async()=>{try{await applyCheats(list.map((c,i)=>i===+b.dataset.cheatToggle?{...c,enabled:b.checked}:c),game);showCheats(game);}catch(e){b.checked=!b.checked;error(e);}});
@@ -434,6 +428,6 @@ matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(set
 setupOffline().catch(e=>console.warn('Offline setup:',e.message));
 function openGameLink(){if(engine||!location.hash.startsWith('#game='))return;const game=library.find(g=>g.id===location.hash.slice(6));if(game)showDetails(game);else toast('このブラウザにゲームがありません。先にROMを追加してください。');}
 window.addEventListener('hashchange',()=>{if(engine)return;tab=tabFromHash();render();openGameLink();});
-if(await startAutoUpdates(()=>appReady&&!engine&&!launching&&!importing&&!exiting&&!link&&!linkStarting&&!saveLock&&tab!=='imports',()=>toast('更新しました。'))!==false){
+if(await startAutoUpdates(()=>appReady&&!libraryView.selecting&&!engine&&!launching&&!importing&&!exiting&&!link&&!linkStarting&&!saveLock&&tab!=='imports',()=>toast('更新しました。'))!==false){
  applySettings();refresh().then(async()=>{dragDepth=0;document.body.classList.remove('drop-active');await finishStartupInputs({onTab:id=>{setTab(id);render();},onFiles:guardUpdateTask(importFiles)});openGameLink();appReady=true;}).catch(e=>{error(e);$('#content').innerHTML='<div class="empty-library"><h2>保存データを開けませんでした</h2><p>プライベートブラウズを終了するか、ブラウザの保存設定を確認してください。</p></div>';});
 }

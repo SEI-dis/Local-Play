@@ -11,6 +11,8 @@
 | ライブラリ、画像、スキン | IndexedDBのlibrary、skins。表示用に端末内のdata/blob URLを使用 | src/app.js、src/skins.js |
 | カバー画像 | IndexedDBのlibrary。端末内の画像をdata URLに変換 | src/cover-dialog.js |
 | 設定・入力機器別割り当て | localStorageのmanic-settings。機器名ではなくIDハッシュを保持。ROM・セーブのバイト列は保存しない | src/game-preferences.js、src/input-controls.js |
+| ライブラリ表示設定 | localStorageのpalmo-library-view-v1。許可したsort/groupだけを保存し、検索語・ゲーム名は含めない | src/library.js、src/library-view.js |
+| 分類・お気に入り | IndexedDBのlibrary.category / library.favorite。一括バックアップの対象 | src/library-view.js、src/storage.js、src/backup.js |
 | ゲーム別設定 | IndexedDBのlibrary.preferences。共通設定への未変更項目の継承とリセット | src/game-preferences.js、src/storage.js |
 | 一括バックアップ | 手動で端末へJSONダウンロード。復元前の置き換え対象と設定はIndexedDBのcoverCatalogs内の予約名前空間に1世代保持 | src/backup.js、src/storage.js |
 | 巻き戻し | RAM内だけのstate／battery。保持履歴と復元コピー合計8MiB上限、終了時破棄 | src/rewind.js、src/rewind-session.js |
@@ -145,3 +147,20 @@ JSONの最大サイズは192MiB、バイト配列の合計は128MiB、1000ゲー
 既存の永続セーブを変更しない復元と、端末外への通信なしを確認しました。
 実アプリ全体への結合と公開対象の全件CIは、RELEASE_VALIDATION.mdと対象コミットの結果で区別します。
 iPhone実機の性能や最大容量のバックアップ操作を検証したものではありません。
+
+## ライブラリ整理（2026-10-10）
+
+ライブラリ表示設定の `palmo-library-view-v1` は許可した `sort` / `group` の値だけを
+localStorageへ保存します。この表示設定には検索語・ゲーム名・選択中のゲーム一覧を含めません。
+分類とお気に入りはIndexedDBのゲーム情報へ保存し、手動の一括バックアップに含めます。
+これらの項目がない旧バックアップでは現在の値を保ち、明示した未分類／お気に入り解除は復元します。
+
+分類・検索・複数選択・削除の実装は端末内の処理で、外部通信やカバー検索を追加していません。
+削除は選択した全ゲームのプレイ中ロックを確認してから、対応するROM・セーブ・ステート・
+履歴を1回のIndexedDBトランザクションで削除します。元ファイルや他のゲーム、共用スキンは対象外です。
+
+library / library-bulk / backup の専用検査はEdge・PC版WebKitで成功しました。
+絞り込み・選択範囲、分類とお気に入りの保存・旧バックアップ互換、競合更新、
+一括削除の中断時の原子性、他タブでのプレイ中保護、各コア・2Pの保存区分を確認しています。
+外部APIを持たないことはソース確認、バックアップの外部送信がないことはHTTP記録でも確認します。
+この結果はiPhone実機や公開対象全件CIの検証を示すものではありません。

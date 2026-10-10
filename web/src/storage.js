@@ -64,13 +64,63 @@ async function setGamePreferences(id,preferences){const db=await database;return
  tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||Error('ゲームの設定を保存できませんでした。'));tx.onerror=()=>{};
  request.onsuccess=()=>{try{const game=request.result;if(!game)throw Error('ゲームが見つかりません。');result=preferences===null?null:sanitizeGamePreferences(preferences);if(result===null)delete game.preferences;else game.preferences=result;store.put(game,id);}catch(e){failure=e;tx.abort();}};
 });}
+function libraryIds(ids){
+ if(!Array.isArray(ids)||!ids.length||Array.from(ids).some(id=>typeof id!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(id)))throw Error('対象のゲームを選び直してください。');
+ return [...new Set(ids)];
+}
+// Read and patch all selected rows in one transaction. Never write a stale card
+// snapshot over an independently updated cover, name, settings or play time.
+async function setGamesLibraryMetadata(ids,patch){
+ ids=libraryIds(ids);
+ if(!patch||Object.getPrototypeOf(patch)!==Object.prototype||!Object.keys(patch).length||Object.keys(patch).some(key=>!['category','favorite'].includes(key))||Object.hasOwn(patch,'category')&&!['','playing','completed','backlog'].includes(patch.category)||Object.hasOwn(patch,'favorite')&&typeof patch.favorite!=='boolean')throw Error('分類またはお気に入りの設定が正しくありません。');
+ return patchLibrary(ids,{...patch},'ゲームの分類を保存できませんでした。');
+}
+async function setGameDetails(id,patch){
+ const ids=libraryIds([id]);
+ if(!patch||Object.getPrototypeOf(patch)!==Object.prototype||!Object.keys(patch).length||Object.keys(patch).some(key=>!['name','lastPlayed','playDuration'].includes(key))||Object.hasOwn(patch,'name')&&(typeof patch.name!=='string'||!patch.name.trim()||patch.name.trim().length>120)||['lastPlayed','playDuration'].some(key=>Object.hasOwn(patch,key)&&(!Number.isFinite(patch[key])||patch[key]<0)))throw Error('ゲーム名またはプレイ情報が正しくありません。');
+ const changes={...patch};if(Object.hasOwn(changes,'name'))changes.name=changes.name.trim();
+ return (await patchLibrary(ids,changes,'ゲームの情報を保存できませんでした。'))[0];
+}
+async function setGameCheats(id,coreKey,next){
+ const ids=libraryIds([id]);
+ if(!Array.isArray(next)||next.length>100||Array.from(next).some(item=>!item||Object.getPrototypeOf(item)!==Object.prototype||Object.keys(item).some(key=>!['name','code','type','enabled'].includes(key))||typeof item.name!=='string'||item.name.length>120||typeof item.code!=='string'||item.code.length>16384||!Number.isInteger(item.type)||item.type<0||item.type>4||typeof item.enabled!=='boolean'))throw Error('チート設定が正しくありません。');
+ const cheats=next.map(item=>({...item}));
+ return (await patchLibrary(ids,game=>{
+  const cores=coreRegistry[game.system],core=cores?.find(item=>item.key===coreKey);
+  if(!core?.cheats||!supportsGame(core,game))throw Error('このゲームで使用できるチート用コアではありません。');
+  return cores[0].key===coreKey?{cheats}:{coreCheats:{...game.coreCheats,[coreKey]:cheats}};
+ },'チート設定を保存できませんでした。'))[0];
+}
+async function patchLibrary(ids,changes,message){
+ const db=await database;
+ return new Promise((resolve,reject)=>{
+  const tx=write(db,'library'),store=tx.objectStore('library'),result=new Array(ids.length);let pending=ids.length,failure;
+  const abort=e=>{failure=e;try{tx.abort();}catch{}};
+  tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||Error(message));tx.onerror=()=>{};
+  for(const [i,id] of ids.entries()){
+   const request=store.get(id);request.onsuccess=()=>{try{
+    const game=request.result;if(!game||game.id!==id)throw Error('ゲーム一覧が変わりました。対象を選び直してください。');result[i]=game;
+    if(--pending)return;
+    for(const row of result){for(const [field,value] of Object.entries(typeof changes==='function'?changes(row):changes)){if(field==='category'&&value==='')delete row.category;else row[field]=value;}store.put(row,row.id);}
+   }catch(e){abort(e);}};
+  }
+ });
+}
 // Deleted skins cannot leave game-specific overrides pointing to missing artwork.
 async function removeSkin(id){const db=await database;return new Promise((resolve,reject)=>{
  const tx=write(db,['skins','library']);tx.objectStore('skins').delete(id);
  const request=tx.objectStore('library').openCursor();request.onsuccess=()=>{const cursor=request.result;if(!cursor)return;const game=cursor.value,next=withoutSkinChoice(game.skinId,id);if(next!==game.skinId){if(next)game.skinId=next;else delete game.skinId;cursor.update(game);}cursor.continue();};
  tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error||new Error('スキンを削除できませんでした。'));tx.onerror=()=>{};
 });}
-async function removeGame(id){if(!navigator.locks)throw new Error('保存を保護するため、最新版のブラウザを使用してください。');return navigator.locks.request('local-game:'+id,{ifAvailable:true},lock=>{if(!lock)throw new Error('このゲームは別のタブでプレイ中です。終了してから削除してください。');return deleteGame(id);});}
+async function removeGame(id){return removeGames([id]);}
+async function removeGames(ids){
+ ids=libraryIds(ids).sort();
+ if(!navigator.locks)throw Error('保存を保護するため、最新版のブラウザを使用してください。');
+ // Acquire every lock before touching IndexedDB. If a later game is active,
+ // unwinding releases earlier locks without deleting any selected data.
+ const next=i=>i===ids.length?deleteGames(ids):navigator.locks.request('local-game:'+ids[i],{ifAvailable:true},lock=>{if(!lock)throw Error('選択したゲームは別のタブでプレイ中です。終了してから削除してください。');return next(i+1);});
+ return next(0);
+}
 async function setGameCore(id,key){
  if(!navigator.locks)throw Error('最新版のブラウザを使用してください。');
  return navigator.locks.request('local-game:'+id,{ifAvailable:true},async lock=>{
@@ -82,7 +132,19 @@ async function setGameCore(id,key){
   });
  });
 }
-async function deleteGame(id){const db=await database;return new Promise((resolve,reject)=>{const tx=write(db,['library','roms','saves','states','backups','recoveries','sessions']);for(const s of ['library','roms','saves','backups','recoveries','sessions']){tx.objectStore(s).delete(id);if(s!=='library'&&s!=='roms')tx.objectStore(s).delete(IDBKeyRange.bound(id+'@',id+'@\uffff'));}tx.objectStore('states').delete(IDBKeyRange.bound(id+':',id+':\uffff'));tx.objectStore('states').delete(IDBKeyRange.bound(id+'@',id+'@\uffff'));tx.oncomplete=resolve;tx.onabort=()=>reject(tx.error);});}
+async function deleteGames(ids){const db=await database;return new Promise((resolve,reject)=>{
+ const tx=write(db,['library','roms','saves','states','backups','recoveries','sessions']);let pending=ids.length,failure;
+ const abort=e=>{failure=e;try{tx.abort();}catch{}};
+ tx.oncomplete=()=>resolve(ids.length);tx.onabort=()=>reject(failure||tx.error||Error('削除が中断されました。元のゲームと保存データは残っています。'));tx.onerror=()=>{};
+ for(const id of ids){const request=tx.objectStore('library').get(id);request.onsuccess=()=>{try{
+  if(!request.result||request.result.id!==id)throw Error('ゲーム一覧が変わりました。対象を選び直してください。');
+  if(--pending)return;
+  for(const selected of ids){
+   for(const name of ['library','roms','saves','backups','recoveries','sessions']){const store=tx.objectStore(name);store.delete(selected);if(name!=='library'&&name!=='roms')store.delete(IDBKeyRange.bound(selected+'@',selected+'@\uffff'));}
+   const states=tx.objectStore('states');states.delete(IDBKeyRange.bound(selected+':',selected+':\uffff'));states.delete(IDBKeyRange.bound(selected+'@',selected+'@\uffff'));
+  }
+ }catch(e){abort(e);}};}
+});}
 const equal=(a,b)=>!!a&&!!b&&a.length===b.length&&a.every((v,i)=>v===b[i]);
 // Save, retained generations and crash marker commit together, or none do.
 // No asynchronous hashing/network calls are allowed inside this transaction.
@@ -125,7 +187,7 @@ async function readBackupData(){const db=await database;return new Promise((reso
  const tx=db.transaction(['library',...backupStores]),result={games:[],records:[]};let bytes=0,failure;
  for(const name of ['library',...backupStores]){const request=tx.objectStore(name).openCursor();request.onsuccess=()=>{try{const c=request.result;if(!c)return;
   const project=(value,fields)=>Object.fromEntries(fields.filter(key=>Object.hasOwn(value,key)).map(key=>[key,value[key]]));
-  if(name==='library')result.games.push(project(c.value,['id','system','size','preferences','coreKey','cheats','coreCheats','controlLayout']));else{const rows=Array.isArray(c.value)?c.value:[c.value],values=rows.map(item=>project(item,['bytes','hash','at','coreId','save','saveHash']));result.records.push({store:name,key:c.key,value:Array.isArray(c.value)?values:values[0]});for(const item of values)bytes+=(item.bytes?.byteLength||0)+(item.save?.byteLength||0);}
+  if(name==='library')result.games.push({category:'',favorite:false,...project(c.value,['id','system','size','preferences','coreKey','cheats','coreCheats','controlLayout','category','favorite'])});else{const rows=Array.isArray(c.value)?c.value:[c.value],values=rows.map(item=>project(item,['bytes','hash','at','coreId','save','saveHash']));result.records.push({store:name,key:c.key,value:Array.isArray(c.value)?values:values[0]});for(const item of values)bytes+=(item.bytes?.byteLength||0)+(item.save?.byteLength||0);}
   if(result.games.length>1000||result.records.length>10000||bytes>128*1048576){failure=Error('バックアップの上限（128 MiB／1000ゲーム／10000件）を超えています。個別に書き出してから整理してください。');tx.abort();return;}c.continue();}catch(e){failure=Error('バックアップ用の保存データを読めませんでした。');tx.abort();}};}
  tx.oncomplete=()=>resolve(result);tx.onabort=()=>reject(failure||tx.error||Error('バックアップ用のデータを読めませんでした。'));
 });}
@@ -152,6 +214,10 @@ async function restoreBackupData({games,records,settings,previousSettings,cleanG
    const game=r.result;if(!game||game.system!==incoming.system||game.size!==incoming.size)throw Error('ゲーム一覧が変わりました。ファイルを選び直してください。');
    before.games.push(cleanGame(game));
    for(const field of ['preferences','coreKey','cheats','coreCheats','controlLayout']){if(Object.hasOwn(incoming,field))game[field]=incoming[field];else delete game[field];}
+   // Older portable backups did not include library organization. Preserve it
+   // unless the archive explicitly supplies a value (including false/empty).
+   if(Object.hasOwn(incoming,'category')){if(incoming.category)game.category=incoming.category;else delete game.category;}
+   if(Object.hasOwn(incoming,'favorite'))game.favorite=incoming.favorite;
    tx.objectStore('library').put(game,game.id);done();
   }catch(e){abort(e);}};
   const check=tx.objectStore('roms').count(incoming.id);check.onsuccess=()=>{if(!check.result)abort(Error('対象のROMがありません。先にROMを追加してください。'));else done();};
@@ -180,6 +246,8 @@ const addGameWithActivity=guardUpdateTask(addGame);
 const setGameCoverWithActivity=guardUpdateTask(setGameCover);
 const setGameSkinWithActivity=guardUpdateTask(setGameSkin);
 const setGameControlsWithActivity=guardUpdateTask(setGameControls);
+const setGamesLibraryMetadataWithActivity=guardUpdateTask(setGamesLibraryMetadata),removeGamesWithActivity=guardUpdateTask(removeGames),setGameDetailsWithActivity=guardUpdateTask(setGameDetails),setGameCheatsWithActivity=guardUpdateTask(setGameCheats);
+export {setGamesLibraryMetadataWithActivity as setGamesLibraryMetadata,removeGamesWithActivity as removeGames,setGameDetailsWithActivity as setGameDetails,setGameCheatsWithActivity as setGameCheats};
 export const setGamePreferencesWithActivity=guardUpdateTask(setGamePreferences);
 export {setGamePreferencesWithActivity as setGamePreferences};
 const readBackupDataWithActivity=guardUpdateTask(readBackupData),restoreBackupDataWithActivity=guardUpdateTask(restoreBackupData),readPreviousBackupWithActivity=guardUpdateTask(readPreviousBackup);

@@ -439,3 +439,33 @@ and [Delta Sync documentation](https://faq.deltaemulator.com/using-delta/delta-s
 No Delta code, text, icon or asset is copied into this distribution, and no claim
 of permission to redistribute unverified Delta source is made. The comparison
 informs input capture and local backup UX only; this app has no Delta Sync service.
+
+## Library organization (modified 2026-10-10)
+
+Added original AGPL-3.0-or-later browser library modules in src/library.js,
+src/library-view.js and library.css. They provide combined filters, sorting,
+grouped presentation, explicit selection of the visible results and confirmed
+batch operations. IndexedDB metadata patches and all-target deletion locks are
+Web-specific implementations; deletion commits all selected games and their
+save/state namespaces together. Optional category/favorite backup fields preserve
+current values when absent from an older backup. No upload service was added.
+
+Behavior references are pinned to Manic-EMU/ManicEMU commit
+fbaeab79c214d5920bb51afa6f2d786fb2b12a58 (AGPL-3.0-or-later):
+
+- GameListView.swift: Max, Copyright © 2025 Manic EMU. Normal versus selection
+  mode, current-results select-all, sorting and a contextual batch toolbar.
+- GamesToolView.swift / Theme.swift / GameListStyleCollectionViewCell.swift:
+  Daiuno, Copyright © 2025 Manic EMU. Selection controls and persisted sort choices.
+- GameOption.swift / GameOptionPerform.swift: Daiuno, Copyright © 2026 Manic EMU.
+  Available actions across selected games and confirmation before deletion.
+- CategorySelectionView.swift: Daiuno, Copyright © 2026 Manic EMU. A shared
+  selection is shown only when all targets agree. Its native categories change
+  a platform's variant; PalmoEMU's manual progress categories and favorite batches
+  are independent Web features, and no online cover matching is included.
+
+Exact source paths, reviewed lines and SHA-256 hashes are recorded under
+browserLibraryOrganization in [SOURCES.json](SOURCES.json). Existing bundled
+Swift originals and their headers are retained unchanged. Newly reviewed Swift
+files are behavior references only, not copied into the runtime or distribution.
+No new third-party image, ROM, BIOS, core binary or native dependency is included.
